@@ -1,0 +1,49 @@
+<%- include('../layout/header.ejs') %>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../layout/sidebar.ejs') %>
+        <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4 class="py-3 mb-4">
+                            <span class="text-muted fw-light">Category Groups</span>
+                        </h4>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <a href="/add-category-group" class="btn btn-primary mb-3">Add Category Group</a>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Display Name</th>
+                                            <th>Categories</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% groups.forEach(function(group) { %>
+                                            <tr>
+                                                <td><%= group.displayName %></td>
+                                                <td>
+                                                    <% group.categories.forEach(function(cat, idx) { %>
+                                                        <span class="badge bg-info"><%= cat.displayName || cat.name %></span>
+                                                        <% if (idx < group.categories.length - 1) { %>, <% } %>
+                                                    <% }) %>
+                                                </td>
+                                                <td>
+                                                    <a href="/edit-category-group?id=<%= group._id %>" class="btn btn-sm btn-warning">Edit</a>
+                                                    <a href="/delete-category-group?id=<%= group._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%- include('../layout/footer.ejs') %>
+        </div>
+    </div>
+</div> 

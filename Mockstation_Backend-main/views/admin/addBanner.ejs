@@ -1,0 +1,63 @@
+<%- include('../layout/header.ejs') %>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../layout/sidebar.ejs') %>
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header sticky-element bg-label-secondary d-flex justify-content-sm-between align-items-sm-center flex-column flex-sm-row">
+                                    <h5 class="card-title mb-sm-0 me-2">Add Carousel Banner</h5>
+                                    <div class="action-btns">
+                                        <a href="/view-banner" class="btn btn-dark">Back</a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post" action="/add-banner" enctype="multipart/form-data">
+                                        <div class="row">
+                                            <div class="col-lg-8 mx-auto">
+                                                <div class="row g-3">
+                                                    <div class="col-md-12">
+                                                        <label class="form-label" for="title">Title</label>
+                                                        <input type="text" id="title" name="title" class="form-control" placeholder="Enter banner title" required/>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <label class="form-label" for="description">Description</label>
+                                                        <textarea id="description" name="description" class="form-control" rows="3" placeholder="Enter banner description"></textarea>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label" for="order">Display Order</label>
+                                                        <input type="number" id="order" name="order" class="form-control" value="0" min="0"/>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <label class="form-label" for="image">Banner Image</label>
+                                                        <input type="file" id="image" name="image" class="form-control" accept="image/*" required/>
+                                                        <small class="text-muted">Recommended size: 1920x600 pixels</small>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active">
+                                                            <label class="form-check-label" for="is_active">Active Status</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 text-center">
+                                                        <button type="submit" class="btn btn-primary me-sm-3 me-1">Submit</button>
+                                                        <button type="reset" class="btn btn-label-secondary">Reset</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../layout/footer.ejs') %>
+
+
+           

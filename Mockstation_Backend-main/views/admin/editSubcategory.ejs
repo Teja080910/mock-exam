@@ -1,0 +1,81 @@
+<%- include('../layout/header.ejs') %>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../layout/sidebar.ejs') %>
+        <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="py-3 mb-4">
+                            <span class="text-muted fw-light">Subcategory /</span> Edit Subcategory
+                        </h4>
+                        <div class="card mb-4">
+                            <form action="/edit-subcategory" method="post" enctype="multipart/form-data">
+                                <div class="card-body">
+                                    <% if(typeof message !== 'undefined'){ %>
+                                        <div class="alert alert-primary alert-dismissible" role="alert"><%= message %>
+                                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                     <% } %>
+                                     <% if(flash && flash.error && flash.error.length> 0){ %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert">
+                                            <%= flash.error %>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    <% } %>
+                                    <input type="hidden" name="id" value="<%= subcategory._id %>" />
+                                    <div class="row mb-3">
+                                        <label class="col-sm-2 col-form-label">Category</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-select" name="categoryId" required>
+                                                <% categories.forEach(function(category) { %>
+                                                    <option value="<%= category._id %>" <% if(subcategory.categoryId && String(subcategory.categoryId) === String(category._id)) { %> selected <% } %>><%= category.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-2 col-form-label">Name</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="name" value="<%= subcategory.name %>" required />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-2 col-form-label">Image</label>
+                                        <div class="col-sm-10">
+                                            <input type="file" name="image" class="form-control" accept="image/png, image/jpeg,image/jpg" />
+                                            <% if(subcategory.image) { %>
+                                                <img src="/assets/userImages/<%= subcategory.image %>" alt="Current Image" class="rounded mt-2" width="80" height="80">
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-2 col-form-label">is Active</label>
+                                        <div class="col-sm-10">
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" name="is_active" <% if(subcategory.is_active == 1) { %> checked <% } %> >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-2 col-form-label">is_feature</label>
+                                        <div class="col-sm-10">
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" name="is_feature" <% if(subcategory.is_feature == 1) { %> checked <% } %> >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-2"></div>
+                                        <div class="col-sm-8">
+                                            <button type="submit" class="btn btn-primary">Update</button>
+                                            <a href="/view-subcategory" class="ms-3 btn btn-dark">Back</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <%- include('../layout/footer.ejs') %> 

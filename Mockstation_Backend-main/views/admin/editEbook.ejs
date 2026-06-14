@@ -1,0 +1,88 @@
+<%- include('../layout/header.ejs') %>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../layout/sidebar.ejs') %>
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4 class="py-3 mb-4">
+                                    <span class="text-muted fw-light">Ebook /</span> Edit Ebook
+                                </h4>
+                                <div class="card mb-4">
+                                    <form action="" method="post" enctype="multipart/form-data">
+                                        <div class="card-body">
+                                            <% if(typeof message !== 'undefined'){ %>
+                                                <h3 class="mt-3 text- property" style="color:green;"><%= message %></h3>
+                                            <% } %>
+                                            <% if(flash.error.length> 0){ %>
+                                                <div class="alert alert-danger alert-dismissible" role="alert">
+                                                    <%= flash.error %>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                </div>
+                                            <% } %>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="basic-icon-default-fullname">Name</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group input-group-merge">
+                                                                <input type="text" class="form-control" name="name" required 
+                                                                value="<%= editebook.name %>"  placeholder="Enter Ebook Name"/>
+                                                            </div>
+                                                        </div>
+                                                        <input type="hidden" name="id" value="<%= editebook._id %>">
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="basic-icon-default-fullname">Language</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group input-group-merge">
+                                                                <input type="text" class="form-control" name="language" required 
+                                                                value="<%= editebook.language %>"  placeholder="Enter Language"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-4">
+                                                        <label class="col-sm-2 col-form-label"for="basic-icon-default-fullname">Preview Image</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group input-group-merge">
+                                                                <img src="./assets/userImages/<%= editebook.image %>" alt="Ebook Cover" style="max-width: 200px; height: auto;">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label"
+                                                            for="basic-icon-default-fullname">Update Image</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group input-group-merge">
+                                                                <span id="basic-icon-default-fullname2" class="input-group-text"><i class="bx bx-image"></i></span>
+                                                                <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="basic-icon-default-fullname">Ebook Link</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group input-group-merge">
+                                                                <span id="basic-icon-default-fullname2" class="input-group-text">
+                                                                    <i class="bx bx-link"></i>
+                                                                </span>
+                                                                <input type="url" id="link" name="link" class="form-control" 
+                                                                value="<%= editebook.link %>" placeholder="Enter Ebook Link" required/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <div class="row mt-5">
+                                                <div class="col-sm-2"></div>
+                                                <div class="col-sm-10">
+                                                    <button type="submit" class="btn btn-primary">Save</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            <%- include('../layout/footer.ejs') %> 

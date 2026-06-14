@@ -1,0 +1,431 @@
+<%- include('../layout/header.ejs') %>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../layout/sidebar.ejs') %>
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4 class="py-3 mb-4">
+                                <span class="text-muted fw-light">Questions /</span> Add Questions
+                              </h4>
+                            <div class="card mb-4">
+                                <form action="" method="post" enctype="multipart/form-data">
+                                    <div class="card-body">
+                                        <% if(typeof message !== 'undefined'){ %>
+                                            <div class="alert alert-primary alert-dismissible" role="alert"><%= message %>
+                                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                         <% } %>
+                                         <% if(flash.error.length> 0){ %>
+                                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                                <%= flash.error %>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        <% } %>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label"for="basic-icon-default-fullname">Category</label>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select class="form-select" name="categoryId" id="defaultSelect">
+                                                                        <% if(category.length> 0 ) { %>
+                                                                            <option>Select Category</option>
+                                                                            <% for(let i=0; i < category.length; i++) { %>
+                                                                                <% if (editdata.categoryId && String(editdata.categoryId._id) === String(category[i]._id)) { %>
+                                                                                        <option  value="<%= category[i]._id %>" selected><%= category[i].name %></option>
+                                                                                <% } else { %>
+                                                                                        <option  value="<%= category[i]._id %>"><%= category[i].name %></option>
+                                                                                <% } %>
+                                                                            <% }  } %>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <input type="hidden" name="id" value="<%= editdata._id %>">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label"for="basic-icon-default-fullname">Quiz Name</label>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select class="form-select" name="quizId" id="quizSelect">
+                                                                        <option>Select quiz</option>
+                                                                        <% for(let j=0; j < quiz.length; j++) { %>
+                                                                            <% if (category.length > 0) { %>
+                                                                                <% if (editdata.quizId && String(editdata.quizId._id) === String(quiz[j]._id)) { %>
+                                                                                    <option value="<%= quiz[j]._id %>" selected data-categoryid="<%= editdata.categoryId ? editdata.categoryId._id : '' %>"><%= quiz[j].name %></option>
+                                                                                <% } else { %>
+                                                                                    <option value="<%= quiz[j]._id %>" data-categoryid="<%= quiz[j].categoryId %>"><%= quiz[j].name %></option>
+                                                                                <% } %>
+                                                                            <% } %>
+                                                                        <% } %>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-sm-1">
+                                                                <label class="col-form-label" for="basic-icon-default-fullname">Question Type</label>
+                                                            </div>
+                                                            <div class="d-flex col-sm-11">
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input text-only-type" type="radio" value="text_only" name="question_type" id="defaultRadio1" 
+                                                                    <% if(editdata.question_type == "text_only") { %> checked <% } else {} %>>
+                                                                    <label class="form-check-label" for="defaultRadio1">Text Only</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input true-false-type" type="radio" value="true_false" name="question_type" id="defaultRadio1"
+                                                                    <% if(editdata.question_type == "true_false") { %> checked <% } else {} %>>
+                                                                    <label class="form-check-label" for="defaultRadio1">True / False</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input images-type" type="radio" value="images" name="question_type" id="defaultRadio1"
+                                                                    <% if(editdata.question_type == "images") { %> checked <% } else {} %>>
+                                                                    <label class="form-check-label" for="defaultRadio1">Image</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input audio-type" type="radio" value="audio" name="question_type" id="defaultRadio1"
+                                                                    <% if(editdata.question_type == "audio") { %> checked <% } else {} %>>
+                                                                    <label class="form-check-label" for="defaultRadio1">Audio</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-4">
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-sm-1">
+                                                                <label class="col-form-label" for="basic-icon-default-fullname">Question</label>
+                                                            </div>
+                                                            <div class="col-sm-11">
+                                                                <div id="questionTitle"></div>
+                                                                <input type="hidden" name="question_title" required value="<%= editdata.question_title %>"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-4 audio-wrap">
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-sm-1">
+                                                                <label class="col-form-label" for="basic-icon-default-fullname">Audio</label>
+                                                            </div>
+                                                            <div class="col-sm-6 plyr">
+                                                                <audio controls id="plyr-audio-player">
+                                                                    <source src="./assets/userImages/<%= editdata.audio %>" type="audio/mpeg">
+                                                                  </audio>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3 audio-wrap">
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-sm-1">
+                                                                <label class="col-form-label" for="basic-icon-default-fullname">Upload Audio</label>
+                                                            </div>
+                                                            <div class="col-sm-11">
+                                                                <div class="input-group">
+                                                                    <input type="file" accept=".mp3" name="audio" class="form-control"/>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="option-image-fields" style="display:none;">
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="mainQuestionImage">Main Question Image (optional)</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <% if (editdata.image) { %>
+                                                                        <div class="mb-2 mt-2">
+                                                                            <img src="/assets/userImages/<%= editdata.image %>" alt="Main Question Image" style="max-height:60px;">
+                                                                        </div>
+                                                                    <% } %>
+                                                                    <div class="input-group input-group-merge mt-2">
+                                                                        <input type="file" class="form-control" name="image" id="mainQuestionImage" accept="image/png, image/jpeg, image/jpg" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge mt-2">
+                                                                        <input type="file" class="form-control" name="a_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                                    </div>
+                                                                    <% if (editdata.option.a && editdata.option.a.image) { %>
+                                                                        <div class="mb-2 mt-2">
+                                                                            <img src="/assets/userImages/<%= editdata.option.a.image %>" alt="Option A Image" style="max-height:60px;">
+                                                                        </div>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge mt-2">
+                                                                        <input type="file" class="form-control" name="b_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                                    </div>
+                                                                    <% if (editdata.option.b && editdata.option.b.image) { %>
+                                                                        <div class="mb-2 mt-2">
+                                                                            <img src="/assets/userImages/<%= editdata.option.b.image %>" alt="Option B Image" style="max-height:60px;">
+                                                                        </div>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge mt-2">
+                                                                        <input type="file" class="form-control" name="c_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                                    </div>
+                                                                    <% if (editdata.option.c && editdata.option.c.image) { %>
+                                                                        <div class="mb-2 mt-2">
+                                                                            <img src="/assets/userImages/<%= editdata.option.c.image %>" alt="Option C Image" style="max-height:60px;">
+                                                                        </div>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge mt-2">
+                                                                        <input type="file" class="form-control" name="d_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                                    </div>
+                                                                    <% if (editdata.option.d && editdata.option.d.image) { %>
+                                                                        <div class="mb-2 mt-2">
+                                                                            <img src="/assets/userImages/<%= editdata.option.d.image %>" alt="Option D Image" style="max-height:60px;">
+                                                                        </div>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="audio-wrap">
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_a" placeholder="Option A" value="<%= editdata.option.a %>"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_b" placeholder="Option B" value="<%= editdata.option.b %>"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_c" placeholder="Option C" value="<%= editdata.option.c %>"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_d" placeholder="Option D" value="<%= editdata.option.d %>"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label"
+                                                        for="basic-icon-default-fullname">Answer</label>
+                                                    <div class="col-sm-11">
+                                                        <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="answer" required placeholder="Enter Answer" value="<%= editdata.answer %>"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label"for="basic-icon-default-fullname">Description</label>
+                                                    <div class="col-sm-11">
+                                                        <div id="description"><%- editdata.description %></div>
+                                                        <input name="description" type="hidden">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <div class="row mt-5">
+                                            <div class="col-sm-1"></div>
+                                            <div class="col-sm-11">
+                                                <button type="submit" class="btn btn-primary" onclick="myFunction();">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    <script type="text/javascript">
+        // Function to update the options based on the selected categoryId
+        function updateOptions(categoryId) {
+            const quizzes = document.getElementById('quizSelect');
+            const options = quizzes.options;
+            
+            // Hide all options first
+            for (let i = 0; i < options.length; i++) {
+                options[i].style.display = 'none';
+            }
+    
+            // Show options with matching categoryId or show all options if categoryId is empty
+            for (let i = 0; i < options.length; i++) {
+                const categoryIdAttr = options[i].getAttribute('data-categoryid');
+                if (!categoryId || (categoryIdAttr && categoryIdAttr === categoryId)) {
+                    options[i].style.display = 'block';
+                }
+            }
+        }
+    
+        // Event listener for the categoryId select element
+        document.getElementById('defaultSelect').addEventListener('change', function() {
+            const categoryId = this.value;
+            let url = window.location.href;
+    
+            // Update the URL with the selected categoryId
+            const hasParams = url.includes('?');
+            const params = `categoryId=${categoryId}`;
+            if (hasParams) {
+                if (url.includes('&')) {
+                    url = url.replace(/&[^&]+$/, '&' + params);
+                } else {
+                    url += '&' + params;
+                }
+            } else {
+                url += `?${params}`;
+            }
+    
+            // Update the URL without reloading the page
+            window.history.pushState({ path: url }, '', url);
+    
+            // Update the options based on the selected categoryId
+            updateOptions(categoryId);
+        });
+    
+        // Initial update of options when the page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            const categoryId = document.getElementById('defaultSelect').value;
+            updateOptions(categoryId);
+        });
+
+        // Initialize Quill editor for question title
+        document.addEventListener('DOMContentLoaded', function() {
+            // Quill editor Toolbar options for question title
+            const questionTitleToolbarOptions = [
+                ['bold', 'italic', 'underline'], // toggled buttons
+                ['blockquote', 'code-block'], // blocks
+                ['image'], // Image
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }], // lists
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }], // headings
+                [{ 'font': [] }], // font family
+                [{ 'align': [] }],  // text align
+            ];
+
+            // Quill editor for question title
+            const questionTitleQuill = new Quill('#questionTitle', {
+                modules: {
+                    toolbar: questionTitleToolbarOptions
+                },
+                placeholder: 'Enter Question Title...',
+                theme: 'snow', // or 'bubble'
+            });
+
+            // Set the initial content from the hidden input
+            const questionTitleInput = document.querySelector('input[name=question_title]');
+            if (questionTitleInput && questionTitleInput.value) {
+                questionTitleQuill.root.innerHTML = questionTitleInput.value;
+            }
+
+            // Paste plaintext into the editor
+            questionTitleQuill.clipboard.addMatcher(Node.ELEMENT_NODE, function (node, delta) {
+                var plaintext = node.innerText
+                var Delta = Quill.import('delta')
+                return new Delta().insert(plaintext)
+            });
+
+            // Update the myFunction to include question title
+            window.myFunction = function() {
+                // Get description editor content
+                var editor = document.getElementsByClassName('ql-editor')[0].innerHTML
+                var about = document.querySelector('input[name=description]');
+                about.value = editor
+
+                // Get question title editor content
+                var questionTitleEditor = document.querySelector('#questionTitle .ql-editor');
+                if (questionTitleEditor) {
+                    var questionTitleContent = questionTitleEditor.innerHTML;
+                    var questionTitleInput = document.querySelector('input[name=question_title]');
+                    questionTitleInput.value = questionTitleContent;
+                }
+            };
+        });
+    </script>
+    
+    <%- include('../layout/footer.ejs') %>
+
+
+           

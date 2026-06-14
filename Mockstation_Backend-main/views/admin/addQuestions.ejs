@@ -1,0 +1,476 @@
+<%- include('../layout/header.ejs') %>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../layout/sidebar.ejs') %>
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4 class="py-3 mb-4">
+                                <span class="text-muted fw-light">Questions /</span> Add Questions
+                              </h4>
+                            <div class="card mb-4">
+                                <form action="" method="post" enctype="multipart/form-data">
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <div class="col-sm-1">
+                                                        <label class="col-form-label" for="questionTitleInput">Question Title</label>
+                                                    </div>
+                                                    <div class="col-sm-11">
+                                                        <div id="questionTitle"></div>
+                                                        <input type="hidden" name="question_title" id="questionTitleInput" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% if(typeof message !== 'undefined'){ %>
+                                            <div class="alert alert-primary alert-dismissible" role="alert"><%= message %>
+                                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                         <% } %>
+                                         <% if(flash.error.length> 0){ %>
+                                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                                <%= flash.error %>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        <% } %>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label"for="basic-icon-default-fullname">Category</label>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                        <select class="form-select" name="categoryId" id="defaultSelect" required>
+                                                                            <% if(category.length > 0 ) { %>
+                                                                                <option value="" disabled selected>Select category...</option>
+                                                                                <% for(let j=0; j < category.length; j++) {  %>
+                                                                                    <option  value="<%= category[j]._id %>"><%= category[j].name %></option>
+                                                                            <% } } %>
+                                                                        </select>
+                                                                    </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label" for="subcategorySelect">Subcategory</label>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select class="form-select" name="subcategoryId" id="subcategorySelect" required>
+                                                                        <option value="" disabled selected>Select Subcategory...</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label" for="quizSelect">Quiz Name</label>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select class="form-select" name="quizId" id="quizSelect" required>
+                                                                        <option value="" disabled selected>Select Quiz...</option>
+                                                                        <% if(quiz.length > 0) { %>
+                                                                            <% for(let i=0; i < quiz.length; i++) { %>
+                                                                                <option value="<%= quiz[i]._id %>" data-categoryid="<%= quiz[i].categoryId %>" data-subcategoryid="<%= quiz[i].subcategoryId %>"><%= quiz[i].name %></option>
+                                                                            <% } %>
+                                                                        <% } %>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-sm-1">
+                                                                <label class="col-form-label" for="basic-icon-default-fullname">Question Type</label>
+                                                            </div>
+                                                            <div class="d-flex col-sm-11">
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input text-only-type" type="radio" value="text_only" name="question_type" id="typeTextOnly" checked>
+                                                                    <label class="form-check-label" for="typeTextOnly">Text Only</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input true-false-type" type="radio" value="true_false" name="question_type" id="typeTrueFalse">
+                                                                    <label class="form-check-label" for="typeTrueFalse">True / False</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input images-type" type="radio" value="images" name="question_type" id="typeImages">
+                                                                    <label class="form-check-label" for="typeImages">Image</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input audio-type" type="radio" value="audio" name="question_type" id="typeAudio">
+                                                                    <label class="form-check-label" for="typeAudio">Audio</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- For Text Only and True/False -->
+                                                <div class="text-wrap">
+                                                  <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="a" placeholder="Option A"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="b" placeholder="Option B"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                  <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="c" placeholder="Option C"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="d" placeholder="Option D"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <!-- For Image -->
+                                                <div class="option-image-fields" style="display:none;">
+                                                  <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="mainQuestionImage">Main Question Image (optional)</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge mt-2">
+                                                            <input type="file" class="form-control" name="image" id="mainQuestionImage" accept="image/png, image/jpeg, image/jpg" />
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                  <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge mt-2">
+                                                            <input type="file" class="form-control" name="a_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge mt-2">
+                                                            <input type="file" class="form-control" name="b_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                  <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge mt-2">
+                                                            <input type="file" class="form-control" name="c_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                      <div class="row">
+                                                        <div class="col-sm-2">
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                          <div class="input-group input-group-merge mt-2">
+                                                            <input type="file" class="form-control" name="d_image" accept="image/png, image/jpeg, image/jpg"/>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div class="audio-wrap">
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_a" placeholder="Option A"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_b" placeholder="Option B"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_c" placeholder="Option C"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-sm-2">
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                                </div>
+                                                                <div class="col-sm-10">
+                                                                    <div class="input-group input-group-merge">
+                                                                        <input type="text" class="form-control" name="audio_d" placeholder="Option D"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label"
+                                                        for="basic-icon-default-fullname">Answer</label>
+                                                    <div class="col-sm-11">
+                                                        <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="answer" required placeholder="Enter Answer"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label"for="basic-icon-default-fullname">Description</label>
+                                                    <div class="col-sm-11">
+                                                        <!-- <textarea class="form-control" id="description" rows="2" name="explaination"></textarea> -->
+                                                        <div id="description"></div>
+                                                        <input name="description" type="hidden">
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="col-sm-1 col-form-label" for="basic-icon-default-fullname">is Active</label>
+                                                    <div class="col-sm-11">
+                                                        <div class="form-check form-switch mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_active">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <div class="row mt-5">
+                                            <div class="col-sm-1"></div>
+                                            <div class="col-sm-8">
+                                                <button type="submit" class="btn btn-primary" onclick="myFunction();">Submit</button>
+                                                <a href="/view-questions" class="ms-3 btn btn-dark">Back</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    <script type="text/javascript">
+        // Get the select category element
+        document.getElementById('defaultSelect').addEventListener('change', function() {
+        const categoryId = this.value;
+        let url = window.location.href;
+
+        const hasParams = url.includes('?');
+        const params = `categoryId=${categoryId}`;
+        if (hasParams) {
+            url = url.replace(/categoryId=[^&]+/, params);
+        } else {
+            url += `?${params}`;
+        }
+        // Update the URL without reloading the page
+        window.history.pushState({ path: url }, '', url);
+
+        const newurl = window.location.href;
+        const queryString = newurl.split('?categoryId=')[1]; // Get the part after the '?'
+        console.log(queryString);
+        const quizzes = document.getElementById('quizSelect');
+        if (quizzes) {
+            const options = quizzes.options;
+            for(let i=0; i < options.length; i++){
+                options[i].classList.remove('active');
+                const categoryId = options[i].getAttribute('data-categoryid');
+                if(categoryId === queryString){
+                    options[i].classList.add('active');
+                }
+            }
+            const selectedElement = quizzes.value;
+            console.log(selectedElement);
+        }
+
+        // Fetch subcategories for the selected category
+        const subcategorySelect = document.getElementById('subcategorySelect');
+        subcategorySelect.innerHTML = '<option value="" disabled selected>Select Subcategory...</option>';
+        if (categoryId) {
+            fetch(`/api/subcategories?categoryId=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(subcat => {
+                        const option = document.createElement('option');
+                        option.value = subcat._id;
+                        option.textContent = subcat.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error fetching subcategories:', err);
+                });
+        }
+        });
+
+        // Filter quizzes by selected subcategory
+        const subcategorySelect = document.getElementById('subcategorySelect');
+        subcategorySelect.addEventListener('change', function() {
+            const selectedSubcat = this.value;
+            const quizSelect = document.getElementById('quizSelect');
+            if (quizSelect) {
+                for (let i = 0; i < quizSelect.options.length; i++) {
+                    const option = quizSelect.options[i];
+                    if (!option.value) continue;
+                    if (option.getAttribute('data-subcategoryid') === selectedSubcat) {
+                        option.style.display = '';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+                quizSelect.selectedIndex = 0;
+            }
+        });
+
+        function updateOptionFields() {
+            var type = document.querySelector('input[name="question_type"]:checked').value;
+            document.querySelector('.text-wrap').style.display = (type === 'text_only' || type === 'true_false') ? '' : 'none';
+            document.querySelector('.option-image-fields').style.display = (type === 'images') ? '' : 'none';
+            document.querySelector('.audio-wrap').style.display = (type === 'audio') ? '' : 'none';
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            updateOptionFields();
+            document.querySelectorAll('input[name="question_type"]').forEach(function(radio) {
+                radio.addEventListener('change', updateOptionFields);
+            });
+        });
+
+        // Initialize Quill editor for question title
+        document.addEventListener('DOMContentLoaded', function() {
+            // Quill editor Toolbar options for question title
+            const questionTitleToolbarOptions = [
+                ['bold', 'italic', 'underline'], // toggled buttons
+                ['blockquote', 'code-block'], // blocks
+                ['image'], // Image
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }], // lists
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }], // headings
+                [{ 'font': [] }], // font family
+                [{ 'align': [] }],  // text align
+            ];
+
+            // Quill editor for question title
+            const questionTitleQuill = new Quill('#questionTitle', {
+                modules: {
+                    toolbar: questionTitleToolbarOptions
+                },
+                placeholder: 'Enter Question Title...',
+                theme: 'snow', // or 'bubble'
+            });
+
+            // Paste plaintext into the editor
+            questionTitleQuill.clipboard.addMatcher(Node.ELEMENT_NODE, function (node, delta) {
+                var plaintext = node.innerText
+                var Delta = Quill.import('delta')
+                return new Delta().insert(plaintext)
+            });
+
+            // Update the myFunction to include question title
+            window.myFunction = function() {
+                // Get description editor content
+                var editor = document.getElementsByClassName('ql-editor')[0].innerHTML
+                var about = document.querySelector('input[name=description]');
+                about.value = editor
+
+                // Get question title editor content
+                var questionTitleEditor = document.querySelector('#questionTitle .ql-editor');
+                if (questionTitleEditor) {
+                    var questionTitleContent = questionTitleEditor.innerHTML;
+                    var questionTitleInput = document.querySelector('input[name=question_title]');
+                    questionTitleInput.value = questionTitleContent;
+                }
+            };
+        });
+    </script>
+    <%- include('../layout/footer.ejs') %>
+
+    
+
+
+           

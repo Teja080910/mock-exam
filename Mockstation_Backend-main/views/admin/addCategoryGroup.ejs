@@ -1,0 +1,48 @@
+<%- include('../layout/header.ejs') %>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../layout/sidebar.ejs') %>
+        <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="py-3 mb-4">
+                            <span class="text-muted fw-light">Category Group /</span> Add Category Group
+                        </h4>
+                        <div class="card mb-4">
+                            <form action="/add-category-group" method="post">
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="displayName">Display Name</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="displayName" placeholder="Enter Group Display Name" required />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="categories">Categories</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" name="categories" multiple required>
+                                                <% categories.forEach(function(cat) { %>
+                                                    <option value="<%= cat._id %>"><%= cat.displayName || cat.name %></option>
+                                                <% }) %>
+                                            </select>
+                                            <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3"></div>
+                                        <div class="col-sm-9">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                            <a href="/view-category-groups" class="ms-3 btn btn-dark">Back</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%- include('../layout/footer.ejs') %>
+        </div>
+    </div>
+</div> 

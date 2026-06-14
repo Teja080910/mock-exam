@@ -1,0 +1,81 @@
+// Export pages
+export '/pages/splash_flow/splash_screen/splash_screen_widget.dart'
+    show SplashScreenWidget;
+export '/pages/profile_flow/profile_screen/profile_screen_widget.dart'
+    show ProfileScreenWidget;
+export '/pages/login_flow/fogotpassword_screen/fogotpassword_screen_widget.dart'
+    show FogotpasswordScreenWidget;
+export '/pages/login_flow/verification_screen/verification_screen_widget.dart'
+    show VerificationScreenWidget;
+export '/pages/profile_flow/setting_page/setting_page_widget.dart'
+    show SettingPageWidget;
+export '/pages/profile_flow/privacy_policy_screen/privacy_policy_screen_widget.dart'
+    show PrivacyPolicyScreenWidget;
+export '/pages/login_flow/reset_password_screen/reset_password_screen_widget.dart'
+    show ResetPasswordScreenWidget;
+export '/pages/login_flow/login_screen/login_screen_widget.dart'
+    show LoginScreenWidget;
+export '/pages/profile_flow/helpline_center_screen/helpline_center_screen_widget.dart'
+    show HelplineCenterScreenWidget;
+export '/pages/profile_flow/aboutus_screen/aboutus_screen_widget.dart'
+    show AboutusScreenWidget;
+export '/pages/profile_flow/terms_condition_screen/terms_condition_screen_widget.dart'
+    show TermsConditionScreenWidget;
+export '/pages/login_flow/signup_screen/signup_screen_widget.dart'
+    show SignupScreenWidget;
+export '/pages/home_flow/home_screen/home_screen_widget.dart'
+    show HomeScreenWidget;
+export '/pages/category_flow/category_viewall/category_viewall_widget.dart'
+    show CategoryViewallWidget;
+export '/pages/category_flow/category_detail_page/category_detail_page_widget.dart'
+    show CategoryDetailPageWidget;
+export '/pages/home_flow/quiz_questions_screen/quiz_questions_screen_widget.dart'
+    show QuizQuestionsScreenWidget;
+export '/pages/home_flow/quiz_result/quiz_result_widget.dart'
+    show QuizResultWidget;
+export '/pages/profile_flow/buy_points_screen/buy_points_screen_widget.dart'
+    show BuyPointsScreenWidget;
+export '/pages/home_flow/payment_screen/payment_screen_widget.dart'
+    show PaymentScreenWidget;
+export '/pages/home_flow/self_chellenge/self_chellenge_widget.dart'
+    show SelfChellengeWidget;
+export '/pages/profile_flow/my_profile/my_profile_widget.dart'
+    show MyProfileWidget;
+export '/pages/profile_flow/completed_quizzes_screen/completed_quizzes_screen_widget.dart'
+    show CompletedQuizzesScreenWidget;
+export '/pages/home_flow/notification_screen/notification_screen_widget.dart'
+    show NotificationScreenWidget;
+export '/pages/profile_flow/edit_profile/edit_profile_widget.dart'
+    show EditProfileWidget;
+export '/pages/home_flow/detail_screen/detail_screen_widget.dart'
+    show DetailScreenWidget;
+export '/pages/home_flow/self_challenge_quiz_page/self_challenge_quiz_page_widget.dart'
+    show SelfChallengeQuizPageWidget;
+export '/pages/login_flow/user_verification_screen/user_verification_screen_widget.dart'
+    show UserVerificationScreenWidget;
+export '/pages/home_flow/self_quiz_result/self_quiz_result_widget.dart'
+    show SelfQuizResultWidget;
+export '/pages/home_flow/quiz_review_screen/quiz_review_screen_widget.dart'
+    show QuizReviewScreenWidget;
+export '/pages/home_flow/quizquestions_screen_copy/quizquestions_screen_copy_widget.dart'
+    show QuizquestionsScreenCopyWidget;
+export '/pages/home_flow/quiz_review_screen_copy_copy/quiz_review_screen_copy_copy_widget.dart'
+    show QuizReviewScreenCopyCopyWidget;
+export '/pages/profile_flow/completedquizzes_screen_detail/completedquizzes_screen_detail_widget.dart'
+    show CompletedquizzesScreenDetailWidget;
+export '/pages/home_flow/self_challenge_quiz_page_copy/self_challenge_quiz_page_copy_widget.dart'
+    show SelfChallengeQuizPageCopyWidget;
+export '/pages/home_flow/featured_category_detail/featured_category_detail_widget.dart'
+    show FeaturedCategoryDetailWidget;
+export '/pages/splash_flow/on_bording_screen/on_bording_screen_widget.dart'
+    show OnBordingScreenWidget;
+export '/pages/home_flow/explanation_page/explanation_page_widget.dart'
+    show ExplanationPageWidget;
+export '/pages/profile_flow/points_history_page/points_history_page_widget.dart'
+    show PointsHistoryPageWidget;
+export '/pages/category_flow/detail_category_viewall/detail_category_viewall_widget.dart'
+    show DetailCategoryViewallWidget;
+export '/pages/profile_flow/plan_screen/my_subscription_screen_widget.dart'
+    show MySubscriptionScreenWidget;
+export '/pages/profile_flow/plan_screen/plans_screen_widget.dart'
+    show PlansScreenWidget;
