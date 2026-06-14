@@ -56,9 +56,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
     setState(() => _isLoading = true);
     print('DEBUG: Starting Google Sign-In');
     try {
-      final googleSignIn = GoogleSignIn(
-        serverClientId: '314697712812-681ll39osofqkk4pbdt0nq9i63ae3lf6.apps.googleusercontent.com',
-      );
+      final googleSignIn = GoogleSignIn();
       await googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       print('DEBUG: Google user: $googleUser');
@@ -123,6 +121,22 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
           // Fallback to Firebase token (might fail on some routes but keeps user logged in)
           FFAppState().loginToken = firebaseToken ?? '';
           FFAppState().isLogin = true;
+          // Set userDetils from Firebase user as fallback
+          if (user != null) {
+            FFAppState().userDetils = {
+              'id': user.uid,
+              'email': user.email,
+              'firstname': user.displayName ?? user.email?.split('@').first ?? '',
+              'lastname': '',
+              'image': user.photoURL ?? '',
+              'phone': '',
+              'points': '0',
+              'is_verified': '1',
+              'created_at': '',
+              'updated_at': '',
+            };
+            FFAppState().userId = user.uid;
+          }
         }
       }
 

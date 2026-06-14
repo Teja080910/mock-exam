@@ -110,7 +110,9 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
               child: Builder(
                 builder: (context) {
                   if (FFAppState().connected == true) {
-                    return ListView(
+                    return RefreshIndicator(
+                      onRefresh: () async => refreshProfile(),
+                      child: ListView(
                       padding: EdgeInsets.fromLTRB(
                         0,
                         24.0,
@@ -149,10 +151,9 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                                         fadeOutDuration:
                                             Duration(milliseconds: 500),
                                         imageUrl:
-                                            '${FFAppConstants.imageBaseURL}${getJsonField(
-                                          FFAppState().userDetils,
-                                          r'''$.image''',
-                                        ).toString()}',
+                                            FFAppState().userDetils != null
+                                                ? '${FFAppConstants.imageBaseURL}${getJsonField(FFAppState().userDetils, r'''$.image''') ?? ''}'
+                                                : '',
                                         width: 100.0,
                                         height: 100.0,
                                         fit: BoxFit.cover,
@@ -186,7 +187,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                                         text: getJsonField(
                                           FFAppState().userDetils,
                                           r'''$.firstname''',
-                                        ).toString(),
+                                        )?.toString() ?? '',
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -206,7 +207,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                                         text: getJsonField(
                                           FFAppState().userDetils,
                                           r'''$.lastname''',
-                                        ).toString(),
+                                        )?.toString() ?? '',
                                         style: TextStyle(),
                                       ),
                                       if (FFAppState().planStatus == 'active')
@@ -753,6 +754,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                             ),
                           ),
                       ],
+                      ),
                     );
                   } else {
                     return Align(

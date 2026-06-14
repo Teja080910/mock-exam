@@ -14,32 +14,12 @@
       },
       "oauth_client": [
         {
-          "client_id": "314697712812-g0buub83ol7a7ha6lqfu1qsp984af2n6.apps.googleusercontent.com",
+          "client_id": "314697712812-c9l5fouq95ksqeorl9o0cnfrfvudrqvf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.mock.test.app",
-            "certificate_hash": "1fa9935d3d4cd81e6e9bde4cc1766f6dca94c4b1"
+            "certificate_hash": "460053af7f3b3ec3fbf5f89b6a3258e51a98206d"
           }
-        },
-        {
-          "client_id": "314697712812-g4ge6sk5p9u5f9v1ktv61ghqchn3q3le.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mock.test.app",
-            "certificate_hash": "b5def153ce8e3b2622a212e0df60809f40a0e0a1"
-          }
-        },
-        {
-          "client_id": "314697712812-jdi4rkj6bgo14m98eebuq4ncj109v5tl.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mock.test.app",
-            "certificate_hash": "5b928d9201dc34194e762039433d8ca15212d86e"
-          }
-        },
-        {
-          "client_id": "314697712812-681ll39osofqkk4pbdt0nq9i63ae3lf6.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
