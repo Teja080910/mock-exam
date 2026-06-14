@@ -87,10 +87,11 @@ Future<void> _showNotification(RemoteMessage message) async {
       NotificationDetails(android: androidNotificationDetails);
 
   await flutterLocalNotificationsPlugin.show(
-    0,
-    message.notification?.title ?? 'New Notification',
-    message.notification?.body ?? '',
-    notificationDetails,
+    id: 0,
+    title: message.notification?.title ?? 'New Notification',
+    body: message.notification?.body ?? '',
+    notificationDetails: notificationDetails,
+    payload: '',
   );
 }
 

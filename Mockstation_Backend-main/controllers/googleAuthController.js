@@ -1,40 +1,9 @@
-const admin = require('firebase-admin');
+const admin = require('../config/firebase');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationModel');
 
-// Initialize Firebase Admin
-let firebaseApp;
-try {
-    // Check if Firebase is already initialized
-    if (!admin.apps.length) {
-        const serviceAccount = require('../config/firebase-adminsdk.json');
-        console.log('Firebase service account loaded:', {
-            project_id: serviceAccount.project_id,
-            client_email: serviceAccount.client_email,
-            private_key_id: serviceAccount.private_key_id
-        });
-        
-        // Format the private key if it exists
-        if (serviceAccount.private_key) {
-            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-            console.log('Private key formatted successfully');
-        } else {
-            console.error('Private key is missing from service account');
-        }
-        
-        firebaseApp = admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-        console.log('Firebase Admin SDK initialized successfully');
-    } else {
-        firebaseApp = admin.app();
-        console.log('Using existing Firebase Admin SDK instance');
-    }
-} catch (error) {
-    console.error('Firebase initialization error:', error);
-    console.warn('Firebase configuration not found or invalid. Google Sign-In will not work.');
-}
+let firebaseApp = admin.apps.length > 0 ? admin.apps[0] : null;
 
 const googleSignIn = async (req, res) => {
     try {
