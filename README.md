@@ -5,7 +5,7 @@
 ```bash
 cd api
 npm install
-# Create api/.env with required env vars (DB_CONNECTION, JWT_SECRET, etc.)
+# Create api/.env with required env vars (DB_CONNECTION, JWT_SECRET, PORT, etc.)
 npm start
 ```
 

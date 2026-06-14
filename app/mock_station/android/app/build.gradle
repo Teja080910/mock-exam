@@ -31,7 +31,7 @@ def keystoreFile = file('../app-keystore.jks')
 
 android {
     namespace "com.mock.test.app"
-    compileSdkVersion 35
+    compileSdkVersion 36
     
 
     compileOptions {
@@ -41,7 +41,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     sourceSets {
