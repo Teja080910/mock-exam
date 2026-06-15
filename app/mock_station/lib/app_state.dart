@@ -5,6 +5,7 @@ import '/backend/schema/structs/index.dart';
 import '/backend/api_requests/api_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import 'config/app_config.dart' as config;
 
 class FFAppState extends ChangeNotifier {
   static FFAppState _instance = FFAppState._internal();
@@ -767,21 +768,19 @@ class FFAppState extends ChangeNotifier {
     prefs.setString('ff_profilePicture', value);
   }
 
-  String _keyId = 'rzp_test_1DP5mmOlF5G5ag';
+  String _keyId = config.AppConfig.razorpayKeyID;
   String get keyId => _keyId;
   set keyId(String value) {
     _keyId = value;
   }
 
-  String _clientId =
-      'AW1TdvpSGbIM5iP4HJNI5TyTmwpY9Gv9dYw8_8yW5lYIbCqf326vrkrp0ce9TAqjEGMHiV3OqJM_aRT0';
+  String _clientId = config.AppConfig.paypalClientId;
   String get clientId => _clientId;
   set clientId(String value) {
     _clientId = value;
   }
 
-  String _secretKey =
-      'EHHtTDjnmTZATYBPiGzZC_AZUfMpMAzj2VZUeqlFUrRJA_C0pQNCxDccB5qoRQSEdcOnnKQhycuOWdP9';
+  String _secretKey = config.AppConfig.paypalSecretKey;
   String get secretKey => _secretKey;
   set secretKey(String value) {
     _secretKey = value;
@@ -811,7 +810,7 @@ class FFAppState extends ChangeNotifier {
     _cvvCode = value;
   }
 
-  String _publishableKey = 'pk_test_kGEVXq7ga94dcLBUZJbdQu9500lLQ5lcyQ';
+  String _publishableKey = config.AppConfig.stripePublishableKey;
 
   String _planStatus = 'none';
   String get planStatus => _planStatus;
@@ -882,38 +881,37 @@ class FFAppState extends ChangeNotifier {
     _skip = value;
   }
 
-  String _stripeSecretKey = 'sk_test_utRGU4wkG19w3o3dCsu4N42b00hRPKIwiJ';
+  String _stripeSecretKey = config.AppConfig.stripePublishableKey;
   String get stripeSecretKey => _stripeSecretKey;
   set stripeSecretKey(String value) {
     _stripeSecretKey = value;
   }
 
-  String _tokenFcm =
-      'e0Z5SQPMRaat0gxQ2EzQva:APA91bEFZ3KS9sck72eDw5HzQ1HkhU_TbIpX7zfNghLFF7aiAnyHN68zcCOdOJrG_lHpICTaNif7NxudJY2Als_6cpbOp6VQtIFT3VCYikSwrzhZtUXxrO7chlQ2g8f_pkQHH-G8OZIc';
+  String _tokenFcm = '';
   String get tokenFcm => _tokenFcm;
   set tokenFcm(String value) {
     _tokenFcm = value;
   }
 
-  String _apiKey = 'AIzaSyCQgyX1UxECSmrMgdMs1eGf6P3DBu-YTQY';
+  String _apiKey = config.AppConfig.firebaseApiKey;
   String get apiKey => _apiKey;
   set apiKey(String value) {
     _apiKey = value;
   }
 
-  String _appID = 'com.mycompany.quizzee';
+  String _appID = config.AppConfig.firebaseAppId;
   String get appID => _appID;
   set appID(String value) {
     _appID = value;
   }
 
-  String _projectID = 'quiz-zee-clone-yox60p';
+  String _projectID = config.AppConfig.firebaseProjectId;
   String get projectID => _projectID;
   set projectID(String value) {
     _projectID = value;
   }
 
-  String _messagingSenderId = '124715078171';
+  String _messagingSenderId = config.AppConfig.firebaseMessagingSenderId;
   String get messagingSenderId => _messagingSenderId;
   set messagingSenderId(String value) {
     _messagingSenderId = value;

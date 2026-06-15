@@ -57,11 +57,16 @@
 # Android / Java
 **/.gradle/
 **/local.properties
+**/key.properties
 **/*.keystore
 **/*.jks
 **/*.apk
 **/*.aab
 **/build/
+
+# Firebase / Google Services (each developer must provide their own)
+**/google-services.json
+**/GoogleService-Info.plist
 
 # iOS
 **/*.xcworkspace

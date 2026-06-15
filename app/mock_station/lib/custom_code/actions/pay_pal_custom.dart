@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 
+import '/config/app_config.dart' as config;
+
 Future payPalCustom(
   BuildContext context,
   String clientId,
@@ -30,12 +32,8 @@ Future payPalCustom(
     MaterialPageRoute(
       builder: (BuildContext context) => UsePaypal(
           sandboxMode: true,
-          clientId: clientId == ""
-              ? "AW1TdvpSGbIM5iP4HJNI5TyTmwpY9Gv9dYw8_8yW5lYIbCqf326vrkrp0ce9TAqjEGMHiV3OqJM_aRT0"
-              : clientId,
-          secretKey: secretKey == ""
-              ? "EHHtTDjnmTZATYBPiGzZC_AZUfMpMAzj2VZUeqlFUrRJA_C0pQNCxDccB5qoRQSEdcOnnKQhycuOWdP9"
-              : secretKey,
+          clientId: clientId == "" ? config.AppConfig.paypalClientId : clientId,
+          secretKey: secretKey == "" ? config.AppConfig.paypalSecretKey : secretKey,
           returnURL: "https://samplesite.com/return",
           cancelURL: "https://samplesite.com/cancel",
           transactions: [

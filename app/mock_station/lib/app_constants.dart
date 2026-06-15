@@ -1,12 +1,16 @@
+import 'config/app_config.dart' as config;
 
 abstract class FFAppConstants {
-  static const String baseURL = 'https://mediumspringgreen-aardvark-783458.hostingersite.com/';
-  static const String imageBaseURL =
-      'https://mediumspringgreen-aardvark-783458.hostingersite.com/assets/userImages/';
-  static const String stripeSecretKey =
-      'sk_live_51S8nSd288735470001';
-  static const String stripePublishableKey =
-      'pk_live_51S8nSd288735470001';
-  static const String razorpayKeyID = 'rzp_live_S8nSdTN0PcQX7z';
-  static const String razorpaySecretKey = 'rzp_live_S8nSdTN0PcQX7z';
+  static const String baseURL = config.AppConfig.baseURL;
+  static const String imageBaseURL = config.AppConfig.imageBaseURL;
+
+  // Stripe
+  // Secret key must be handled by your backend - never put it in the app
+  static const String stripeSecretKey = config.AppConfig.stripePublishableKey; // FIXME: Replace with server-side Stripe integration
+  static const String stripePublishableKey = config.AppConfig.stripePublishableKey;
+
+  // Razorpay
+  // Secret key must be handled by your backend - never put it in the app
+  static const String razorpayKeyID = config.AppConfig.razorpayKeyID;
+  static const String razorpaySecretKey = ''; // FIXME: Replace with server-side Razorpay integration
 }

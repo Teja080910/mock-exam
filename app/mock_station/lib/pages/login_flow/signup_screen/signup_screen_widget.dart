@@ -100,7 +100,7 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
       // Send token to backend
       final idToken = await userCredential.user?.getIdToken();
       final response = await http.post(
-        Uri.parse('https://mediumspringgreen-aardvark-783458.hostingersite.com/api/google-signin'), // <-- Change to your backend URL if needed
+        Uri.parse('${FFAppConstants.baseURL}api/google-signin'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'token': idToken,
