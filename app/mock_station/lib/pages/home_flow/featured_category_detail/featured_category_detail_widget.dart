@@ -1,5 +1,6 @@
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
+import '/app_constants.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -222,7 +223,7 @@ class _FeaturedCategoryDetailWidgetState
                                                         ParamType.String,
                                                       ),
                                                       'image': serializeParam(
-                                                        'https://quiz.templatevictory.com/assets/userImages/${getJsonField(
+                                                        '${FFAppConstants.baseURL}assets/userImages/${getJsonField(
                                                           quizzesItem,
                                                           r'''$.image''',
                                                         ).toString()}',

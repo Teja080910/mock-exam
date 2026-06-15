@@ -16,7 +16,7 @@ class QuizGroup {
   static String getBaseUrl({
     String? token = '',
   }) =>
-      'https://mediumspringgreen-aardvark-783458.hostingersite.com/api/';
+      'http://192.168.3.137:6900/api/';
   static Map<String, String> headers = {
     'Authorization': 'Bearer [token]',
   };
