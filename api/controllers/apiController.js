@@ -2361,7 +2361,14 @@ const GetQuizBySubcategory = async (req, res) => {
   try {
     const { subcategoryId } = req.body;
     if (!subcategoryId) return res.status(400).json({ quizzes: [] });
-    const quizzes = await Quiz.find({ subcategoryId, is_active: 1 });
+    // Try subcategoryId first, then fall back to parent categoryId
+    let quizzes = await Quiz.find({ subcategoryId, is_active: 1 });
+    if (quizzes.length === 0) {
+      const subcategory = await require("../models/subcategoryModel").findById(subcategoryId);
+      if (subcategory) {
+        quizzes = await Quiz.find({ categoryId: subcategory.categoryId, is_active: 1 });
+      }
+    }
     res.json({ quizzes });
   } catch (err) {
     res.status(500).json({ quizzes: [] });
