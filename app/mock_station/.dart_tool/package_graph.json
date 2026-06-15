@@ -831,7 +831,7 @@
     },
     {
       "name": "flutter_local_notifications",
-      "version": "22.0.0",
+      "version": "22.0.1",
       "dependencies": [
         "clock",
         "flutter",
@@ -1699,7 +1699,7 @@
     },
     {
       "name": "flutter_local_notifications_windows",
-      "version": "3.1.0",
+      "version": "3.1.1",
       "dependencies": [
         "ffi",
         "flutter",
