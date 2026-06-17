@@ -89,12 +89,12 @@
 **/.docker/
 
 # Flutter-generated platform dirs (can be recreated)
-mock_station 2/mock_station/android/
-mock_station 2/mock_station/ios/
-mock_station 2/mock_station/web/
-mock_station 2/mock_station/.dart_tool/
-mock_station 2/mock_station/docs/
-mock_station 2/mock_station/null
+app/mock_station/android/
+app/mock_station/ios/
+app/mock_station/web/
+app/mock_station/.dart_tool/
+app/mock_station/docs/
+app/mock_station/null
 
 # Backup files
 **/*.bak
