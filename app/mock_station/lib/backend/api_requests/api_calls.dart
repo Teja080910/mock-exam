@@ -13,10 +13,10 @@ const _kPrivateApiFunctionName = 'ffPrivateApiCall';
 /// Start Quiz Group Code
 
 class QuizGroup {
-  static String getBaseUrl({
+  static String getBaseUrl({  
     String? token = '',
   }) =>
-      'http://192.168.3.137:6900/api/';
+      'https://mediumspringgreen-aardvark-783458.hostingersite.com/api/';
   static Map<String, String> headers = {
     'Authorization': 'Bearer [token]',
   };
