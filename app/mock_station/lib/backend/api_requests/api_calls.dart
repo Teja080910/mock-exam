@@ -1630,14 +1630,11 @@ class GetCategoryGroupsCall {
   Future<ApiCallResponse> call({
     String? token = '',
   }) async {
-    final baseUrl = QuizGroup.getBaseUrl(
-      token: token,
-    );
+    final baseUrl = FFAppConstants.baseURL;
 
-    // Note: This endpoint is GET on backend as per apiRoute.js
     return ApiManager.instance.makeApiCall(
       callName: 'GetCategoryGroups',
-      apiUrl: '${baseUrl.replaceAll('/api/', '')}/api/category-groups',
+      apiUrl: '${baseUrl}api/category-groups',
       callType: ApiCallType.GET,
       headers: {
         'Authorization': 'Bearer ${token}',

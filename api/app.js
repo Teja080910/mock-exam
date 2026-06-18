@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Load the express-session module
 const session = require('express-session');
-app.use(session({secret:process.env.SESSION_SECREAT,resave: false,saveUninitialized: true,rolling: true, cookie: {maxAge: 24 * 60 * 60 * 1000},
+app.use(session({secret:process.env.SESSION_SECRET,resave: false,saveUninitialized: true,rolling: true, cookie: {maxAge: 24 * 60 * 60 * 1000},
     store: MongoStore.create({
         mongoUrl: process.env.DB_CONNECTION, 
         ttl: 3600,
