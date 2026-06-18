@@ -94,9 +94,11 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    print('Payment Error: ${response.code} - ${response.message}');
+    final msg = response.message;
+    final reason = (msg != null && msg.isNotEmpty && msg != 'undefined') ? msg : 'Payment was cancelled';
+    print('Payment Error: ${response.code} - $reason');
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Payment Failed: ${response.message}')),
+      SnackBar(content: Text('Payment Failed: $reason')),
     );
   }
 
