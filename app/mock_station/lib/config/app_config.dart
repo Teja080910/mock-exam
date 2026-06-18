@@ -9,14 +9,14 @@ class AppConfig {
   // Firebase
   // ============================================
   static const String firebaseApiKey =
-      'AIzaSyAWaKg15juVxHhaH5sQntzXBz3JBtwgxoo';
-  static const String firebaseProjectId = 'mock-test-657990';
-  static const String firebaseAuthDomain = 'mock-test-657990.firebaseapp.com';
+      'AIzaSyBudWXW59XL_rO0ruyCdQaIS2Bnt8eqN7o';
+  static const String firebaseProjectId = 'mock-test-65799';
+  static const String firebaseAuthDomain = 'mock-test-65799.firebaseapp.com';
   static const String firebaseStorageBucket =
-      'mock-test-657990.firebasestorage.app';
-  static const String firebaseMessagingSenderId = '481518702750';
+      'mock-test-65799.firebasestorage.app';
+  static const String firebaseMessagingSenderId = '314697712812';
   static const String firebaseAppId =
-      '1:481518702750:android:7cc30006165d5010caeb8f';
+      '1:314697712812:android:5ea19bc3e2b15b41860b09';
 
   // ============================================
   // Stripe (publishable key only - keep secret key on backend)
