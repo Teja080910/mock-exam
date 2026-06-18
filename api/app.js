@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Load the express-session module
 const session = require('express-session');
-app.use(session({secret:process.env.SESSION_SECREAT,resave: false,saveUninitialized: true,rolling: true, cookie: {maxAge: 24 * 60 * 60 * 1000},
+app.use(session({secret:process.env.SESSION_SECRET,resave: false,saveUninitialized: true,rolling: true, cookie: {maxAge: 24 * 60 * 60 * 1000},
     store: MongoStore.create({
         mongoUrl: process.env.DB_CONNECTION, 
         ttl: 3600,
@@ -91,5 +91,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 6900;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Server is accessible at http://localhost:${PORT} and http://192.168.1.41:${PORT}`);
+  console.log(`Server is accessible at http://localhost:${PORT}`);
 });

@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import '/flutter_flow/flutter_flow_util.dart';
 import 'api_manager.dart';
+import '/config/app_config.dart';
 
 export 'api_manager.dart' show ApiCallResponse;
 
@@ -16,7 +15,7 @@ class QuizGroup {
   static String getBaseUrl({  
     String? token = '',
   }) =>
-      'https://mediumspringgreen-aardvark-783458.hostingersite.com/api/';
+      '${AppConfig.baseURL}api/';
   static Map<String, String> headers = {
     'Authorization': 'Bearer [token]',
   };
