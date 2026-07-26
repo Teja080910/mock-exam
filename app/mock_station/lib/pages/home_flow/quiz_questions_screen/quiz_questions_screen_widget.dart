@@ -437,7 +437,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                     errorWidget: (context, url, error) =>
-                        Icon(Icons.error, size: 24),
+                        Icon(Icons.image, size: 24),
                   ),
                 ),
               ),

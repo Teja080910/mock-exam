@@ -613,44 +613,6 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                 ),
         ),
         const SizedBox(height: 24),
-        FadeInUp(
-          duration: const Duration(milliseconds: 500),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Already have an account? ",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              GestureDetector(
-                onTap: _showTestLoginDialog,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFF6366F1).withOpacity(0.2),
-                    ),
-                  ),
-                  child: const Text(
-                    "Signin",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6366F1),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
         _buildLegalText(isDark),
         const SizedBox(height: 18),
         FadeInUp(
