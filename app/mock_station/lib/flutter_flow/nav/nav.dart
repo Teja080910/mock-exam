@@ -172,6 +172,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: SubcategoryDetailPageWidget.routeName,
           path: SubcategoryDetailPageWidget.routePath,
           builder: (context, params) => SubcategoryDetailPageWidget(
+            key: ValueKey(params.getParam('subcategoryId', ParamType.String)),
             subcategoryId: params.getParam('subcategoryId', ParamType.String),
             subcategoryName: params.getParam('subcategoryName', ParamType.String),
           ),

@@ -104,21 +104,18 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                       String nameA = getJsonField(a, r'$.name').toString().trim().toLowerCase();
                       String nameB = getJsonField(b, r'$.name').toString().trim().toLowerCase();
                       
-                      // Natural sort for numbers
-                      final RegExp regex = RegExp(r'(\d+)');
+                      // Extract trailing number from each name
+                      final regex = RegExp(r'(\d+)$');
                       final matchA = regex.firstMatch(nameA);
                       final matchB = regex.firstMatch(nameB);
                       
                       if (matchA != null && matchB != null) {
-                        // If both have numbers and the prefix is same, sort by number
-                        String prefixA = nameA.substring(0, matchA.start);
-                        String prefixB = nameB.substring(0, matchB.start);
-                        if (prefixA == prefixB) {
-                          int valA = int.parse(matchA.group(1)!);
-                          int valB = int.parse(matchB.group(1)!);
-                          return valA.compareTo(valB);
-                        }
+                        int valA = int.parse(matchA.group(1)!);
+                        int valB = int.parse(matchB.group(1)!);
+                        return valA.compareTo(valB);
                       }
+                      if (matchA != null) return -1; // names with numbers first
+                      if (matchB != null) return 1;
                       
                       return nameA.compareTo(nameB);
                     });
