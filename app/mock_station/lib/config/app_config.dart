@@ -2,8 +2,8 @@ class AppConfig {
   // ============================================
   // Backend API
   // ============================================
-  static const String baseURL = 'https://mediumspringgreen-aardvark-783458.hostingersite.com/';
-  static const String imageBaseURL = 'https://mediumspringgreen-aardvark-783458.hostingersite.com/assets/userImages/';
+  static const String baseURL = 'https://mockstation.com/';
+  static const String imageBaseURL = 'https://mockstation.com/assets/userImages/';
 
   // ============================================
   // Firebase
