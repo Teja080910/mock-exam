@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
 const csv = require('csv-parser');
+const XLSX = require('xlsx');
 const os = require('os');
 const crypto = require('crypto');
 const { verifyAdminAccess } = require('../config/verification');
@@ -120,78 +121,87 @@ const addQuestions = async (req, res) => {
     }
 }
 
-// Add this new function for importing CSV
+// Add this new function for importing CSV/Excel
 const importQuestionsCSV = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
 
-        const results = [];
-        fs.createReadStream(req.file.path)
-            .pipe(csv())
-            .on('data', (data) => results.push(data))
-            .on('end', async () => {
-                // Process and save the data to MongoDB
-                for (const row of results) {
-                    let option = {};
-                    if (row.question_type === "text_only" || row.question_type === "images" || row.question_type === "audio") {
-                        option = {
-                            a: row.option_a || row.image_a || row.audio_a,
-                            b: row.option_b || row.image_b || row.audio_b,
-                            c: row.option_c || row.image_c || row.audio_c,
-                            d: row.option_d || row.image_d || row.audio_d,
-                        };
-                    } else if (row.question_type === "true_false") {
-                        option = {
-                            answer: row.answer,
-                        };
-                    }
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        let results = [];
 
-                    // Handle image reference from CSV
-                    let imagePath = null;
-                    if (row.image) {
-                        // Store the image filename or path as provided in the CSV
-                        imagePath = row.image; 
-                        // Since the source file is from CSV, we don't need to move it
-                        // Just save the image reference directly
-                    }
-
-                    // Handle audio reference from CSV
-                    let audioPath = null;
-                    if (row.audio) {
-                        // Store the audio filename or path as provided in the CSV
-                        audioPath = row.audio;
-                        // Since the source file is from CSV, we don't need to move it
-                        // Just save the audio reference directly
-                    }
-
-                    const question = new Questions({
-                        categoryId: req.body.categoryId,
-                        quizId: req.body.quizId,
-                        question_title: row.question_title,
-                        question_type: row.question_type,
-                        option: option,
-                        answer: row.answer,
-                        description: row.description,
-                        is_active: 1,
-                        image: imagePath || null, // Save the image reference as is
-                        audio: audioPath || null  // Added for audio support
-                    });
-                    await question.save();
-
-                    // Delete CSV file after processing
-                        fs.unlink(req.file.path, (err) => {
-                            if (err) {
-                                console.error(`Error deleting file: ${err}`);
-                            } else {
-                                console.log('CSV file deleted successfully');
-                            }
-                        });
-                }
-                req.flash('message', 'Questions imported successfully');
-                res.redirect('/view-questions');
+        if (ext === '.csv') {
+            // Parse CSV
+            await new Promise((resolve, reject) => {
+                const rows = [];
+                fs.createReadStream(req.file.path)
+                    .pipe(csv())
+                    .on('data', (data) => rows.push(data))
+                    .on('end', () => { results = rows; resolve(); })
+                    .on('error', reject);
             });
+        } else if (ext === '.xlsx' || ext === '.xls') {
+            // Parse Excel
+            const workbook = XLSX.readFile(req.file.path);
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            results = XLSX.utils.sheet_to_json(sheet);
+        } else {
+            req.flash('error', 'Unsupported file format. Please upload a CSV or Excel file.');
+            return res.redirect('/view-questions');
+        }
+
+        // Process and save the data to MongoDB
+        for (const row of results) {
+            let option = {};
+            if (row.question_type === "text_only" || row.question_type === "images" || row.question_type === "audio") {
+                option = {
+                    a: row.option_a || row.image_a || row.audio_a,
+                    b: row.option_b || row.image_b || row.audio_b,
+                    c: row.option_c || row.image_c || row.audio_c,
+                    d: row.option_d || row.image_d || row.audio_d,
+                };
+            } else if (row.question_type === "true_false") {
+                option = {
+                    answer: row.answer,
+                };
+            }
+
+            // Handle image reference from CSV/Excel
+            let imagePath = null;
+            if (row.image) {
+                imagePath = row.image;
+            }
+
+            // Handle audio reference from CSV/Excel
+            let audioPath = null;
+            if (row.audio) {
+                audioPath = row.audio;
+            }
+
+            const question = new Questions({
+                categoryId: req.body.categoryId,
+                quizId: req.body.quizId,
+                question_title: row.question_title,
+                question_type: row.question_type,
+                option: option,
+                answer: row.answer,
+                description: row.description,
+                is_active: 1,
+                image: imagePath || null,
+                audio: audioPath || null
+            });
+            await question.save();
+        }
+
+        // Delete uploaded file after processing
+        fs.unlink(req.file.path, (err) => {
+            if (err) console.error(`Error deleting file: ${err}`);
+        });
+
+        req.flash('message', `Questions imported successfully from ${ext === '.csv' ? 'CSV' : 'Excel'} file`);
+        res.redirect('/view-questions');
     } catch (error) {
         console.log(error.message);
         req.flash('error', `An error occurred while importing questions: ${error.message}`);

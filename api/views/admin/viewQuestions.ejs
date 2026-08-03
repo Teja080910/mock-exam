@@ -12,7 +12,7 @@
                                     </h4>
                                     <div class="btnwrap mb-4">
                                         <a href="/add-questions" class="btn btn-primary me-3"><i class='bx bx-plus'></i>Add New Questions</a>
-                                        <button type="button" class="btn btn-dark me-3" data-bs-toggle="modal" data-bs-target="#importCSVModal"><i class='bx bx-import'></i> Import CSV</button>
+                                        <button type="button" class="btn btn-dark me-3" data-bs-toggle="modal" data-bs-target="#importCSVModal"><i class='bx bx-import'></i> Import CSV/Excel</button>
                                         <a href="/csv-format" class="btn btn-dark"><i class='bx bx-file'></i> CSV Format</a>
 
                                         <!-- Modal -->
@@ -20,7 +20,7 @@
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="importCSVModalLabel">Import Questions from CSV</h5>
+                                                        <h5 class="modal-title" id="importCSVModalLabel">Import Questions from CSV or Excel</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
@@ -48,8 +48,8 @@
                                                                 </select>
                                                             </div>
                                                             <div class="mb-3">
-                                                                <label for="csv" class="form-label">CSV File</label>
-                                                                <input type="file" name="csv" accept=".csv" class="form-control" required>
+                                                                <label for="csv" class="form-label">File (CSV or Excel)</label>
+                                                                <input type="file" name="csv" accept=".csv,.xlsx,.xls" class="form-control" required>
                                                             </div>
                                                             <button type="submit" class="btn btn-primary">Submit</button>
                                                         </form>

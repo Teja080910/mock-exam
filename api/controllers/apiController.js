@@ -2361,6 +2361,7 @@ const GetQuizBySubcategory = async (req, res) => {
   try {
     const { subcategoryId } = req.body;
     if (!subcategoryId) return res.status(400).json({ quizzes: [] });
+    // Try subcategoryId first, then fall back to parent categoryId
     const quizzes = await Quiz.find({ subcategoryId, is_active: 1 });
     res.json({ quizzes });
   } catch (err) {

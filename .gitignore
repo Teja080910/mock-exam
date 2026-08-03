@@ -92,7 +92,7 @@
 app/mock_station/android/
 app/mock_station/ios/
 app/mock_station/web/
-app/mock_station/.dart_tool/*
+app/mock_station/.dart_tool/
 app/mock_station/docs/
 app/mock_station/null
 

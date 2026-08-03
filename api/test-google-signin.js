@@ -5,7 +5,7 @@ const token = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImE0YTEwZGVjZTk4MzY2ZDZmNjNlMTY3Mjg2Y
 async function testGoogleSignIn() {
     try {
         console.log('Sending request to Google Sign-In endpoint...');
-        const response = await axios.post('https://quiz.deltospark.com/api/google-signin', {
+        const response = await axios.post('http://localhost:6900/api/google-signin', {
             token,
             deviceId: 'AP3A.240905.015.A2'
         }, {

@@ -91,5 +91,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 6900;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Server is accessible at http://localhost:${PORT} and http://192.168.1.41:${PORT}`);
+  console.log(`Server is accessible at http://localhost:${PORT}`);
 });

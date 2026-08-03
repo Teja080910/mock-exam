@@ -36,7 +36,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.mock.test.app"
+        namespace "com.mock.exam.app"
     compileSdkVersion 36
 
     compileOptions {
@@ -59,7 +59,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.mock.test.app"
+        applicationId "com.mock.exam.app"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
