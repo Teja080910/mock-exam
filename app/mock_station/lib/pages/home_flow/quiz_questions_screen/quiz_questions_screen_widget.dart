@@ -239,6 +239,376 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     return htmlWidget;
   }
 
+  Future<void> _showQuitQuizDialog() async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          backgroundColor: Colors.transparent,
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(dialogContext).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: const QuitQuizWidget(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildScoreChip({
+    required String label,
+    required Color backgroundColor,
+    required Color textColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 16.0,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimerChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F8FF),
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(color: const Color(0xFFD6E4FF)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.access_time_rounded,
+            size: 18.0,
+            color: Color(0xFF2563EB),
+          ),
+          const SizedBox(width: 8.0),
+          Text(
+            _model.timerValue.isNotEmpty ? _model.timerValue : '00:00',
+            style: const TextStyle(
+              color: Color(0xFF1E3A8A),
+              fontSize: 16.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizHeader({
+    required int totalQuestions,
+    required double correctAnsReward,
+    required double penaltyPerQuestion,
+  }) {
+    final currentQuestion = _model.pageViewCurrentIndex + 1;
+    final title = widget.title ?? '';
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF6F9FF), Color(0xFFFFFFFF)],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 14.0),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF3F7FF),
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFE5ECF7)),
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20.0),
+                      onTap: _showQuitQuizDialog,
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.arrow_back_rounded,
+                          size: 28.0,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  if (widget.image != null && widget.image!.isNotEmpty)
+                    ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: widget.image.toString(),
+                        width: 42.0,
+                        height: 42.0,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 42.0,
+                          height: 42.0,
+                          color: const Color(0xFFE5E7EB),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 42.0,
+                          height: 42.0,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFFE5E7EB),
+                          ),
+                          child: const Icon(Icons.image_outlined, size: 20.0),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 42.0,
+                      height: 42.0,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFE5E7EB),
+                      ),
+                      child: const Icon(Icons.school_rounded, size: 20.0),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 8.0),
+            child: Row(
+              children: [
+                _buildScoreChip(
+                  label: '$currentQuestion',
+                  backgroundColor: const Color(0xFFEEEBFF),
+                  textColor: const Color(0xFF4338CA),
+                ),
+                const SizedBox(width: 10.0),
+                _buildScoreChip(
+                  label: '+${correctAnsReward.toStringAsFixed(correctAnsReward.truncateToDouble() == correctAnsReward ? 0 : 1)}',
+                  backgroundColor: const Color(0xFFEAF8EB),
+                  textColor: const Color(0xFF16A34A),
+                ),
+                const SizedBox(width: 10.0),
+                _buildScoreChip(
+                  label: '-${penaltyPerQuestion.toStringAsFixed(penaltyPerQuestion.truncateToDouble() == penaltyPerQuestion ? 0 : 2)}',
+                  backgroundColor: const Color(0xFFFDEBEC),
+                  textColor: const Color(0xFFEF4444),
+                ),
+                const Spacer(),
+                Container(
+                  width: 46.0,
+                  height: 46.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0F111827),
+                        blurRadius: 12.0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    onPressed: _showQuitQuizDialog,
+                    icon: const Icon(
+                      Icons.menu_rounded,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionTile({
+    required String label,
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14.0),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFF3F7FF) : Colors.white,
+              borderRadius: BorderRadius.circular(14.0),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFFE5E7EB),
+                width: isSelected ? 1.6 : 1.0,
+              ),
+              boxShadow: isSelected
+                  ? const [
+                      BoxShadow(
+                        color: Color(0x143B82F6),
+                        blurRadius: 14.0,
+                        offset: Offset(0, 6),
+                      ),
+                    ]
+                  : const [],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38.0,
+                  height: 38.0,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : Colors.white,
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF2563EB)
+                          : const Color(0xFFE5E7EB),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF111827),
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14.0),
+                Container(
+                  width: 1.0,
+                  height: 34.0,
+                  color: const Color(0xFFE5E7EB),
+                ),
+                const SizedBox(width: 14.0),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: const TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: 17.0,
+                      fontWeight: FontWeight.w500,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooterButton({
+    required String text,
+    required VoidCallback? onPressed,
+    required bool isPrimary,
+    required Color accentColor,
+    IconData? leadingIcon,
+    IconData? trailingIcon,
+  }) {
+    final buttonChild = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (leadingIcon != null) ...[
+          Icon(leadingIcon, size: 20.0),
+          const SizedBox(width: 8.0),
+        ],
+        Flexible(child: Text(text, overflow: TextOverflow.ellipsis)),
+        if (trailingIcon != null) ...[
+          const SizedBox(width: 8.0),
+          Icon(trailingIcon, size: 20.0),
+        ],
+      ],
+    );
+
+    if (isPrimary) {
+      return SizedBox(
+        height: 54.0,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: accentColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
+          child: buttonChild,
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 54.0,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: accentColor,
+          side: BorderSide(color: accentColor.withOpacity(0.45)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+        child: buttonChild,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -415,34 +785,6 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        appBar: AppBar(
-          title: Text(
-            widget.title ?? '',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            if (widget.image != null && widget.image!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.image.toString(),
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    errorWidget: (context, url, error) =>
-                        Icon(Icons.image, size: 24),
-                  ),
-                ),
-              ),
-          ],
-        ),
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: showBody
             ? Scaffold(
@@ -575,8 +917,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                 return Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    SizedBox(
-                                      height: 10,
+                                    _buildQuizHeader(
+                                      totalQuestions: totalQuestions,
+                                      correctAnsReward: correctAnsReward,
+                                      penaltyPerQuestion: penaltyPerQuestion,
                                     ),
                                     Expanded(
                                       child: Stack(
@@ -761,11 +1105,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                 BoxDecoration(),
                                                                             child:
                                                                                 Padding(
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 0.0),
                                                                               child: ListView(
                                                                                 padding: EdgeInsets.fromLTRB(
                                                                                   0,
-                                                                                  5.0,
+                                                                                  0,
                                                                                   0,
                                                                                   24.0,
                                                                                 ),
@@ -773,136 +1117,108 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                 scrollDirection: Axis.vertical,
                                                                                 children: [
                                                                                   /// question widget
-                                                                                  Align(
-                                                                                    alignment: AlignmentDirectional(-1.0, 0.0),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 5.0),
-                                                                                      child: Column(
-                                                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                        children: [
-                                                                                          Text(
-                                                                                            "Q.${(_model.pageViewCurrentIndex + 1).toString()}",
-                                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                  fontFamily: 'Roboto',
-                                                                                                  fontSize: 18.0,
-                                                                                                  letterSpacing: 0.0,
-                                                                                                  fontWeight: FontWeight.w600,
-                                                                                                  useGoogleFonts: false,
-                                                                                                  lineHeight: 1.2,
-                                                                                                ),
-                                                                                          ),
-                                                                                          _buildQuestionHtmlWidget(
-                                                                                            context: context,
-                                                                                            questionHtml: questionHtml,
-                                                                                            questionIndex: categorywisequizIndex,
-                                                                                            variantKey: 'text',
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
+                                                                                  Padding(
+                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 18.0),
+                                                                                    child: _buildQuestionHtmlWidget(
+                                                                                      context: context,
+                                                                                      questionHtml: questionHtml,
+                                                                                      questionIndex: categorywisequizIndex,
+                                                                                      variantKey: 'text',
                                                                                     ),
                                                                                   ),
                                                                                   if (timerStatus == 1)
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                                                                      child: Row(
-                                                                                        //mainAxisSize: MainAxisSize.min,
-                                                                                        mainAxisAlignment: MainAxisAlignment.end,
-                                                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                        children: [
-
-                                                                                          if (timerInitialized && actualQuizDurationMinutes > 0)
-                                                                                            Container(
-                                                                                              width: 100.0,
-                                                                                              height: 34.0,
-                                                                                              decoration: BoxDecoration(
-                                                                                                color: FlutterFlowTheme.of(context).primary,
-                                                                                                borderRadius: BorderRadius.circular(20.0),
-                                                                                              ),
-                                                                                              alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                              child: FlutterFlowTimer(
-                                                                                                key: const ValueKey('quiz-timer-main'),
-                                                                                                initialTime: actualQuizDurationMinutes * 60 * 1000,
-                                                                                                getDisplayTime: (value) => StopWatchTimer.getDisplayTime(
-                                                                                                  value,
-                                                                                                  hours: false,
-                                                                                                  milliSecond: false,
-                                                                                                ),
-                                                                                                controller: _model.timerController,
-                                                                                                updateStateInterval: Duration(milliseconds: 1000),
-                                                                                                onChanged: (value, displayTime, shouldUpdate) {
-                                                                                                  _model.timerMilliseconds = value;
-                                                                                                  _model.timerValue = displayTime;
-                                                                                                  // print('QUIZ DEBUG: Timer changed - value: $value, displayTime: $displayTime, shouldUpdate: $shouldUpdate');
-                                                                                                  if (shouldUpdate) safeSetState(() {});
-                                                                                                },
-                                                                                                textAlign: TextAlign.center,
-                                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                      fontFamily: 'Roboto',
-                                                                                                      color: Colors.white,
-                                                                                                      fontSize: 16.0,
-                                                                                                      useGoogleFonts: false,
+                                                                                    Align(
+                                                                                      alignment: AlignmentDirectional(1.0, 0.0),
+                                                                                      child: Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 18.0),
+                                                                                        child: Stack(
+                                                                                          alignment: Alignment.center,
+                                                                                          children: [
+                                                                                            _buildTimerChip(),
+                                                                                            if (timerInitialized && actualQuizDurationMinutes > 0)
+                                                                                              Opacity(
+                                                                                                opacity: 0.0,
+                                                                                                child: SizedBox(
+                                                                                                  width: 110.0,
+                                                                                                  height: 40.0,
+                                                                                                  child: FlutterFlowTimer(
+                                                                                                    key: const ValueKey('quiz-timer-main'),
+                                                                                                    initialTime: actualQuizDurationMinutes * 60 * 1000,
+                                                                                                    getDisplayTime: (value) => StopWatchTimer.getDisplayTime(
+                                                                                                      value,
+                                                                                                      hours: false,
+                                                                                                      milliSecond: false,
                                                                                                     ),
-                                                                                                onEnded: () async {
-                                                                                                  // Prevent multiple auto-submits
-                                                                                                  if (quizAutoSubmitted) {
-                                                                                                    return;
-                                                                                                  }
-
-                                                                                                  quizAutoSubmitted = true;
-
-                                                                                                  await showDialog(
-                                                                                                    barrierDismissible: false,
-                                                                                                    context: context,
-                                                                                                    builder: (dialogContext) {
-                                                                                                      return Dialog(
-                                                                                                        elevation: 0,
-                                                                                                        insetPadding: EdgeInsets.zero,
-                                                                                                        backgroundColor: Colors.transparent,
-                                                                                                        alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                                                        child: GestureDetector(
-                                                                                                          onTap: () {
-                                                                                                            FocusScope.of(dialogContext).unfocus();
-                                                                                                            FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                          },
-                                                                                                          child: TimeoutDialogWidget(
-                                                                                                            istimeout: () async {
-                                                                                                              FFAppState().clearCoinsCache();
-                                                                                                              context.pushNamed(
-                                                                                                                QuizResultWidget.routeName,
-                                                                                                                queryParameters: {
-                                                                                                                  'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
-                                                                                                                  'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
-                                                                                                                  'totalQuestion': serializeParam(questions is List ? questions.length : 0, ParamType.int),
-                                                                                                                  'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
-                                                                                                                  'quizID': serializeParam(widget.quizID, ParamType.String),
-                                                                                                                  'title': serializeParam(widget.title, ParamType.String),
-                                                                                                                  'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
-                                                                                                                  'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
-                                                                                                                }.withoutNulls,
-                                                                                                              );
-                                                                                                            },
-                                                                                                          ),
+                                                                                                    controller: _model.timerController,
+                                                                                                    updateStateInterval: Duration(milliseconds: 1000),
+                                                                                                    onChanged: (value, displayTime, shouldUpdate) {
+                                                                                                      _model.timerMilliseconds = value;
+                                                                                                      _model.timerValue = displayTime;
+                                                                                                      if (shouldUpdate) safeSetState(() {});
+                                                                                                    },
+                                                                                                    textAlign: TextAlign.center,
+                                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                          fontFamily: 'Roboto',
+                                                                                                          color: Colors.transparent,
+                                                                                                          fontSize: 16.0,
+                                                                                                          useGoogleFonts: false,
                                                                                                         ),
+                                                                                                    onEnded: () async {
+                                                                                                      if (quizAutoSubmitted) {
+                                                                                                        return;
+                                                                                                      }
+
+                                                                                                      quizAutoSubmitted = true;
+
+                                                                                                      await showDialog(
+                                                                                                        barrierDismissible: false,
+                                                                                                        context: context,
+                                                                                                        builder: (dialogContext) {
+                                                                                                          return Dialog(
+                                                                                                            elevation: 0,
+                                                                                                            insetPadding: EdgeInsets.zero,
+                                                                                                            backgroundColor: Colors.transparent,
+                                                                                                            alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
+                                                                                                            child: GestureDetector(
+                                                                                                              onTap: () {
+                                                                                                                FocusScope.of(dialogContext).unfocus();
+                                                                                                                FocusManager.instance.primaryFocus?.unfocus();
+                                                                                                              },
+                                                                                                              child: TimeoutDialogWidget(
+                                                                                                                istimeout: () async {
+                                                                                                                  FFAppState().clearCoinsCache();
+                                                                                                                  context.pushNamed(
+                                                                                                                    QuizResultWidget.routeName,
+                                                                                                                    queryParameters: {
+                                                                                                                      'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
+                                                                                                                      'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
+                                                                                                                      'totalQuestion': serializeParam(questions is List ? questions.length : 0, ParamType.int),
+                                                                                                                      'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
+                                                                                                                      'quizID': serializeParam(widget.quizID, ParamType.String),
+                                                                                                                      'title': serializeParam(widget.title, ParamType.String),
+                                                                                                                      'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
+                                                                                                                      'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                                                                                                                    }.withoutNulls,
+                                                                                                                  );
+                                                                                                                },
+                                                                                                              ),
+                                                                                                            ),
+                                                                                                          );
+                                                                                                        },
                                                                                                       );
                                                                                                     },
-                                                                                                  );
-                                                                                                },
+                                                                                                  ),
+                                                                                                ),
                                                                                               ),
-                                                                                            ),
-                                                                                        ],
+                                                                                          ],
+                                                                                        ),
                                                                                       ),
                                                                                     ),
-                                                                                  SizedBox(
-                                                                                    height: 10,
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
+                                                                                  _buildOptionTile(
+                                                                                    label: 'A',
+                                                                                    text: _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
+                                                                                    isSelected: selectedIndex == 0,
+                                                                                    onTap: () async {
                                                                                         if (selectedIndex == 0) {
                                                                                           _model.userAnswer = null;
                                                                                           _model.actualAnswer = null;
@@ -919,93 +1235,34 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                         safeSetState(() {});
                                                                                         FFAppState().update(() {});
                                                                                       },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
                                                                                   ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
-                                                                                        if (selectedIndex == 1) {
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
-                                                                                        } else {
-                                                                                          _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.b''').toString();
-                                                                                          _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 1;
-                                                                                          FFAppState().selectedColorIndex = 1;
-                                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'b';
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
+                                                                                  _buildOptionTile(
+                                                                                    label: 'B',
+                                                                                    text: _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
+                                                                                    isSelected: selectedIndex == 1,
+                                                                                    onTap: () async {
+                                                                                      if (selectedIndex == 1) {
+                                                                                        _model.userAnswer = null;
+                                                                                        _model.actualAnswer = null;
+                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                        FFAppState().selectedColorIndex = -1;
+                                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                      } else {
+                                                                                        _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.b''').toString();
+                                                                                        _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = 1;
+                                                                                        FFAppState().selectedColorIndex = 1;
+                                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'b';
+                                                                                      }
+                                                                                      safeSetState(() {});
+                                                                                      FFAppState().update(() {});
+                                                                                    },
                                                                                   ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
+                                                                                  _buildOptionTile(
+                                                                                    label: 'C',
+                                                                                    text: _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
+                                                                                    isSelected: selectedIndex == 2,
+                                                                                    onTap: () async {
                                                                                         if (selectedIndex == 2) {
                                                                                           _model.userAnswer = null;
                                                                                           _model.actualAnswer = null;
@@ -1022,38 +1279,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                         safeSetState(() {});
                                                                                         FFAppState().update(() {});
                                                                                       },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 2 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
                                                                                   ),
-                                                                                  InkWell(
-                                                                                    splashColor: Colors.transparent,
-                                                                                    focusColor: Colors.transparent,
-                                                                                    hoverColor: Colors.transparent,
-                                                                                    highlightColor: Colors.transparent,
+                                                                                  _buildOptionTile(
+                                                                                    label: 'D',
+                                                                                    text: _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
+                                                                                    isSelected: selectedIndex == 3,
                                                                                     onTap: () async {
                                                                                       if (selectedIndex == 3) {
                                                                                         _model.userAnswer = null;
@@ -1071,31 +1301,6 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       safeSetState(() {});
                                                                                       FFAppState().update(() {});
                                                                                     },
-                                                                                    child: Container(
-                                                                                      width: 369.0,
-                                                                                      decoration: BoxDecoration(
-                                                                                        color: FlutterFlowTheme.of(context).grey,
-                                                                                        borderRadius: BorderRadius.circular(12.0),
-                                                                                        border: selectedIndex == 3 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                      ),
-                                                                                      child: Align(
-                                                                                        alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                        child: Padding(
-                                                                                          padding: EdgeInsets.all(16.0),
-                                                                                          child: Text(
-                                                                                            _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
-                                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                  fontFamily: 'Roboto',
-                                                                                                  fontSize: 18.0,
-                                                                                                  letterSpacing: 0.0,
-                                                                                                  fontWeight: FontWeight.normal,
-                                                                                                  useGoogleFonts: false,
-                                                                                                  lineHeight: 1.5,
-                                                                                                ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
                                                                                   ),
                                                                                 ],
                                                                               ),
@@ -1956,8 +2161,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                     Padding(
                                                       padding:
                                                           EdgeInsetsDirectional
-                                                              .fromSTEB(12, 12,
-                                                                  12, 40.0),
+                                                              .fromSTEB(20.0,
+                                                                  12.0, 20.0,
+                                                                  28.0),
                                                       child: Row(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -1965,7 +2171,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                             // Back Button
                                                             Expanded(
                                                               child:
-                                                                  FFButtonWidget(
+                                                                  _buildFooterButton(
                                                                 onPressed:
                                                                     () async {
                                                                   if (_model
@@ -1992,38 +2198,22 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                   }
                                                                 },
                                                                 text: 'Back',
-                                                                options:
-                                                                    FFButtonOptions(
-                                                                  height: 40.0,
-                                                                  textStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'Roboto',
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        useGoogleFonts:
-                                                                            false,
-                                                                      ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8.0),
-                                                                ),
+                                                                isPrimary: false,
+                                                                accentColor:
+                                                                    const Color(
+                                                                        0xFFA855F7),
+                                                                leadingIcon:
+                                                                    Icons
+                                                                        .arrow_back_rounded,
                                                               ),
                                                             ),
 
                                                             SizedBox(
-                                                                width: 8.0),
+                                                                width: 12.0),
                                                             // Skip Button
                                                             Expanded(
                                                               child:
-                                                                  FFButtonWidget(
+                                                                  _buildFooterButton(
                                                                 onPressed:
                                                                     () async {
                                                                   // Skip logic: go to next question without saving answer
@@ -2061,41 +2251,19 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                   }
                                                                 },
                                                                 text: 'Skip',
-                                                                options:
-                                                                    FFButtonOptions(
-                                                                  height: 40.0,
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  textStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'Roboto',
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        useGoogleFonts:
-                                                                            false,
-                                                                      ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8.0),
-                                                                ),
+                                                                isPrimary: false,
+                                                                accentColor:
+                                                                    const Color(
+                                                                        0xFF22C55E),
                                                               ),
                                                             ),
 
                                                             SizedBox(
-                                                                width: 8.0),
+                                                                width: 12.0),
                                                             // Save & Next Button
                                                             Expanded(
                                                               child:
-                                                                  FFButtonWidget(
+                                                                  _buildFooterButton(
                                                                 onPressed:
                                                                     () async {
                                                                   // First, process the answer for the current question
@@ -2804,32 +2972,18 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             1))
                                                                     ? 'Submit'
                                                                     : 'Save & Next',
-                                                                options:
-                                                                    FFButtonOptions(
-                                                                  height: 40.0,
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primary,
-                                                                  textStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'Roboto',
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .white,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        useGoogleFonts:
-                                                                            false,
-                                                                      ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8.0),
-                                                                ),
+                                                                isPrimary: true,
+                                                                accentColor:
+                                                                    const Color(
+                                                                        0xFF2563EB),
+                                                                trailingIcon: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
+                                                                            0) ==
+                                                                        (_model.pageViewCurrentIndex +
+                                                                            1))
+                                                                    ? Icons
+                                                                        .check_rounded
+                                                                    : Icons
+                                                                        .keyboard_double_arrow_right_rounded,
                                                               ),
                                                             ),
                                                           ]),

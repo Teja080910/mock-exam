@@ -1,4 +1,3 @@
-import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'category_detail_page_widget.dart' show CategoryDetailPageWidget;
@@ -9,20 +8,14 @@ class CategoryDetailPageModel
     extends FlutterFlowModel<CategoryDetailPageWidget> {
   ///  State fields for stateful widgets in this page.
 
-  // Model for appBar component.
-  late AppBarModel appBarModel;
   bool apiRequestCompleted = false;
   String? apiRequestLastUniqueKey;
 
   @override
-  void initState(BuildContext context) {
-    appBarModel = createModel(context, () => AppBarModel());
-  }
+  void initState(BuildContext context) {}
 
   @override
-  void dispose() {
-    appBarModel.dispose();
-  }
+  void dispose() {}
 
   /// Additional helper methods.
   Future waitForApiRequestCompleted({

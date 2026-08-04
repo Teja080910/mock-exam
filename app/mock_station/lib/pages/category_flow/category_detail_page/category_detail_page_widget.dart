@@ -1,9 +1,7 @@
 import '/backend/api_requests/api_calls.dart';
-import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +39,221 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
 
   final animationsMap = <String, AnimationInfo>{};
 
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFDCEAFF),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 16.0),
+          child: Row(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22.0),
+                  onTap: () => context.safePop(),
+                  child: Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Color(0xFF111827),
+                      size: 22.0,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14.0),
+              Expanded(
+                child: Text(
+                  widget.title ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 54.0),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDisclaimer() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFDDEBFF),
+        borderRadius: BorderRadius.circular(14.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 30.0,
+            height: 30.0,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.verified_user_outlined,
+              color: Color(0xFF2563EB),
+              size: 20.0,
+            ),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Text(
+              'Disclaimer: Mock Station is not affiliated with any government entity. These mock tests are for practice purposes only.',
+              style: TextStyle(
+                fontSize: 10.0,
+                height: 1.35,
+                color: FlutterFlowTheme.of(context).secondaryText,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubcategoryCard(dynamic subcategory) {
+    final imageUrl = widget.image != null && widget.image!.isNotEmpty
+        ? widget.image!
+        : 'https://picsum.photos/seed/alp/120';
+
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(
+          'subcategory_detail_page',
+          queryParameters: {
+            'subcategoryId': serializeParam(
+              getJsonField(subcategory, r'$._id').toString(),
+              ParamType.String,
+            ),
+            'subcategoryName': serializeParam(
+              getJsonField(subcategory, r'$.name').toString(),
+              ParamType.String,
+            ),
+            'categoryName': serializeParam(widget.title, ParamType.String),
+            'image': serializeParam(widget.image, ParamType.String),
+          }.withoutNulls,
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x140F172A),
+              blurRadius: 12.0,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(0.0, 14.0, 14.0, 14.0),
+        child: Row(
+          children: [
+            Container(
+              width: 4.0,
+              height: 34.0,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2563EB),
+                borderRadius: BorderRadius.circular(999.0),
+              ),
+            ),
+            const SizedBox(width: 10.0),
+            Container(
+              width: 54.0,
+              height: 54.0,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F8FF),
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              padding: const EdgeInsets.all(4.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => Container(
+                    color: const Color(0xFFF5F8FF),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.image_outlined,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    getJsonField(subcategory, r'$.name').toString(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16.0,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    'Click to view quizzes',
+                    style: TextStyle(
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8.0),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF2563EB),
+              size: 28.0,
+            ),
+          ],
+        ),
+      ),
+    ).animateOnPageLoad(
+      animationsMap['containerOnPageLoadAnimation']!,
+      effects: [
+        MoveEffect(
+          curve: Curves.easeInOut,
+          delay: 0.ms,
+          duration: 300.ms,
+          begin: const Offset(40.0, 0.0),
+          end: const Offset(0.0, 0.0),
+        ),
+      ],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -65,19 +278,12 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
     return Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      key: scaffoldKey,
+      backgroundColor: const Color(0xFFEAF3FF),
       body: SafeArea(
         child: Column(
           children: [
-            wrapWithModel(
-              model: _model.appBarModel,
-              updateCallback: () => safeSetState(() {}),
-              child: AppBarWidget(
-                title: widget.title ?? '',
-                backIcon: false,
-              ),
-            ),
+            _buildHeader(),
             Expanded(
               child: FutureBuilder<ApiCallResponse>(
                 future: FFAppState().details(
@@ -134,101 +340,18 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                     ));
                   }
                   return ListView.separated(
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 16.0),
                     itemCount: subcategoryList.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 16),
+                    separatorBuilder: (_, __) => const SizedBox(height: 14.0),
                     itemBuilder: (context, subcategoryIndex) {
                       final subcategory = subcategoryList[subcategoryIndex];
-                      return GestureDetector(
-                        onTap: () {
-                                                  context.pushNamed(
-                            'subcategory_detail_page',
-                                                    queryParameters: {
-                              'subcategoryId': serializeParam(getJsonField(subcategory, r'$._id').toString(), ParamType.String),
-                              'subcategoryName': serializeParam(getJsonField(subcategory, r'$.name').toString(), ParamType.String),
-                              'categoryName': serializeParam(widget.title, ParamType.String),
-                              'image': serializeParam(widget.image, ParamType.String),
-                                                    }.withoutNulls,
-                                                  );
-                                              },
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                                                ),
-                            ],
-                          ),
-                          padding: EdgeInsets.all(16),
-                                                  child: Row(
-                                                    children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.quiz,
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  size: 30,
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                                                      Expanded(
-                                                          child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                      getJsonField(subcategory, r'$.name').toString(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                                                    ),
-                                                              ),
-                                    SizedBox(height: 4),
-                                                                  Text(
-                                      'Click to view quizzes',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.grey[400],
-                                size: 20,
-                                                ),
-                                              ],
-                          ),
-                          ),
-                        );
+                      return _buildSubcategoryCard(subcategory);
                       },
                     );
                 },
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: FlutterFlowTheme.of(context).primaryBackground,
-              child: Text(
-                "Disclaimer: Mock Station is not affiliated with any government entity. These mock tests are for practice purposes only.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
+            _buildDisclaimer(),
           ],
         ),
       ),

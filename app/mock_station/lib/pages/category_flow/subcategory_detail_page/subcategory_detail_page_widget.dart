@@ -1,11 +1,8 @@
 import '/backend/api_requests/api_calls.dart';
-import '/componants/app_bar/app_bar_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class SubcategoryDetailPageWidget extends StatefulWidget {
   const SubcategoryDetailPageWidget({
@@ -21,10 +18,300 @@ class SubcategoryDetailPageWidget extends StatefulWidget {
   static String routePath = '/subcategoryDetailPage';
 
   @override
-  State<SubcategoryDetailPageWidget> createState() => _SubcategoryDetailPageWidgetState();
+  State<SubcategoryDetailPageWidget> createState() =>
+      _SubcategoryDetailPageWidgetState();
 }
 
-class _SubcategoryDetailPageWidgetState extends State<SubcategoryDetailPageWidget> {
+class _SubcategoryDetailPageWidgetState
+    extends State<SubcategoryDetailPageWidget> {
+  Widget _buildHeader(String title) {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFDCEAFF),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 16.0),
+          child: Row(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22.0),
+                  onTap: () => context.safePop(),
+                  child: Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Color(0xFF111827),
+                      size: 22.0,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14.0),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetaItem({
+    required IconData icon,
+    required String text,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 21.0,
+          height: 21.0,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(5.0),
+            border: Border.all(color: const Color(0xFFD9E4FF)),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            icon,
+            size: 13.0,
+            color: const Color(0xFF4A6CF7),
+          ),
+        ),
+        const SizedBox(width: 7.0),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFF374151),
+            fontSize: 14.0,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDashedDivider() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final dashCount = (constraints.maxWidth / 5).floor();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(
+            dashCount,
+            (_) => Container(
+              width: 3.0,
+              height: 1.2,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6D9CFF),
+                borderRadius: BorderRadius.circular(999.0),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openQuiz(Map quiz) async {
+    context.pushNamed(
+      'quiz_questions_screen',
+      queryParameters: {
+        'quizID': quiz['_id'],
+        'title': quiz['name'],
+        'image': '${FFAppConstants.imageBaseURL}${quiz['image']}',
+        'quizTime': quiz['minutes_per_quiz'].toString(),
+        'description': quiz['description'],
+      },
+    );
+  }
+
+  Widget _buildQuizCard(Map quiz) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () async => _openQuiz(quiz),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 176.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0.0, 12.0, 14.0, 12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 5.0,
+                height: 28.0,
+                margin: const EdgeInsets.only(top: 2.0),
+                color: const Color(0xFF1D6FFF),
+              ),
+              const SizedBox(width: 10.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 72.0,
+                          height: 72.0,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F8FF),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          padding: const EdgeInsets.all(6.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  '${FFAppConstants.imageBaseURL}${quiz['image']}',
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => Container(
+                                color: const Color(0xFFF5F8FF),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.image_outlined,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 11.0),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 2.0, right: 6.0),
+                            child: Text(
+                              quiz['name'] ?? '',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.w800,
+                                height: 1.28,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10.0),
+                    Row(
+                      children: [
+                        _buildMetaItem(
+                          icon: Icons.access_time_rounded,
+                          text: '${quiz['minutes_per_quiz'] ?? ''} mins',
+                        ),
+                        const SizedBox(width: 13.0),
+                        Container(
+                          width: 1.0,
+                          height: 18.0,
+                          color: const Color(0xFFD7E1F0),
+                        ),
+                        const SizedBox(width: 13.0),
+                        _buildMetaItem(
+                          icon: Icons.assignment_outlined,
+                          text:
+                              '${quiz['minimum_required_points'] ?? quiz['total_questions'] ?? 'N/A'} Marks',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15.0),
+                    SizedBox(
+                      width: 260.0,
+                      child: _buildDashedDivider(),
+                    ),
+                    const SizedBox(height: 14.0),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 28.0,
+                          height: 28.0,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8.0),
+                            border: Border.all(color: const Color(0xFFD9E4FF)),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.g_translate_rounded,
+                            size: 18.0,
+                            color: Color(0xFF4F46E5),
+                          ),
+                        ),
+                        const SizedBox(width: 10.0),
+                        const Expanded(
+                          child: Text(
+                            'हिंदी',
+                            style: TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 107.0,
+                          height: 42.0,
+                          child: ElevatedButton(
+                            onPressed: () async => _openQuiz(quiz),
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: const Color(0xFF1D6FFF),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            child: const Text(
+                              'Start Test',
+                              style: TextStyle(
+                                fontSize: 15.0,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments as Map?;
@@ -32,161 +319,122 @@ class _SubcategoryDetailPageWidgetState extends State<SubcategoryDetailPageWidge
     final subcategoryName = args != null ? args['subcategoryName'] : widget.subcategoryName;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(subcategoryName ?? 'Subcategory'),
-      ),
-      body: FutureBuilder<ApiCallResponse>(
-        future: QuizGroup.getQuizBySubcategoryCall.call(subcategoryId: subcategoryId),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final quizzesList = QuizGroup.getQuizBySubcategoryCall.quizList(snapshot.data!.jsonBody) ?? [];
-          // Sort quizzes by date and shift extracted from name
-          final quizzes = quizzesList.toList();
-          quizzes.sort((a, b) {
-            String nameA = a['name'] ?? '';
-            String nameB = b['name'] ?? '';
-            
-            DateTime? parseDate(String name) {
-              final monthMap = {
-                'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
-                'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
-                'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
-                'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
-              };
-              
-              // Handle various formats like "28 Dec 2024", "28-Dec-2024", "28.Dec.2024"
-              final regex = RegExp(r'(\d{1,2})[\s\-\.]*([a-zA-Z]+)[\s\-\.]*(\d{4})', caseSensitive: false);
-              final match = regex.firstMatch(name);
-              
-              if (match != null) {
-                final day = int.tryParse(match.group(1)!);
-                final monthStr = match.group(2)!.toLowerCase();
-                final year = int.tryParse(match.group(3)!);
-                
-                final month = monthMap[monthStr];
-                
-                if (day != null && month != null && year != null) {
-                  return DateTime(year, month, day);
+      backgroundColor: const Color(0xFFEAF3FF),
+      body: Column(
+        children: [
+          _buildHeader(subcategoryName ?? 'Subcategory'),
+          Expanded(
+            child: FutureBuilder<ApiCallResponse>(
+              future: QuizGroup.getQuizBySubcategoryCall.call(
+                subcategoryId: subcategoryId,
+              ),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
                 }
-              }
-              return null;
-            }
+                final quizzesList =
+                    QuizGroup.getQuizBySubcategoryCall.quizList(
+                          snapshot.data!.jsonBody,
+                        ) ??
+                        [];
+                final quizzes = quizzesList.toList();
+                quizzes.sort((a, b) {
+                  String nameA = a['name'] ?? '';
+                  String nameB = b['name'] ?? '';
 
-            int parseShift(String name) {
-              final match = RegExp(r'\(Shift\s*(\d+)\)', caseSensitive: false).firstMatch(name);
-              if (match != null) {
-                return int.tryParse(match.group(1) ?? '0') ?? 0;
-              }
-              return 0;
-            }
+                  DateTime? parseDate(String name) {
+                    final monthMap = {
+                      'jan': 1,
+                      'feb': 2,
+                      'mar': 3,
+                      'apr': 4,
+                      'may': 5,
+                      'jun': 6,
+                      'jul': 7,
+                      'aug': 8,
+                      'sep': 9,
+                      'oct': 10,
+                      'nov': 11,
+                      'dec': 12,
+                      'january': 1,
+                      'february': 2,
+                      'march': 3,
+                      'april': 4,
+                      'june': 6,
+                      'july': 7,
+                      'august': 8,
+                      'september': 9,
+                      'october': 10,
+                      'november': 11,
+                      'december': 12
+                    };
 
-            DateTime? dateA = parseDate(nameA);
-            DateTime? dateB = parseDate(nameB);
+                    final regex = RegExp(
+                      r'(\d{1,2})[\s\-\.]*([a-zA-Z]+)[\s\-\.]*(\d{4})',
+                      caseSensitive: false,
+                    );
+                    final match = regex.firstMatch(name);
 
-            if (dateA != null && dateB != null) {
-              int dateComp = dateB.compareTo(dateA); // Newest first
-              if (dateComp != 0) return dateComp;
-            } else if (dateA != null) {
-              return -1; // Move items with dates to top
-            } else if (dateB != null) {
-              return 1;
-            }
+                    if (match != null) {
+                      final day = int.tryParse(match.group(1)!);
+                      final monthStr = match.group(2)!.toLowerCase();
+                      final year = int.tryParse(match.group(3)!);
+                      final month = monthMap[monthStr];
 
-            int shiftA = parseShift(nameA);
-            int shiftB = parseShift(nameB);
-            return shiftB.compareTo(shiftA); // Higher shift first
-          });
+                      if (day != null && month != null && year != null) {
+                        return DateTime(year, month, day);
+                      }
+                    }
+                    return null;
+                  }
 
-          if (quizzes.isEmpty) {
-            return Center(child: Text('No quizzes found for this subcategory.'));
-          }
-          return ListView.separated(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-            itemCount: quizzes.length,
-            separatorBuilder: (_, __) => SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final quiz = quizzes[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      quiz['name'] ?? '',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        SizedBox(width: 8),
-                        //Text('.', style: TextStyle(color: Colors.grey[700])),
-                        SizedBox(width: 8),
-                        Text(
-                          '${quiz['minutes_per_quiz'] ?? ''} mins',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                        SizedBox(width: 8),
-                       // Text('.', style: TextStyle(color: Colors.grey[700])),
-                        SizedBox(width: 8),
-                        Text(
-                          '${quiz['minimum_required_points'] ?? 'N/A'} Marks',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                        Spacer(),
-                        TextButton(
-                          onPressed: () {
-                            context.pushNamed(
-                              'quiz_questions_screen',
-                              queryParameters: {
-                                'quizID': quiz['_id'],
-                                'title': quiz['name'],
-                                'image': '${FFAppConstants.imageBaseURL}${quiz['image']}',
-                                'quizTime': quiz['minutes_per_quiz'].toString(),
-                                'description': quiz['description'],
-                              },
-                            );
-                          },
-                          child: Text(
-                            'Start Test',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'English, Hindi',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
+                  int parseShift(String name) {
+                    final match = RegExp(
+                      r'\(Shift\s*(\d+)\)',
+                      caseSensitive: false,
+                    ).firstMatch(name);
+                    if (match != null) {
+                      return int.tryParse(match.group(1) ?? '0') ?? 0;
+                    }
+                    return 0;
+                  }
+
+                  DateTime? dateA = parseDate(nameA);
+                  DateTime? dateB = parseDate(nameB);
+
+                  if (dateA != null && dateB != null) {
+                    int dateComp = dateB.compareTo(dateA);
+                    if (dateComp != 0) return dateComp;
+                  } else if (dateA != null) {
+                    return -1;
+                  } else if (dateB != null) {
+                    return 1;
+                  }
+
+                  int shiftA = parseShift(nameA);
+                  int shiftB = parseShift(nameB);
+                  return shiftB.compareTo(shiftA);
+                });
+
+                if (quizzes.isEmpty) {
+                  return const Center(
+                    child: Text('No quizzes found for this subcategory.'),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
+                  itemCount: quizzes.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+                  itemBuilder: (context, index) {
+                    return _buildQuizCard(Map<String, dynamic>.from(quizzes[index]));
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
-} 
+}
