@@ -175,7 +175,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                               QuizGroup.getAllPagesCall.aboutUs(
                                             containerGetAllPagesResponse
                                                 .jsonBody,
-                                          )!,
+                                          ) ?? '',
                                         ),
                                       ],
                                     ),

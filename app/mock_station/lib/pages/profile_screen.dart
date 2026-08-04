@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_zee/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -8,7 +9,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -20,8 +21,12 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: Colors.black12,
-                    child: Icon(Icons.person, size: 40, color: Colors.black),
+                    backgroundColor: FlutterFlowTheme.of(context).primary.withOpacity(0.12),
+                    child: Icon(
+                      Icons.person,
+                      size: 40,
+                      color: FlutterFlowTheme.of(context).primary,
+                    ),
                   ),
                   SizedBox(width: 16),
                   Text(
@@ -29,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: FlutterFlowTheme.of(context).primaryText,
                     ),
                   ),
                 ],
@@ -74,13 +79,13 @@ class _ProfileMenuItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: Row(
           children: [
-            Icon(icon, color: Colors.black54, size: 28),
+            Icon(icon, color: FlutterFlowTheme.of(context).primary, size: 28),
             SizedBox(width: 20),
             Text(
               label,
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.black,
+                color: FlutterFlowTheme.of(context).primaryText,
                 fontWeight: FontWeight.w400,
               ),
             ),

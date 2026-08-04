@@ -112,30 +112,30 @@ class LightModeTheme extends FlutterFlowTheme {
   @Deprecated('Use tertiary instead')
   Color get tertiaryColor => tertiary;
 
-  late Color primary = const Color(0xFF14335B);
-  late Color secondary = const Color(0xFFFFF2DA);
-  late Color tertiary = const Color(0xFFEE8B60);
-  late Color alternate = const Color(0xFFE0E3E7);
-  late Color primaryText = const Color(0xFF14181B);
-  late Color secondaryText = const Color(0xFF57636C);
-  late Color primaryBackground = const Color(0xFFF1F3F5);
+  late Color primary = const Color(0xFF2563EB);
+  late Color secondary = const Color(0xFFEAF3FF);
+  late Color tertiary = const Color(0xFF7C3AED);
+  late Color alternate = const Color(0xFFD6E4FF);
+  late Color primaryText = const Color(0xFF111827);
+  late Color secondaryText = const Color(0xFF6B7280);
+  late Color primaryBackground = const Color(0xFFF6F9FF);
   late Color secondaryBackground = const Color(0xFFFFFFFF);
-  late Color accent1 = const Color(0x4C4B39EF);
-  late Color accent2 = const Color(0x4D39D2C0);
-  late Color accent3 = const Color(0x4DEE8B60);
+  late Color accent1 = const Color(0x332563EB);
+  late Color accent2 = const Color(0x3334D399);
+  late Color accent3 = const Color(0x33F59E0B);
   late Color accent4 = const Color(0xCCFFFFFF);
-  late Color success = const Color(0xFF04B155);
-  late Color warning = const Color(0xFFF1A80F);
-  late Color error = const Color(0xFFFF3E3E);
+  late Color success = const Color(0xFF16A34A);
+  late Color warning = const Color(0xFFF59E0B);
+  late Color error = const Color(0xFFEF4444);
   late Color info = const Color(0xFFFFFFFF);
 
   late Color white = Color(0xFFFFFFFF);
-  late Color lightGrey = Color(0xFFF8F8F8);
-  late Color grey = Color(0xFFF4F4F4);
-  late Color black10 = Color(0xFFDCDCDC);
-  late Color black20 = Color(0xFFDCDCDC);
-  late Color black30 = Color(0xFFC0C0C0);
-  late Color black40 = Color(0xFF696969);
+  late Color lightGrey = Color(0xFFF8FAFC);
+  late Color grey = Color(0xFFF1F5F9);
+  late Color black10 = Color(0xFFE5E7EB);
+  late Color black20 = Color(0xFFD1D5DB);
+  late Color black30 = Color(0xFF9CA3AF);
+  late Color black40 = Color(0xFF6B7280);
   late Color black = Color(0xFF000000);
 }
 
@@ -229,15 +229,15 @@ class ThemeTypography extends Typography {
   String get titleMediumFamily => 'Roboto';
   TextStyle get titleMedium => TextStyle(
         fontFamily: 'Roboto',
-        color: theme.info,
-        fontWeight: FontWeight.normal,
+        color: theme.primaryText,
+        fontWeight: FontWeight.w600,
         fontSize: 18.0,
       );
   String get titleSmallFamily => 'Roboto';
   TextStyle get titleSmall => TextStyle(
         fontFamily: 'Roboto',
-        color: theme.info,
-        fontWeight: FontWeight.w500,
+        color: theme.primaryText,
+        fontWeight: FontWeight.w700,
         fontSize: 16.0,
       );
   String get labelLargeFamily => 'Roboto';

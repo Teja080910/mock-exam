@@ -847,13 +847,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                 ),
                 body: Column(
                   children: [
-                    Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(12.0, 8.0, 12.0, 8.0),
-                      child: custom_widgets.HtmlConverterExp(
-                        width: double.infinity,
-                        height: null,
-                        text: widget.description!,
+                    SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            12.0, 8.0, 12.0, 8.0),
+                        child: custom_widgets.HtmlConverterExp(
+                          width: double.infinity,
+                          height: null,
+                          text: widget.description!,
+                        ),
                       ),
                     ),
                   ],

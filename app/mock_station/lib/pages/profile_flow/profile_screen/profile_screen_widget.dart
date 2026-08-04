@@ -1,17 +1,12 @@
-import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
-import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'profile_screen_model.dart';
-import 'package:url_launcher/url_launcher.dart';
 export 'profile_screen_model.dart';
 
 class ProfileScreenWidget extends StatefulWidget {
@@ -76,6 +71,372 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
     }
   }
 
+  String get _displayName {
+    if (!FFAppState().isLogin) {
+      return 'Guest User';
+    }
+    final firstName = getJsonField(
+          FFAppState().userDetils,
+          r'''$.firstname''',
+        )?.toString() ??
+        '';
+    final lastName = getJsonField(
+          FFAppState().userDetils,
+          r'''$.lastname''',
+        )?.toString() ??
+        '';
+    final fullName = '$firstName $lastName'.trim();
+    return fullName.isNotEmpty ? fullName : 'Profile';
+  }
+
+  Widget _buildAvatar() {
+    if (!FFAppState().isLogin) {
+      return Image.asset(
+        'assets/images/place_holderProfile.png',
+        fit: BoxFit.cover,
+      );
+    }
+
+    return CachedNetworkImage(
+      fadeInDuration: const Duration(milliseconds: 300),
+      fadeOutDuration: const Duration(milliseconds: 300),
+      imageUrl:
+          '${FFAppConstants.imageBaseURL}${getJsonField(FFAppState().userDetils, r'''$.image''') ?? ''}',
+      fit: BoxFit.cover,
+      errorWidget: (context, error, stackTrace) => Image.asset(
+        'assets/images/place_holderProfile.png',
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildProfileHero() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 22.0),
+      decoration: const BoxDecoration(
+        color: Color(0xFFEAF3FF),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 2.0),
+          const Text(
+            'Profile',
+            style: TextStyle(
+              color: Color(0xFF10213F),
+              fontSize: 18.0,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 22.0),
+          SizedBox(
+            width: double.infinity,
+            height: 100.0,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  left: 36.0,
+                  top: 18.0,
+                  child: _buildDecorDot(10.0, const Color(0xFFC7DBFF)),
+                ),
+                Positioned(
+                  right: 24.0,
+                  top: 0.0,
+                  child: _buildDecorDot(44.0, const Color(0xFFD8E6FF)),
+                ),
+                Positioned(
+                  left: 54.0,
+                  bottom: 14.0,
+                  child: _buildDotGrid(),
+                ),
+                Container(
+                  width: 90.0,
+                  height: 90.0,
+                  padding: const EdgeInsets.all(4.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withOpacity(0.18),
+                        blurRadius: 18.0,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(child: _buildAvatar()),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  _displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF10213F),
+                    fontSize: 21.0,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              if (FFAppState().planStatus == 'active') ...[
+                const SizedBox(width: 8.0),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 3.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(999.0),
+                  ),
+                  child: const Text(
+                    'PRO',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10.0,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDecorDot(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+
+  Widget _buildDotGrid() {
+    return SizedBox(
+      width: 42.0,
+      height: 28.0,
+      child: Wrap(
+        spacing: 5.0,
+        runSpacing: 5.0,
+        children: List.generate(
+          18,
+          (_) => Container(
+            width: 3.0,
+            height: 3.0,
+            decoration: const BoxDecoration(
+              color: Color(0xFFC9DAF8),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuTile({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.0),
+          onTap: onTap,
+          child: Container(
+            height: 62.0,
+            padding: const EdgeInsets.symmetric(horizontal: 14.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0D0F172A),
+                  blurRadius: 12.0,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38.0,
+                  height: 38.0,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 23.0),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF1F2A44),
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFF64748B),
+                  size: 24.0,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileContent() {
+    return RefreshIndicator(
+      onRefresh: () async => refreshProfile(),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _buildProfileHero(),
+          Container(
+            color: const Color(0xFFF8FBFF),
+            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 20.0),
+            child: Column(
+              children: [
+                if (FFAppState().isLogin == true)
+                  _buildMenuTile(
+                    icon: Icons.person_outline_rounded,
+                    label: 'My profile',
+                    color: const Color(0xFF2F80ED),
+                    onTap: () {
+                      context.pushNamed(
+                        MyProfileWidget.routeName,
+                        queryParameters: {
+                          'fname': serializeParam(
+                            FFAppState().userFirstName,
+                            ParamType.String,
+                          ),
+                          'lname': serializeParam(
+                            FFAppState().userLastName,
+                            ParamType.String,
+                          ),
+                          'profilePicture': serializeParam(
+                            '${FFAppConstants.imageBaseURL}${getJsonField(
+                              FFAppState().userDetils,
+                              r'''$.image''',
+                            ).toString()}',
+                            ParamType.String,
+                          ),
+                        }.withoutNulls,
+                      );
+                    },
+                  ),
+                if (FFAppState().isLogin == true)
+                  _buildMenuTile(
+                    icon: Icons.credit_card_rounded,
+                    label: 'My Subscription',
+                    color: const Color(0xFF20C997),
+                    onTap: () {
+                      context.pushNamed(MySubscriptionScreenWidget.routeName);
+                    },
+                  ),
+                if (FFAppState().isLogin == true)
+                  _buildMenuTile(
+                    icon: Icons.shopping_bag_outlined,
+                    label: 'Subscription Plans',
+                    color: const Color(0xFF8B5CF6),
+                    onTap: () {
+                      context.pushNamed(PlansScreenWidget.routeName);
+                    },
+                  ),
+                if (FFAppState().isLogin == true)
+                  _buildMenuTile(
+                    icon: Icons.notifications_none_rounded,
+                    label: 'Notifications',
+                    color: const Color(0xFFF59E0B),
+                    onTap: () {
+                      context.pushNamed(NotificationScreenWidget.routeName);
+                    },
+                  ),
+                _buildMenuTile(
+                  icon: Icons.privacy_tip_outlined,
+                  label: 'Privacy Policy',
+                  color: const Color(0xFFEF4444),
+                  onTap: () {
+                    launchURL(
+                      'https://mockstation.blogspot.com/2026/05/privacy-policy-for-mockstation.html',
+                    );
+                  },
+                ),
+                _buildMenuTile(
+                  icon: Icons.settings_outlined,
+                  label: 'Settings',
+                  color: const Color(0xFF2F80ED),
+                  onTap: () {
+                    context.pushNamed(SettingPageWidget.routeName);
+                  },
+                ),
+                _buildMenuTile(
+                  icon: Icons.support_agent_rounded,
+                  label: 'Help & Support',
+                  color: const Color(0xFF14B8A6),
+                  onTap: () {
+                    context.pushNamed(HelplineCenterScreenWidget.routeName);
+                  },
+                ),
+                _buildMenuTile(
+                  icon: Icons.share_outlined,
+                  label: 'Share App',
+                  color: const Color(0xFF7C3AED),
+                  onTap: () {
+                    launchURL('https://mockstation.blogspot.com/');
+                  },
+                ),
+                if (FFAppState().isLogin == false)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.goNamed(LoginScreenWidget.routeName);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 52.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Login/Register',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _model.dispose();
@@ -94,684 +455,24 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            wrapWithModel(
-              model: _model.appBarModel,
-              updateCallback: () => safeSetState(() {}),
-              child: AppBarWidget(
-                title: 'Profile',
-                backIcon: true,
-              ),
-            ),
-            Expanded(
-              child: Builder(
-                builder: (context) {
-                  if (FFAppState().connected == true) {
-                    return RefreshIndicator(
-                      onRefresh: () async => refreshProfile(),
-                      child: ListView(
-                      padding: EdgeInsets.fromLTRB(
-                        0,
-                        24.0,
-                        0,
-                        24.0,
-                      ),
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      children: [
-                        Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Container(
-                            width: 100.0,
-                            height: 100.0,
-                            decoration: BoxDecoration(),
-                            child: Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                              child: Builder(
-                                builder: (context) {
-                                  if (FFAppState().isLogin == false) {
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(50.0),
-                                      child: Image.asset(
-                                        'assets/images/place_holderProfile.png',
-                                        width: 100.0,
-                                        height: 100.0,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    );
-                                  } else {
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(50.0),
-                                      child: CachedNetworkImage(
-                                        fadeInDuration:
-                                            Duration(milliseconds: 500),
-                                        fadeOutDuration:
-                                            Duration(milliseconds: 500),
-                                        imageUrl:
-                                            FFAppState().userDetils != null
-                                                ? '${FFAppConstants.imageBaseURL}${getJsonField(FFAppState().userDetils, r'''$.image''') ?? ''}'
-                                                : '',
-                                        width: 100.0,
-                                        height: 100.0,
-                                        fit: BoxFit.cover,
-                                        errorWidget:
-                                            (context, error, stackTrace) =>
-                                                Image.asset(
-                                          'assets/images/error_image.png',
-                                          width: 100.0,
-                                          height: 100.0,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (FFAppState().isLogin == true)
-                          Align(
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 14.0, 16.0, 16.0),
-                              child: RichText(
-                                textScaler: MediaQuery.of(context).textScaler,
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: getJsonField(
-                                          FFAppState().userDetils,
-                                          r'''$.firstname''',
-                                        )?.toString() ?? '',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Roboto',
-                                              fontSize: 20.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.bold,
-                                              useGoogleFonts: false,
-                                              lineHeight: 1.5,
-                                            ),
-                                      ),
-                                      TextSpan(
-                                        text: ' ',
-                                        style: TextStyle(),
-                                      ),
-                                      TextSpan(
-                                        text: getJsonField(
-                                          FFAppState().userDetils,
-                                          r'''$.lastname''',
-                                        )?.toString() ?? '',
-                                        style: TextStyle(),
-                                      ),
-                                      if (FFAppState().planStatus == 'active')
-                                        WidgetSpan(
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 8.0),
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: FlutterFlowTheme.of(context).primary,
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                'PRO',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Roboto',
-                                          fontSize: 20.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                          useGoogleFonts: false,
-                                          lineHeight: 1.5,
-                                        ),
-                                  ),
-                                  maxLines: 1,
-                                ),
-                            ),
-                          ),
-                        Container(
-                          height: 24.0,
-                          decoration: BoxDecoration(
-                            color:
-                                FlutterFlowTheme.of(context).primaryBackground,
-                          ),
-                        ),
-                        if (FFAppState().isLogin == true)
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 16.0),
-                            child: InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                context.pushNamed(
-                                  MyProfileWidget.routeName,
-                                  queryParameters: {
-                                    'fname': serializeParam(
-                                      FFAppState().userFirstName,
-                                      ParamType.String,
-                                    ),
-                                    'lname': serializeParam(
-                                      FFAppState().userLastName,
-                                      ParamType.String,
-                                    ),
-                                    'profilePicture': serializeParam(
-                                      '${FFAppConstants.imageBaseURL}${getJsonField(
-                                        FFAppState().userDetils,
-                                        r'''$.image''',
-                                      ).toString()}',
-                                      ParamType.String,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
-                              child: Container(
-                                width: 100.0,
-                                height: 64.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 8.0, 0.0, 8.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 48.0,
-                                        height: 48.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 0.0),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child: SvgPicture.asset(
-                                              'assets/images/profile.svg',
-                                              width: 24.0,
-                                              height: 24.0,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          'My profile',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Roboto',
-                                                fontSize: 17.0,
-                                                letterSpacing: 0.0,
-                                                useGoogleFonts: false,
-                                                lineHeight: 1.5,
-                                              ),
-                                        ),
-                                      ),
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: SvgPicture.asset(
-                                          'assets/images/arrow_right.svg',
-                                          width: 20.0,
-                                          height: 20.0,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ]
-                                        .divide(SizedBox(width: 16.0))
-                                        .addToStart(SizedBox(width: 8.0))
-                                        .addToEnd(SizedBox(width: 8.0)),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (FFAppState().isLogin == true)
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 8.0),
-                            child: InkWell(
-                              onTap: () async {
-                                context.pushNamed(MySubscriptionScreenWidget.routeName);
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                height: 60.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      10.0, 0.0, 10.0, 0.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                       Container(
-                                        width: 48.0,
-                                        height: 48.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 0.0),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child:  Icon(Icons.card_membership, color: FlutterFlowTheme.of(context).primaryText, size: 24),
-                                          ),
-                                        ),
-                                      ),
-                                     
-                                      SizedBox(width: 16),
-                                      Expanded(
-                                        child: Text(
-                                          'My Subscription',
-                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                fontFamily: 'Roboto',
-                                                fontSize: 17.0,
-                                                useGoogleFonts: false,
-                                              ),
-                                        ),
-                                      ),
-                                      Icon(Icons.arrow_forward_ios, size: 16, color: FlutterFlowTheme.of(context).secondaryText),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                           SizedBox(height: 5),
-                        if (FFAppState().isLogin == true)
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 16.0),
-                            child: InkWell(
-                              onTap: () async {
-                                context.pushNamed(PlansScreenWidget.routeName);
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                height: 60.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      10.0, 0.0, 12.0, 0.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                       Container(
-                                        width: 48.0,
-                                        height: 48.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 0.0),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child:  Icon(Icons.shopping_bag_outlined, color: FlutterFlowTheme.of(context).primaryText, size: 24),
-                                          ),
-                                        ),
-                                      ),
+        backgroundColor: const Color(0xFFF8FBFF),
+        body: Builder(
+          builder: (context) {
+            if (FFAppState().connected == true) {
+              return _buildProfileContent();
+            }
 
-                                      SizedBox(width: 16),
-                                      Expanded(
-                                        child: Text(
-                                          'Subscription Plans',
-                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                fontFamily: 'Roboto',
-                                                fontSize: 17.0,
-                                                useGoogleFonts: false,
-                                              ),
-                                        ),
-                                      ),
-                                      Icon(Icons.arrow_forward_ios, size: 16, color: FlutterFlowTheme.of(context).secondaryText),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (FFAppState().isLogin == true)
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 16.0),
-                            child: InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                context.pushNamed(
-                                    NotificationScreenWidget.routeName);
-                              },
-                              child: Container(
-                                width: 100.0,
-                                height: 64.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 8.0, 0.0, 8.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 48.0,
-                                        height: 48.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 0.0),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child: SvgPicture.asset(
-                                              'assets/images/notifications_FILL0_wght400_GRAD0_opsz24.svg',
-                                              width: 24.0,
-                                              height: 24.0,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          'Notifications',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Roboto',
-                                                fontSize: 17.0,
-                                                letterSpacing: 0.0,
-                                                useGoogleFonts: false,
-                                                lineHeight: 1.5,
-                                              ),
-                                        ),
-                                      ),
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: SvgPicture.asset(
-                                          'assets/images/arrow_right.svg',
-                                          width: 20.0,
-                                          height: 20.0,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ]
-                                        .divide(SizedBox(width: 16.0))
-                                        .addToStart(SizedBox(width: 8.0))
-                                        .addToEnd(SizedBox(width: 8.0)),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 16.0),
-                          child: InkWell(
-                            splashColor: Colors.transparent,
-                            focusColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onTap: () async {
-                              await launchURL("https://mockstation.blogspot.com/2026/05/privacy-policy-for-mockstation.html");
-                            },
-                            child: Container(
-                              width: 100.0,
-                              height: 64.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 8.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Container(
-                                      width: 48.0,
-                                      height: 48.0,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .lightGrey,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Align(
-                                        alignment:
-                                            AlignmentDirectional(0.0, 0.0),
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          child: Icon(
-                                            Icons.privacy_tip_outlined,
-                                            size: 24.0,
-                                            color: FlutterFlowTheme.of(context).primaryText,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Privacy Policy',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Roboto',
-                                              fontSize: 17.0,
-                                              letterSpacing: 0.0,
-                                              useGoogleFonts: false,
-                                              lineHeight: 1.5,
-                                            ),
-                                      ),
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: SvgPicture.asset(
-                                        'assets/images/arrow_right.svg',
-                                        width: 20.0,
-                                        height: 20.0,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ]
-                                      .divide(SizedBox(width: 16.0))
-                                      .addToStart(SizedBox(width: 8.0))
-                                      .addToEnd(SizedBox(width: 8.0)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          child: InkWell(
-                            splashColor: Colors.transparent,
-                            focusColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onTap: () async {
-                              context.pushNamed(SettingPageWidget.routeName);
-                            },
-                            child: Container(
-                              width: 100.0,
-                              height: 64.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 8.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Container(
-                                      width: 48.0,
-                                      height: 48.0,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .lightGrey,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Align(
-                                        alignment:
-                                            AlignmentDirectional(0.0, 0.0),
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          child: SvgPicture.asset(
-                                            'assets/images/setting.svg',
-                                            width: 24.0,
-                                            height: 24.0,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Settings',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Roboto',
-                                              fontSize: 17.0,
-                                              letterSpacing: 0.0,
-                                              useGoogleFonts: false,
-                                              lineHeight: 1.5,
-                                            ),
-                                      ),
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: SvgPicture.asset(
-                                        'assets/images/arrow_right.svg',
-                                        width: 20.0,
-                                        height: 20.0,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ]
-                                      .divide(SizedBox(width: 16.0))
-                                      .addToStart(SizedBox(width: 8.0))
-                                      .addToEnd(SizedBox(width: 8.0)),
-                                ),
-                              ),
-                              
-                            ),
-                          ),
-                        ),
-                        if (FFAppState().isLogin == false)
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 16.0, 16.0, 0.0),
-                            child: FFButtonWidget(
-                              onPressed: () async {
-                                context.goNamed(LoginScreenWidget.routeName);
-                              },
-                              text: 'Login/Register',
-                              options: FFButtonOptions(
-                                width: 189.0,
-                                height: 56.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    24.0, 0.0, 24.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: FlutterFlowTheme.of(context).primary,
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      fontFamily: 'Roboto',
-                                      color: FlutterFlowTheme.of(context).white,
-                                      fontSize: 18.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w600,
-                                      useGoogleFonts: false,
-                                    ),
-                                elevation: 0.0,
-                                borderSide: BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                            ),
-                          ),
-                      ],
-                      ),
-                    );
-                  } else {
-                    return Align(
-                      alignment: AlignmentDirectional(0.0, 0.0),
-                      child: Lottie.asset(
-                        'assets/jsons/No_Wifi.json',
-                        width: 150.0,
-                        height: 150.0,
-                        fit: BoxFit.contain,
-                        animate: true,
-                      ),
-                    );
-                  }
-                },
+            return Align(
+              alignment: AlignmentDirectional(0.0, 0.0),
+              child: Lottie.asset(
+                'assets/jsons/No_Wifi.json',
+                width: 150.0,
+                height: 150.0,
+                fit: BoxFit.contain,
+                animate: true,
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

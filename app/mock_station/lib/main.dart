@@ -110,6 +110,38 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: const [Locale('en', '')],
       theme: ThemeData(
         brightness: Brightness.light,
+        useMaterial3: true,
+        scaffoldBackgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: FlutterFlowTheme.of(context).primary,
+          brightness: Brightness.light,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          foregroundColor: FlutterFlowTheme.of(context).primaryText,
+          elevation: 0,
+          centerTitle: true,
+          surfaceTintColor: Colors.transparent,
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          selectedItemColor: FlutterFlowTheme.of(context).primary,
+          unselectedItemColor: FlutterFlowTheme.of(context).black40,
+          type: BottomNavigationBarType.fixed,
+          elevation: 10,
+        ),
+        cardTheme: CardThemeData(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.0),
+            side: BorderSide(color: FlutterFlowTheme.of(context).black10),
+          ),
+        ),
+        dividerTheme: DividerThemeData(
+          color: FlutterFlowTheme.of(context).black10,
+          thickness: 1,
+        ),
       ),
       themeMode: _themeMode,
       routerConfig: _router,

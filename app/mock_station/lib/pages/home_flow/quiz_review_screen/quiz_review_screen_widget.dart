@@ -1,7 +1,7 @@
-import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_audio_player.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/componants/quit_quiz/quit_quiz_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -25,8 +25,7 @@ class QuizReviewScreenWidget extends StatefulWidget {
   State<QuizReviewScreenWidget> createState() => _QuizReviewScreenWidgetState();
 }
 
-class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget>
-    with TickerProviderStateMixin {
+class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   late QuizReviewScreenModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -104,16 +103,482 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget>
     );
   }
 
+  Future<void> _showQuitQuizDialog() async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          backgroundColor: Colors.transparent,
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(dialogContext).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: const QuitQuizWidget(),
+          ),
+        );
+      },
+    );
+  }
+
+  List<dynamic> _reviewQuestions() {
+    return FFAppState().quesReviewList.toList();
+  }
+
+  bool _isAnswered(dynamic question) {
+    final value = getJsonField(question, r'''$.user_answer''');
+    return value != null && value.toString() != 'skipped';
+  }
+
+  Widget _buildLegendDot({
+    required Color color,
+    required String label,
+    bool outlined = false,
+  }) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 12.0,
+            height: 12.0,
+            decoration: BoxDecoration(
+              color: outlined ? Colors.white : color,
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 1.2),
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 11.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNumberChip({
+    required int number,
+    required bool filled,
+  }) {
+    return Container(
+      width: 30.0,
+      height: 30.0,
+      decoration: BoxDecoration(
+        color: filled ? const Color(0xFF1D66E5) : Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: filled ? const Color(0xFF1D66E5) : const Color(0xFFD6DCE5),
+        ),
+        boxShadow: filled
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF1D66E5).withOpacity(0.16),
+                  blurRadius: 10.0,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : const [],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        number.toString(),
+        style: TextStyle(
+          color: filled ? Colors.white : const Color(0xFF374151),
+          fontSize: 12.0,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTab({
+    required String text,
+    required bool selected,
+  }) {
+    return Expanded(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: selected
+                    ? const Color(0xFFF43F5E)
+                    : const Color(0xFF4B5563),
+                fontSize: 11.0,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          Container(
+            height: 3.0,
+            width: 92.0,
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFFF43F5E) : Colors.transparent,
+              borderRadius: BorderRadius.circular(999.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionGridCard({
+    required String title,
+    required List<dynamic> questions,
+    required bool showSubmitButton,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(color: const Color(0xFFE8EDF5)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 18.0,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.keyboard_arrow_up_rounded,
+                  color: const Color(0xFF1F2937).withOpacity(0.9),
+                  size: 24.0,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12.0),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FBFF),
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(color: const Color(0xFFE4EAF4)),
+              ),
+              child: Row(
+                children: [
+                  _buildLegendDot(
+                    color: const Color(0xFF1D66E5),
+                    label: 'Answered',
+                  ),
+                  Container(
+                    width: 1.0,
+                    height: 16.0,
+                    color: const Color(0xFFE5E7EB),
+                  ),
+                  _buildLegendDot(
+                    color: const Color(0xFF8EA0BF),
+                    label: 'Not Answered',
+                    outlined: true,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14.0),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const itemSpacing = 8.0;
+                const columns = 5;
+                final itemSize =
+                    ((constraints.maxWidth - (itemSpacing * (columns - 1))) /
+                            columns)
+                        .floorToDouble();
+                return Wrap(
+                  spacing: itemSpacing,
+                  runSpacing: itemSpacing,
+                  children: [
+                    for (var i = 0; i < questions.length; i++)
+                      SizedBox(
+                        width: itemSize,
+                        child: Center(
+                          child: _buildNumberChip(
+                            number: i + 1,
+                            filled: _isAnswered(questions[i]),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            if (showSubmitButton) ...[
+              const SizedBox(height: 14.0),
+              SizedBox(
+                width: double.infinity,
+                height: 46.0,
+                child: ElevatedButton.icon(
+                  onPressed: _showQuitQuizDialog,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: const Color(0xFF1D66E5),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  icon: const Icon(Icons.description_outlined, size: 18.0),
+                  label: const Text(
+                    'SUBMIT TEST',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionPanel({
+    required List<dynamic> questions,
+  }) {
+    final visibleCount = questions.isEmpty ? 25 : questions.length.clamp(0, 25);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(color: const Color(0xFFE8EDF5)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 18.0,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14.0, 12.0, 14.0, 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'General Science',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const Expanded(
+                  child: Text(
+                    'Mathematics',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const Expanded(
+                  child: Text(
+                    'General Intelligence and',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2.0),
+            Row(
+              children: [
+                _buildSectionTab(text: 'General Science', selected: true),
+                _buildSectionTab(text: 'Mathematics', selected: false),
+                _buildSectionTab(
+                  text: 'General Intelligence and',
+                  selected: false,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10.0),
+            Row(
+              children: [
+                const Text(
+                  'Questions: 25',
+                  style: TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  width: 22.0,
+                  height: 22.0,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF9CA3AF)),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    size: 14.0,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12.0),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const columns = 5;
+                const spacing = 10.0;
+                final itemSize = ((constraints.maxWidth -
+                            ((columns - 1) * spacing)) /
+                        columns)
+                    .floorToDouble();
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: [
+                    for (var i = 0; i < visibleCount; i++)
+                      SizedBox(
+                        width: itemSize,
+                        child: Center(
+                          child: _buildNumberChip(
+                            number: i + 1,
+                            filled: _isAnswered(
+                              questions.isEmpty
+                                  ? {'user_answer': 'skipped'}
+                                  : questions[i],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 18.0),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FBFF),
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(color: const Color(0xFFE4EAF4)),
+              ),
+              child: Row(
+                children: [
+                  _buildLegendDot(
+                    color: const Color(0xFF1D66E5),
+                    label: 'Answered',
+                  ),
+                  Container(
+                    width: 1.0,
+                    height: 16.0,
+                    color: const Color(0xFFE5E7EB),
+                  ),
+                  _buildLegendDot(
+                    color: const Color(0xFF8EA0BF),
+                    label: 'Not Answered',
+                    outlined: true,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12.0),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 42.0,
+                    child: OutlinedButton(
+                      onPressed: _showQuitQuizDialog,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1D66E5),
+                        side: const BorderSide(color: Color(0xFF9EC0FF)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Submit Section',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: SizedBox(
+                    height: 42.0,
+                    child: ElevatedButton(
+                      onPressed: _showQuitQuizDialog,
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: const Color(0xFF1D66E5),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Submit Test',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => QuizReviewScreenModel());
-
-    _model.tabBarController = TabController(
-      vsync: this,
-      length: 2,
-      initialIndex: 0,
-    )..addListener(() => safeSetState(() {}));
   }
 
   @override
@@ -127,6 +592,11 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget>
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
+    final questions = _reviewQuestions();
+    final sectionTabCount = questions.isEmpty ? 25 : questions.length.clamp(0, 25).toInt();
+    final answeredCount = questions.where(_isAnswered).length;
+    final notAnsweredCount = (questions.isEmpty ? 25 : questions.length) - answeredCount;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -134,904 +604,10 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFFF6F9FF),
         body: Builder(
           builder: (context) {
-            if (FFAppState().connected == true) {
-              return Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  wrapWithModel(
-                    model: _model.appBarModel,
-                    updateCallback: () => safeSetState(() {}),
-                    child: AppBarWidget(
-                      title: 'Test overview',
-                      backIcon: false,
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment(0.0, 0),
-                          child: TabBar(
-                            labelColor:
-                                FlutterFlowTheme.of(context).primaryText,
-                            unselectedLabelColor:
-                                FlutterFlowTheme.of(context).secondaryText,
-                            labelStyle: FlutterFlowTheme.of(context)
-                                .titleMedium
-                                .override(
-                                  fontFamily: 'Roboto',
-                                  letterSpacing: 0.0,
-                                  useGoogleFonts: false,
-                                ),
-                            unselectedLabelStyle: TextStyle(),
-                            indicatorColor:
-                                FlutterFlowTheme.of(context).primary,
-                            padding: EdgeInsets.all(4.0),
-                            tabs: [
-                              Tab(
-                                text: 'Answered',
-                              ),
-                              Tab(
-                                text: 'Skipped',
-                              ),
-                            ],
-                            controller: _model.tabBarController,
-                            onTap: (i) async {
-                              [() async {}, () async {}][i]();
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          child: TabBarView(
-                            controller: _model.tabBarController,
-                            children: [
-                              Builder(
-                                builder: (context) {
-                                  final ques = FFAppState()
-                                      .quesReviewList
-                                      .where((q) =>
-                                          q['user_answer'] != null &&
-                                          q['user_answer'] != 'skipped')
-                                      .toList();
-
-                                  return ListView.separated(
-                                    padding: EdgeInsets.fromLTRB(
-                                      0,
-                                      13.0,
-                                      0,
-                                      13.0,
-                                    ),
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    itemCount: ques.length,
-                                    separatorBuilder: (_, __) =>
-                                        SizedBox(height: 16.0),
-                                    itemBuilder: (context, quesIndex) {
-                                      final quesItem = ques[quesIndex];
-print('=quesItem==ANSWER=>>>${quesItem}');
-                                      final options = quesItem['option'] ?? {};
-                                      final userAnswer =
-                                          quesItem['user_answer'];
-                                      final correctAnswer =
-                                          quesItem['correct_answer'] ??
-                                              quesItem['answer'];
-
-                                      return Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            10.0, 0.0, 10.0, 0.0),
-                                        child: Container(
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                blurRadius: 15.0,
-                                                color: Color(0x1A000000),
-                                                offset: Offset(0.0, 4.0),
-                                                spreadRadius: 0.0,
-                                              )
-                                            ],
-                                            borderRadius:
-                                                BorderRadius.circular(12.0),
-                                          ),
-                                          child: Padding(
-                                            padding: EdgeInsetsGeometry.all(8),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                // Question title with HTML support (includes images)
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Q${quesIndex + 1}. ',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 15.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            useGoogleFonts:
-                                                                false,
-                                                            lineHeight: 1.5,
-                                                          ),
-                                                    ),
-                                                    Expanded(
-                                                      child:
-                                                          _buildQuestionHtmlWidget(
-                                                        context: context,
-                                                        questionHtml: getJsonField(
-                                                                quesItem,
-                                                                r'''$.question_title''')
-                                                            .toString(),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                // Question image - show if image field exists and is not empty
-                                                if (getJsonField(quesItem,
-                                                    r'''$.image''') !=
-                                                    null &&
-                                                    getJsonField(quesItem,
-                                                        r'''$.image''')
-                                                        .toString()
-                                                        .isNotEmpty)
-                                                  Padding(
-                                                    padding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(0.0, 16.0,
-                                                        0.0, 16.0),
-                                                    child: Center(
-                                                      child: Container(
-                                                        width: double.infinity,
-                                                        constraints:
-                                                        BoxConstraints(
-                                                          maxWidth: MediaQuery.of(
-                                                              context)
-                                                              .size
-                                                              .width -
-                                                              64.0,
-                                                          maxHeight: 300.0,
-                                                        ),
-                                                        child: ClipRRect(
-                                                          borderRadius:
-                                                          BorderRadius
-                                                              .circular(
-                                                              12.0),
-                                                          child:
-                                                          CachedNetworkImage(
-                                                            imageUrl:
-                                                            '${FFAppConstants.imageBaseURL}${getJsonField(quesItem, r'''$.image''').toString()}',
-                                                            width:
-                                                            double.infinity,
-                                                            fit: BoxFit.contain,
-                                                            alignment:
-                                                            Alignment(
-                                                                0.0, 0.0),
-                                                            placeholder:
-                                                                (context,
-                                                                url) =>
-                                                                Center(
-                                                                  child:
-                                                                  CircularProgressIndicator(
-                                                                    valueColor:
-                                                                    AlwaysStoppedAnimation<
-                                                                        Color>(
-                                                                      FlutterFlowTheme.of(
-                                                                          context)
-                                                                          .primary,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                            errorWidget: (context,
-                                                                url,
-                                                                error) =>
-                                                                SizedBox
-                                                                    .shrink(),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-
-                                                ...List.generate(options.length,
-                                                    (optionIndex) {
-                                                  final optionKeys =
-                                                      options.keys.toList();
-                                                  final optionKey =
-                                                      optionKeys[optionIndex];
-                                                  final option =
-                                                      options[optionKey];
-                                                  // Check if this option's text matches the correct answer
-                                                  final normalize = (dynamic
-                                                          value) =>
-                                                      (value ?? '')
-                                                          .toString()
-                                                          .replaceAll(
-                                                              RegExp(r'\s+'),
-                                                              ' ')
-                                                          .trim()
-                                                          .toLowerCase();
-
-                                                  final optionText = option !=
-                                                              null &&
-                                                          option['text'] != null
-                                                      ? (option['text'] is Map
-                                                          ? (option['text']
-                                                                  ['text'] ??
-                                                              option['text']
-                                                                  .toString())
-                                                          : option['text']
-                                                              .toString())
-                                                      : '';
-
-                                                  final optionTextNormalized =
-                                                      normalize(optionText);
-                                                  final userAnswerNormalized =
-                                                      normalize(userAnswer);
-                                                  final correctAnswerNormalized =
-                                                      normalize(correctAnswer);
-                                                  final optionKeyNormalized =
-                                                      normalize(optionKey);
-
-                                                  final isCorrectAnswer =
-                                                      correctAnswerNormalized
-                                                              .isNotEmpty &&
-                                                          (optionKeyNormalized ==
-                                                                  correctAnswerNormalized ||
-                                                              optionTextNormalized ==
-                                                                  correctAnswerNormalized);
-
-                                                  final isUserSelected = userAnswerNormalized
-                                                          .isNotEmpty &&
-                                                      (optionKeyNormalized ==
-                                                              userAnswerNormalized ||
-                                                          optionTextNormalized ==
-                                                              userAnswerNormalized);
-
-                                                  // Check if user selected the correct answer
-                                                  // This is true if: user selected this option AND this option is the correct answer
-                                                  final isUserCorrect =
-                                                      isUserSelected &&
-                                                          isCorrectAnswer;
-
-                                                  // Debug logging for answered tab
-
-                                                  return Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 8.0,
-                                                                0.0, 0.0),
-                                                    child: Row(
-                                                      children: [
-                                                        // Icon indicator
-                                                        Container(
-                                                          width: 24.0,
-                                                          height: 24.0,
-                                                          child: isUserCorrect
-                                                              ? Icon(
-                                                                  Icons
-                                                                      .check_circle,
-                                                                  color: Colors
-                                                                      .green,
-                                                                  size: 24.0,
-                                                                )
-                                                              : isCorrectAnswer
-                                                                  ? Icon(
-                                                                      Icons
-                                                                          .check_circle,
-                                                                      color: Colors
-                                                                          .green,
-                                                                      size:
-                                                                          24.0,
-                                                                    )
-                                                                  : isUserSelected
-                                                                      ? Icon(
-                                                                          Icons
-                                                                              .cancel,
-                                                                          color:
-                                                                              Colors.red,
-                                                                          size:
-                                                                              24.0,
-                                                                        )
-                                                                      : Icon(
-                                                                          Icons
-                                                                              .cancel,
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).secondaryText,
-                                                                          size:
-                                                                              24.0,
-                                                                        ),
-                                                        ),
-                                                        SizedBox(width: 12.0),
-
-                                                        // Option content
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              // Image for image-based options
-                                                              if (getJsonField(quesItem,
-                                                                              r'''$.question_type''')
-                                                                          .toString() ==
-                                                                      'images' &&
-                                                                  option !=
-                                                                      null &&
-                                                                  option['image'] !=
-                                                                      null &&
-                                                                  option['image']
-                                                                      .toString()
-                                                                      .isNotEmpty)
-                                                                Padding(
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          8.0),
-                                                                  child:
-                                                                      ClipRRect(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            8.0),
-                                                                    child:
-                                                                        CachedNetworkImage(
-                                                                      imageUrl:
-                                                                          '${FFAppConstants.imageBaseURL}${option['image']}',
-                                                                      width:
-                                                                          50.0,
-                                                                      height:
-                                                                          50.0,
-                                                                      fit: BoxFit
-                                                                          .contain,
-                                                                    ),
-                                                                  ),
-                                                                ),
-
-                                                              // Option text
-                                                              RichText(
-                                                                textScaler: MediaQuery.of(
-                                                                        context)
-                                                                    .textScaler,
-                                                                text: TextSpan(
-                                                                  children: [
-                                                                    TextSpan(
-                                                                      text: extractOptionText(
-                                                                          option),
-                                                                      style: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .override(
-                                                                            fontFamily:
-                                                                                'Roboto',
-                                                                            fontSize:
-                                                                                17.0,
-                                                                            letterSpacing:
-                                                                                0.0,
-                                                                            useGoogleFonts:
-                                                                                false,
-                                                                            lineHeight:
-                                                                                1.5,
-                                                                          ),
-                                                                    ),
-                                                                    if (isUserCorrect)
-                                                                      TextSpan(
-                                                                        text:
-                                                                            ' (Correct Answer & Your Answer)',
-                                                                        style:
-                                                                            TextStyle(
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primary,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                        ),
-                                                                      )
-                                                                    else if (isCorrectAnswer)
-                                                                      TextSpan(
-                                                                        text:
-                                                                            ' (Correct Answer)',
-                                                                        style:
-                                                                            TextStyle(
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primary,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                        ),
-                                                                      )
-                                                                    else if (isUserSelected)
-                                                                      TextSpan(
-                                                                        text:
-                                                                            ' (Your Answer)',
-                                                                        style:
-                                                                            TextStyle(
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).error,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                        ),
-                                                                      ),
-                                                                  ],
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'Roboto',
-                                                                        fontSize:
-                                                                            17.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        useGoogleFonts:
-                                                                            false,
-                                                                        lineHeight:
-                                                                            1.5,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  final question = FFAppState()
-                                      .quesReviewList
-                                      .where(
-                                          (q) => q['user_answer'] == 'skipped')
-                                      .toList();
-
-                                  return ListView.separated(
-                                    padding: EdgeInsets.fromLTRB(
-                                      0,
-                                      13.0,
-                                      0,
-                                      13.0,
-                                    ),
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    itemCount: question.length,
-                                    separatorBuilder: (_, __) =>
-                                        SizedBox(height: 16.0),
-                                    itemBuilder: (context, questionIndex) {
-                                      final questionItem =
-                                          question[questionIndex];
-                                      print('=quesItem==SKIPPED=>>>${questionItem}');
-                                      final options =
-                                          questionItem['option'] ?? {};
-                                      final correctAnswer =
-                                          questionItem['correct_answer'] ??
-                                              questionItem['answer'];
-
-                                      return Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            10.0, 0.0, 10.0, 0.0),
-                                        child: Container(
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                blurRadius: 15.0,
-                                                color: Color(0x1A000000),
-                                                offset: Offset(0.0, 4.0),
-                                                spreadRadius: 0.0,
-                                              )
-                                            ],
-                                            borderRadius:
-                                                BorderRadius.circular(12.0),
-                                          ),
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 16.0, 16.0, 16.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                // Question title with HTML support (includes images)
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Q${questionIndex + 1}. ',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 15.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            useGoogleFonts:
-                                                                false,
-                                                            lineHeight: 1.5,
-                                                          ),
-                                                    ),
-                                                    Expanded(
-                                                      child:
-                                                          _buildQuestionHtmlWidget(
-                                                        context: context,
-                                                        questionHtml: getJsonField(
-                                                                questionItem,
-                                                                r'''$.question_title''')
-                                                            .toString(),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-
-                                                // Question image - show if image field exists and is not empty
-                                                if (getJsonField(questionItem,
-                                                            r'''$.image''') !=
-                                                        null &&
-                                                    getJsonField(questionItem,
-                                                            r'''$.image''')
-                                                        .toString()
-                                                        .isNotEmpty)
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 16.0,
-                                                                0.0, 16.0),
-                                                    child: Center(
-                                                      child: Container(
-                                                        width: double.infinity,
-                                                        constraints:
-                                                            BoxConstraints(
-                                                          maxWidth: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width -
-                                                              64.0,
-                                                          maxHeight: 300.0,
-                                                        ),
-                                                        child: ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      12.0),
-                                                          child:
-                                                              CachedNetworkImage(
-                                                            imageUrl:
-                                                                '${FFAppConstants.imageBaseURL}${getJsonField(questionItem, r'''$.image''').toString()}',
-                                                            width:
-                                                                double.infinity,
-                                                            fit: BoxFit.contain,
-                                                            alignment:
-                                                                Alignment(
-                                                                    0.0, 0.0),
-                                                            placeholder:
-                                                                (context,
-                                                                        url) =>
-                                                                    Center(
-                                                              child:
-                                                                  CircularProgressIndicator(
-                                                                valueColor:
-                                                                    AlwaysStoppedAnimation<
-                                                                        Color>(
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primary,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            errorWidget: (context,
-                                                                    url,
-                                                                    error) =>
-                                                                SizedBox
-                                                                    .shrink(),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                if ('audio' ==
-                                                    getJsonField(
-                                                      questionItem,
-                                                      r'''$.question_type''',
-                                                    ).toString())
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 16.0,
-                                                                0.0, 0.0),
-                                                    child:
-                                                        FlutterFlowAudioPlayer(
-                                                      audio: Audio.network(
-                                                        getJsonField(
-                                                                  questionItem,
-                                                                  r'''$.audio''',
-                                                                ) !=
-                                                                null
-                                                            ? '${FFAppConstants.imageBaseURL}${getJsonField(
-                                                                questionItem,
-                                                                r'''$.audio''',
-                                                              ).toString()}'
-                                                            : 'https://filesamples.com/samples/audio/mp3/sample3.mp3',
-                                                        metas: Metas(
-                                                          title: 'Title',
-                                                        ),
-                                                      ),
-                                                      titleTextStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Roboto',
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                useGoogleFonts:
-                                                                    false,
-                                                              ),
-                                                      playbackDurationTextStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Roboto',
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                useGoogleFonts:
-                                                                    false,
-                                                              ),
-                                                      fillColor: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      playbackButtonColor:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      activeTrackColor:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      inactiveTrackColor:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .alternate,
-                                                      elevation: 0.0,
-                                                      playInBackground:
-                                                          PlayInBackground
-                                                              .disabledRestoreOnForeground,
-                                                    ),
-                                                  ),
-
-                                                // Options with indicators
-                                                ...List.generate(options.length,
-                                                    (optionIndex) {
-                                                  final optionKeys =
-                                                      options.keys.toList();
-                                                  final optionKey =
-                                                      optionKeys[optionIndex];
-                                                  final option =
-                                                      options[optionKey];
-                                                  final normalize = (dynamic
-                                                          value) =>
-                                                      (value ?? '')
-                                                          .toString()
-                                                          .replaceAll(
-                                                              RegExp(r'\s+'),
-                                                              ' ')
-                                                          .trim()
-                                                          .toLowerCase();
-
-                                                  final optionText = option !=
-                                                              null &&
-                                                          option['text'] != null
-                                                      ? (option['text'] is Map
-                                                          ? (option['text']
-                                                                  ['text'] ??
-                                                              option['text']
-                                                                  .toString())
-                                                          : option['text']
-                                                              .toString())
-                                                      : '';
-
-                                                  final optionTextNormalized =
-                                                      normalize(optionText);
-                                                  final correctAnswerNormalized =
-                                                      normalize(correctAnswer);
-                                                  final optionKeyNormalized =
-                                                      normalize(optionKey);
-
-                                                  final isCorrectAnswer =
-                                                      correctAnswerNormalized
-                                                              .isNotEmpty &&
-                                                          (optionKeyNormalized ==
-                                                                  correctAnswerNormalized ||
-                                                              optionTextNormalized ==
-                                                                  correctAnswerNormalized);
-
-                                                  return Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 8.0,
-                                                                0.0, 0.0),
-                                                    child: Row(
-                                                      children: [
-                                                        // Icon indicator
-                                                        Container(
-                                                          width: 24.0,
-                                                          height: 24.0,
-                                                          child: isCorrectAnswer
-                                                              ? Icon(
-                                                                  Icons
-                                                                      .check_circle,
-                                                                  color: Colors
-                                                                      .green,
-                                                                  size: 24.0,
-                                                                )
-                                                              : Icon(
-                                                                  Icons
-                                                                      .radio_button_unchecked,
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText,
-                                                                  size: 24.0,
-                                                                ),
-                                                        ),
-                                                        SizedBox(width: 12.0),
-
-                                                        // Option content
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              // Image for image-based options
-                                                              if (getJsonField(questionItem,
-                                                                              r'''$.question_type''')
-                                                                          .toString() ==
-                                                                      'images' &&
-                                                                  option !=
-                                                                      null &&
-                                                                  option['image'] !=
-                                                                      null &&
-                                                                  option['image']
-                                                                      .toString()
-                                                                      .isNotEmpty)
-                                                                Padding(
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          8.0),
-                                                                  child:
-                                                                      ClipRRect(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            8.0),
-                                                                    child:
-                                                                        CachedNetworkImage(
-                                                                      imageUrl:
-                                                                          '${FFAppConstants.imageBaseURL}${option['image']}',
-                                                                      width:
-                                                                          50.0,
-                                                                      height:
-                                                                          50.0,
-                                                                      fit: BoxFit
-                                                                          .contain,
-                                                                    ),
-                                                                  ),
-                                                                ),
-
-                                                              // Option text
-                                                              RichText(
-                                                                textScaler: MediaQuery.of(
-                                                                        context)
-                                                                    .textScaler,
-                                                                text: TextSpan(
-                                                                  children: [
-                                                                    TextSpan(
-                                                                      text: extractOptionText(
-                                                                          option),
-                                                                      style: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .override(
-                                                                            fontFamily:
-                                                                                'Roboto',
-                                                                            fontSize:
-                                                                                17.0,
-                                                                            letterSpacing:
-                                                                                0.0,
-                                                                            useGoogleFonts:
-                                                                                false,
-                                                                            lineHeight:
-                                                                                1.5,
-                                                                          ),
-                                                                    ),
-                                                                    if (isCorrectAnswer)
-                                                                      TextSpan(
-                                                                        text:
-                                                                            ' (Correct Answer)',
-                                                                        style:
-                                                                            TextStyle(
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primary,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                        ),
-                                                                      ),
-                                                                  ],
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'Roboto',
-                                                                        fontSize:
-                                                                            17.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        useGoogleFonts:
-                                                                            false,
-                                                                        lineHeight:
-                                                                            1.5,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            } else {
+            if (FFAppState().connected != true) {
               return Align(
                 alignment: AlignmentDirectional(0.0, 0.0),
                 child: Lottie.asset(
@@ -1043,6 +619,93 @@ print('=quesItem==ANSWER=>>>${quesItem}');
                 ),
               );
             }
+
+            return SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 12.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => context.pop(),
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 18.0,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                        ),
+                        const Expanded(
+                          child: Center(
+                            child: Text(
+                              'Grid View',
+                              style: TextStyle(
+                                color: Color(0xFF1F2937),
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 40.0),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
+                      child: Column(
+                        children: [
+                          _buildQuestionGridCard(
+                            title: 'Grid View',
+                            questions: questions.isEmpty
+                                ? List.generate(
+                                    25,
+                                    (index) => {'user_answer': 'skipped'},
+                                  )
+                                : questions,
+                            showSubmitButton: true,
+                          ),
+                          const SizedBox(height: 16.0),
+                          _buildSectionPanel(
+                            questions: questions.isEmpty
+                                ? List.generate(
+                                    25,
+                                    (index) => {'user_answer': 'skipped'},
+                                  )
+                                : questions.sublist(
+                                    0,
+                                    sectionTabCount,
+                                  ),
+                          ),
+                          const SizedBox(height: 12.0),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                            child: Text(
+                              'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
+                              style: const TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ),
