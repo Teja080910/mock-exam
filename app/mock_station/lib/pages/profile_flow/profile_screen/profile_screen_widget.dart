@@ -384,14 +384,6 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   },
                 ),
                 _buildMenuTile(
-                  icon: Icons.settings_outlined,
-                  label: 'Settings',
-                  color: const Color(0xFF2F80ED),
-                  onTap: () {
-                    context.pushNamed(SettingPageWidget.routeName);
-                  },
-                ),
-                _buildMenuTile(
                   icon: Icons.support_agent_rounded,
                   label: 'Help & Support',
                   color: const Color(0xFF14B8A6),
@@ -405,6 +397,14 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   color: const Color(0xFF7C3AED),
                   onTap: () {
                     launchURL('https://mockstation.blogspot.com/');
+                  },
+                ),
+                _buildMenuTile(
+                  icon: Icons.settings_outlined,
+                  label: 'Settings',
+                  color: const Color(0xFF2F80ED),
+                  onTap: () {
+                    context.pushNamed(SettingPageWidget.routeName);
                   },
                 ),
                 if (FFAppState().isLogin == false)

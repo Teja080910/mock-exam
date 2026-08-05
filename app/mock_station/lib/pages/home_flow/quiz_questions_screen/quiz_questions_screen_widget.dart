@@ -265,17 +265,17 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     required Color textColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: textColor,
-          fontSize: 16.0,
-          fontWeight: FontWeight.w700,
+          fontSize: 13.0,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -283,10 +283,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
 
   Widget _buildTimerChip() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F8FF),
-        borderRadius: BorderRadius.circular(14.0),
+        borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: const Color(0xFFD6E4FF)),
       ),
       child: Row(
@@ -294,16 +294,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
         children: [
           const Icon(
             Icons.access_time_rounded,
-            size: 18.0,
+            size: 14.0,
             color: Color(0xFF2563EB),
           ),
-          const SizedBox(width: 8.0),
+          const SizedBox(width: 6.0),
           Text(
             _model.timerValue.isNotEmpty ? _model.timerValue : '00:00',
             style: const TextStyle(
               color: Color(0xFF1E3A8A),
-              fontSize: 16.0,
-              fontWeight: FontWeight.w700,
+              fontSize: 13.0,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -376,17 +376,17 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     ClipOval(
                       child: CachedNetworkImage(
                         imageUrl: widget.image.toString(),
-                        width: 42.0,
-                        height: 42.0,
+                        width: 32.0,
+                        height: 32.0,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          width: 42.0,
-                          height: 42.0,
+                          width: 32.0,
+                          height: 32.0,
                           color: const Color(0xFFE5E7EB),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          width: 42.0,
-                          height: 42.0,
+                          width: 32.0,
+                          height: 32.0,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Color(0xFFE5E7EB),
@@ -397,13 +397,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     )
                   else
                     Container(
-                      width: 42.0,
-                      height: 42.0,
+                      width: 32.0,
+                      height: 32.0,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color(0xFFE5E7EB),
                       ),
-                      child: const Icon(Icons.school_rounded, size: 20.0),
+                      child: const Icon(Icons.school_rounded, size: 16.0),
                     ),
                 ],
               ),
@@ -432,8 +432,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                 ),
                 const Spacer(),
                 Container(
-                  width: 46.0,
-                  height: 46.0,
+                  width: 36.0,
+                  height: 36.0,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -447,10 +447,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     ],
                   ),
                   child: IconButton(
-                    onPressed: _showQuitQuizDialog,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      context.pushNamed(QuizReviewScreenWidget.routeName);
+                    },
                     icon: const Icon(
                       Icons.menu_rounded,
                       color: Color(0xFF111827),
+                      size: 20.0,
                     ),
                   ),
                 ),
@@ -469,7 +474,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     required VoidCallback onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -478,7 +483,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
+            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFF3F7FF) : Colors.white,
               borderRadius: BorderRadius.circular(14.0),
@@ -501,8 +506,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             child: Row(
               children: [
                 Container(
-                  width: 38.0,
-                  height: 38.0,
+                  width: 36.0,
+                  height: 36.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected
@@ -515,16 +520,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     ),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF111827),
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.w700,
-                    ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected
+                        ? Colors.white
+                        : const Color(0xFF111827),
+                    fontSize: 17.0,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
                 ),
                 const SizedBox(width: 14.0),
                 Container(
@@ -538,7 +543,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     text,
                     style: const TextStyle(
                       color: Color(0xFF111827),
-                      fontSize: 17.0,
+                      fontSize: 16.0,
                       fontWeight: FontWeight.w500,
                       height: 1.35,
                     ),
@@ -562,15 +567,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   }) {
     final buttonChild = Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (leadingIcon != null) ...[
-          Icon(leadingIcon, size: 20.0),
-          const SizedBox(width: 8.0),
+          Icon(leadingIcon, size: 18.0),
+          const SizedBox(width: 4.0),
         ],
-        Flexible(child: Text(text, overflow: TextOverflow.ellipsis)),
+        Flexible(child: Text(text, overflow: TextOverflow.visible, textAlign: TextAlign.center)),
         if (trailingIcon != null) ...[
-          const SizedBox(width: 8.0),
-          Icon(trailingIcon, size: 20.0),
+          const SizedBox(width: 4.0),
+          Icon(trailingIcon, size: 18.0),
         ],
       ],
     );
@@ -852,10 +858,77 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
                             12.0, 8.0, 12.0, 8.0),
-                        child: custom_widgets.HtmlConverterExp(
-                          width: double.infinity,
-                          height: null,
-                          text: widget.description!,
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(22.0),
+                                    onTap: () => context.safePop(),
+                                    child: Container(
+                                      width: 40.0,
+                                      height: 40.0,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF5F8FF),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.arrow_back_rounded,
+                                        color: Color(0xFF111827),
+                                        size: 22.0,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12.0),
+                                Expanded(
+                                  child: Text(
+                                    widget.title ?? '',
+                                    style: const TextStyle(
+                                      color: Color(0xFF111827),
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                if (widget.image != null && widget.image!.isNotEmpty)
+                                  const SizedBox(width: 12.0),
+                                if (widget.image != null && widget.image!.isNotEmpty)
+                                  Container(
+                                    width: 40.0,
+                                    height: 40.0,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF5F8FF),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(6.0),
+                                      child: CachedNetworkImage(
+                                        imageUrl: widget.image!,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) => Container(
+                                          color: const Color(0xFFF5F8FF),
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                            Icons.image_outlined,
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 16.0),
+                            custom_widgets.HtmlConverterExp(
+                              width: double.infinity,
+                              height: null,
+                              text: widget.description!,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -942,11 +1015,24 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                             .center,
                                                     children: [
                                                       Container(
-                                                        height: 625.0,
                                                         decoration:
                                                             BoxDecoration(),
                                                         child: Builder(
                                                           builder: (context) {
+                                                            final availableHeight =
+                                                                max(
+                                                              0.0,
+                                                              MediaQuery.sizeOf(
+                                                                          context)
+                                                                      .height -
+                                                                  MediaQuery.of(context)
+                                                                      .padding
+                                                                      .top -
+                                                                  MediaQuery.of(context)
+                                                                      .padding
+                                                                      .bottom -
+                                                                  220.0,
+                                                            );
                                                             final categorywisequiz = QuizGroup
                                                                     .getquestionsbyquizidApiCall
                                                                     .questionDetailsList(
@@ -957,7 +1043,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                     ?.toList() ??
                                                                 [];
 
-                                                            return Container(
+                                                            return SizedBox(
+                                                              height:
+                                                                  availableHeight,
                                                               width: double
                                                                   .infinity,
                                                               child: Padding(
@@ -1109,16 +1197,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             child:
                                                                                 Padding(
                                                                               padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 0.0),
-                                                                              child: ListView(
-                                                                                padding: EdgeInsets.fromLTRB(
-                                                                                  0,
-                                                                                  0,
-                                                                                  0,
-                                                                                  24.0,
-                                                                                ),
-                                                                                primary: false,
-                                                                                scrollDirection: Axis.vertical,
-                                                                                children: [
+                                                                              child: SingleChildScrollView(
+                                                                                physics: const ClampingScrollPhysics(),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
                                                                                   /// question widget
                                                                                   Padding(
                                                                                     padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 18.0),
@@ -1305,7 +1388,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       FFAppState().update(() {});
                                                                                     },
                                                                                   ),
-                                                                                ],
+                                                                                  ],
+                                                                                ),
                                                                               ),
                                                                             ),
                                                                           );
@@ -1323,22 +1407,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             child:
                                                                                 Container(
                                                                               width: double.infinity,
-                                                                              height: 50.0,
                                                                               decoration: BoxDecoration(
                                                                                 color: FlutterFlowTheme.of(context).secondaryBackground,
                                                                                 borderRadius: BorderRadius.circular(16.0),
                                                                               ),
                                                                               alignment: AlignmentDirectional(0.0, -1.0),
-                                                                              child: ListView(
-                                                                                padding: EdgeInsets.fromLTRB(
-                                                                                  0,
-                                                                                  24.0,
-                                                                                  0,
-                                                                                  24.0,
-                                                                                ),
-                                                                                primary: false,
-                                                                                scrollDirection: Axis.vertical,
-                                                                                children: [
+                                                                              child: SingleChildScrollView(
+                                                                                physics: const ClampingScrollPhysics(),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
                                                                                   Align(
                                                                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                                                                     child: Padding(
@@ -1458,8 +1536,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       ),
                                                                                     ),
                                                                                   ),
-                                                                                ],
+                                                                                  ],
                                                                               ),
+                                                                            ),
                                                                             ),
                                                                           );
                                                                         } else if ('${getJsonField(
@@ -1476,22 +1555,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             child:
                                                                                 Container(
                                                                               width: double.infinity,
-                                                                              height: 50.0,
                                                                               decoration: BoxDecoration(
                                                                                 color: FlutterFlowTheme.of(context).secondaryBackground,
                                                                                 borderRadius: BorderRadius.circular(16.0),
                                                                               ),
                                                                               alignment: AlignmentDirectional(0.0, -1.0),
-                                                                              child: ListView(
-                                                                                padding: EdgeInsets.fromLTRB(
-                                                                                  0,
-                                                                                  0,
-                                                                                  0,
-                                                                                  24.0,
-                                                                                ),
-                                                                                primary: false,
-                                                                                scrollDirection: Axis.vertical,
-                                                                                children: [
+                                                                              child: SingleChildScrollView(
+                                                                                physics: const ClampingScrollPhysics(),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
                                                                                   Align(
                                                                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                                                                     child: Padding(
@@ -1784,8 +1857,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       ],
                                                                                     ),
                                                                                   ),
-                                                                                ],
+                                                                                  ],
                                                                               ),
+                                                                            ),
                                                                             ),
                                                                           );
                                                                         } else if ('${getJsonField(
@@ -1840,22 +1914,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             child:
                                                                                 Container(
                                                                               width: double.infinity,
-                                                                              height: 50.0,
                                                                               decoration: BoxDecoration(
                                                                                 color: FlutterFlowTheme.of(context).secondaryBackground,
                                                                                 borderRadius: BorderRadius.circular(16.0),
                                                                               ),
                                                                               alignment: AlignmentDirectional(0.0, -1.0),
-                                                                              child: ListView(
-                                                                                padding: EdgeInsets.fromLTRB(
-                                                                                  0,
-                                                                                  24.0,
-                                                                                  0,
-                                                                                  24.0,
-                                                                                ),
-                                                                                primary: false,
-                                                                                scrollDirection: Axis.vertical,
-                                                                                children: [
+                                                                              child: SingleChildScrollView(
+                                                                                physics: const ClampingScrollPhysics(),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
                                                                                   Align(
                                                                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                                                                     child: Padding(
@@ -2126,8 +2194,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       ),
                                                                                     ),
                                                                                   ),
-                                                                                ],
+                                                                                  ],
                                                                               ),
+                                                                            ),
                                                                             ),
                                                                           );
                                                                         } else {
@@ -2171,102 +2240,100 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                           mainAxisSize:
                                                               MainAxisSize.max,
                                                           children: [
-                                                            // Back Button
-                                                            Expanded(
-                                                              child:
-                                                                  _buildFooterButton(
-                                                                onPressed:
-                                                                    () async {
-                                                                  if (_model
-                                                                          .pageViewCurrentIndex >
-                                                                      0) {
-                                                                    await _model
-                                                                        .pageViewController
-                                                                        ?.previousPage(
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              300),
-                                                                      curve: Curves
-                                                                          .ease,
-                                                                    );
-                                                                    FFAppState()
-                                                                            .quesIndex =
-                                                                        _model
-                                                                            .pageViewCurrentIndex;
-                                                                    safeSetState(
-                                                                        () {});
+                                                              // Back Button
+                                                              Expanded(
+                                                                child:
+                                                                    _buildFooterButton(
+                                                                  onPressed:
+                                                                      () async {
+                                                                    if (_model
+                                                                            .pageViewCurrentIndex >
+                                                                        0) {
+                                                                      await _model
+                                                                          .pageViewController
+                                                                          ?.previousPage(
+                                                                        duration: Duration(
+                                                                            milliseconds:
+                                                                                300),
+                                                                        curve: Curves
+                                                                            .ease,
+                                                                      );
+                                                                      FFAppState()
+                                                                              .quesIndex =
+                                                                          _model
+                                                                              .pageViewCurrentIndex;
+                                                                      safeSetState(
+                                                                          () {});
 
-                                                                    // Timer should continue running when navigating between questions
-                                                                    // Do not reset timer state on navigation
-                                                                  }
-                                                                },
-                                                                text: 'Back',
-                                                                isPrimary: false,
-                                                                accentColor:
-                                                                    const Color(
-                                                                        0xFFA855F7),
-                                                                leadingIcon:
-                                                                    Icons
-                                                                        .arrow_back_rounded,
+                                                                      // Timer should continue running when navigating between questions
+                                                                      // Do not reset timer state on navigation
+                                                                    }
+                                                                  },
+                                                                  text: 'Back',
+                                                                  isPrimary: false,
+                                                                  accentColor:
+                                                                      const Color(
+                                                                          0xFFA855F7),
+                                                                  leadingIcon:
+                                                                      Icons
+                                                                          .arrow_back_rounded,
+                                                                ),
                                                               ),
-                                                            ),
 
-                                                            SizedBox(
-                                                                width: 12.0),
-                                                            // Skip Button
-                                                            Expanded(
-                                                              child:
-                                                                  _buildFooterButton(
-                                                                onPressed:
-                                                                    () async {
-                                                                  // Skip logic: go to next question without saving answer
-                                                                  if ((_model.pageViewController !=
-                                                                          null) &&
-                                                                      ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
-                                                                              0) !=
-                                                                          (_model.pageViewCurrentIndex +
-                                                                              1))) {
-                                                                    await _model
-                                                                        .pageViewController
-                                                                        ?.nextPage(
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              300),
-                                                                      curve: Curves
-                                                                          .ease,
-                                                                    );
-                                                                    FFAppState()
-                                                                            .quesIndex =
-                                                                        _model.pageViewCurrentIndex +
-                                                                            1;
-                                                                    safeSetState(
-                                                                        () {});
-                                                                    FFAppState()
-                                                                        .selectedColorIndex = -1;
-                                                                    safeSetState(
-                                                                        () {});
-                                                                    _model.userAnswer =
-                                                                        null;
-                                                                    _model.actualAnswer =
-                                                                        null;
-                                                                    safeSetState(
-                                                                        () {});
-                                                                  }
-                                                                },
-                                                                text: 'Skip',
-                                                                isPrimary: false,
-                                                                accentColor:
-                                                                    const Color(
-                                                                        0xFF22C55E),
+                                                              SizedBox(width: 8.0),
+                                                              // Skip Button
+                                                              Expanded(
+                                                                child:
+                                                                    _buildFooterButton(
+                                                                  onPressed:
+                                                                      () async {
+                                                                    // Skip logic: go to next question without saving answer
+                                                                    if ((_model.pageViewController !=
+                                                                            null) &&
+                                                                        ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
+                                                                                0) !=
+                                                                            (_model.pageViewCurrentIndex +
+                                                                                1))) {
+                                                                      await _model
+                                                                          .pageViewController
+                                                                          ?.nextPage(
+                                                                       duration: Duration(
+                                                                           milliseconds:
+                                                                               300),
+                                                                       curve: Curves
+                                                                           .ease,
+                                                                     );
+                                                                     FFAppState()
+                                                                             .quesIndex =
+                                                                         _model.pageViewCurrentIndex +
+                                                                             1;
+                                                                     safeSetState(
+                                                                         () {});
+                                                                     FFAppState()
+                                                                         .selectedColorIndex = -1;
+                                                                     safeSetState(
+                                                                         () {});
+                                                                     _model.userAnswer =
+                                                                         null;
+                                                                     _model.actualAnswer =
+                                                                         null;
+                                                                     safeSetState(
+                                                                         () {});
+                                                                   }
+                                                                 },
+                                                                  text: 'Skip',
+                                                                 isPrimary: false,
+                                                                 accentColor:
+                                                                     const Color(
+                                                                         0xFF22C55E),
+                                                               ),
                                                               ),
-                                                            ),
 
-                                                            SizedBox(
-                                                                width: 12.0),
-                                                            // Save & Next Button
-                                                            Expanded(
-                                                              child:
-                                                                  _buildFooterButton(
+                                                              SizedBox(width: 8.0),
+                                                              // Save & Next Button
+                                                              Expanded(
+                                                               child:
+                                                                   _buildFooterButton(
                                                                 onPressed:
                                                                     () async {
                                                                   // First, process the answer for the current question
@@ -2969,24 +3036,24 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           .quesList
                                                                           .toList();
                                                                 },
-                                                                text: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
-                                                                            0) ==
-                                                                        (_model.pageViewCurrentIndex +
-                                                                            1))
-                                                                    ? 'Submit'
-                                                                    : 'Save & Next',
+                                                                 text: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
+                                                                             0) ==
+                                                                         (_model.pageViewCurrentIndex +
+                                                                             1))
+                                                                     ? 'Submit'
+                                                                     : 'Next',
                                                                 isPrimary: true,
                                                                 accentColor:
                                                                     const Color(
                                                                         0xFF2563EB),
-                                                                trailingIcon: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
-                                                                            0) ==
-                                                                        (_model.pageViewCurrentIndex +
-                                                                            1))
-                                                                    ? Icons
-                                                                        .check_rounded
-                                                                    : Icons
-                                                                        .keyboard_double_arrow_right_rounded,
+                                                                 trailingIcon: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
+                                                                             0) ==
+                                                                         (_model.pageViewCurrentIndex +
+                                                                             1))
+                                                                     ? Icons
+                                                                         .check_rounded
+                                                                     : Icons
+                                                                         .keyboard_double_arrow_right_rounded,
                                                               ),
                                                             ),
                                                           ]),

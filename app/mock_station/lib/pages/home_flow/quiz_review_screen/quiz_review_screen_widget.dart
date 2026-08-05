@@ -29,6 +29,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   late QuizReviewScreenModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  int _selectedSectionIndex = 0;
 
   // Helper function to extract option image
   String extractOptionImage(dynamic optionData) {
@@ -202,36 +203,40 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   Widget _buildSectionTab({
     required String text,
     required bool selected,
+    required VoidCallback onTap,
   }) {
     return Expanded(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: selected
-                    ? const Color(0xFFF43F5E)
-                    : const Color(0xFF4B5563),
-                fontSize: 11.0,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? const Color(0xFFF43F5E)
+                      : const Color(0xFF4B5563),
+                  fontSize: 11.0,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8.0),
-          Container(
-            height: 3.0,
-            width: 92.0,
-            decoration: BoxDecoration(
-              color: selected ? const Color(0xFFF43F5E) : Colors.transparent,
-              borderRadius: BorderRadius.circular(999.0),
+            const SizedBox(height: 8.0),
+            Container(
+              height: 3.0,
+              width: 92.0,
+              decoration: BoxDecoration(
+                color: selected ? const Color(0xFFF43F5E) : Colors.transparent,
+                borderRadius: BorderRadius.circular(999.0),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -424,11 +429,20 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
             const SizedBox(height: 2.0),
             Row(
               children: [
-                _buildSectionTab(text: 'General Science', selected: true),
-                _buildSectionTab(text: 'Mathematics', selected: false),
+                _buildSectionTab(
+                  text: 'General Science',
+                  selected: _selectedSectionIndex == 0,
+                  onTap: () => setState(() => _selectedSectionIndex = 0),
+                ),
+                _buildSectionTab(
+                  text: 'Mathematics',
+                  selected: _selectedSectionIndex == 1,
+                  onTap: () => setState(() => _selectedSectionIndex = 1),
+                ),
                 _buildSectionTab(
                   text: 'General Intelligence and',
-                  selected: false,
+                  selected: _selectedSectionIndex == 2,
+                  onTap: () => setState(() => _selectedSectionIndex = 2),
                 ),
               ],
             ),
@@ -674,18 +688,6 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                                   )
                                 : questions,
                             showSubmitButton: true,
-                          ),
-                          const SizedBox(height: 16.0),
-                          _buildSectionPanel(
-                            questions: questions.isEmpty
-                                ? List.generate(
-                                    25,
-                                    (index) => {'user_answer': 'skipped'},
-                                  )
-                                : questions.sublist(
-                                    0,
-                                    sectionTabCount,
-                                  ),
                           ),
                           const SizedBox(height: 12.0),
                           Padding(

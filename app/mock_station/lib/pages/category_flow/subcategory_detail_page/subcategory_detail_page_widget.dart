@@ -204,41 +204,46 @@ class _SubcategoryDetailPageWidgetState
                         ),
                         const SizedBox(width: 11.0),
                         Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 2.0, right: 6.0),
-                            child: Text(
-                              quiz['name'] ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF111827),
-                                fontSize: 17.0,
-                                fontWeight: FontWeight.w800,
-                                height: 1.28,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0, right: 6.0),
+                                child: Text(
+                                  quiz['name'] ?? '',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: 17.0,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.28,
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 8.0),
+                              Row(
+                                children: [
+                                  _buildMetaItem(
+                                    icon: Icons.access_time_rounded,
+                                    text: '${quiz['minutes_per_quiz'] ?? ''} mins',
+                                  ),
+                                  const SizedBox(width: 13.0),
+                                  Container(
+                                    width: 1.0,
+                                    height: 18.0,
+                                    color: const Color(0xFFD7E1F0),
+                                  ),
+                                  const SizedBox(width: 13.0),
+                                  _buildMetaItem(
+                                    icon: Icons.assignment_outlined,
+                                    text:
+                                        '${quiz['minimum_required_points'] ?? quiz['total_questions'] ?? 'N/A'} Marks',
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10.0),
-                    Row(
-                      children: [
-                        _buildMetaItem(
-                          icon: Icons.access_time_rounded,
-                          text: '${quiz['minutes_per_quiz'] ?? ''} mins',
-                        ),
-                        const SizedBox(width: 13.0),
-                        Container(
-                          width: 1.0,
-                          height: 18.0,
-                          color: const Color(0xFFD7E1F0),
-                        ),
-                        const SizedBox(width: 13.0),
-                        _buildMetaItem(
-                          icon: Icons.assignment_outlined,
-                          text:
-                              '${quiz['minimum_required_points'] ?? quiz['total_questions'] ?? 'N/A'} Marks',
                         ),
                       ],
                     ),

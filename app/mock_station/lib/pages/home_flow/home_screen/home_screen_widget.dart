@@ -328,7 +328,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                     style: TextStyle(
                                       fontSize: 18, 
                                       fontWeight: FontWeight.bold, 
-                                      color: FlutterFlowTheme.of(context).primary,
+                                      color: Colors.black,
                                       fontFamily: 'Roboto',
                                     ),
                                   ),

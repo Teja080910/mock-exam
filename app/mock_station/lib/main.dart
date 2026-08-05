@@ -97,6 +97,13 @@ class _MyAppState extends State<MyApp> {
         _themeMode = mode;
       });
 
+  double _responsiveTextScale(double width) {
+    if (width < 340.0) return 0.90;
+    if (width < 380.0) return 0.94;
+    if (width < 430.0) return 0.97;
+    return 1.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
@@ -144,6 +151,16 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       themeMode: _themeMode,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        final scale = _responsiveTextScale(mediaQuery.size.width);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(scale),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routerConfig: _router,
     );
   }
