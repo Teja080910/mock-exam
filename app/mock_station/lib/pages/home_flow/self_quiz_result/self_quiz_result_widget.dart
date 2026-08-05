@@ -45,6 +45,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     with TickerProviderStateMixin {
   late SelfQuizResultModel _model;
   late TabController _tabController;
+  int _answerKeyFilterIndex = 0;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -69,6 +70,28 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
   List<dynamic> _questions() {
     final list = FFAppState().quesList;
     return list is List ? list.toList() : [];
+  }
+
+  List<String> _sectionLabels() {
+    final labels = <String>[];
+    for (final item in _questions()) {
+      final questionData = item is Map ? (item['question'] ?? item) : item;
+      final subject = _cleanText(
+        (item is Map ? item['subcategoryName'] : null) ??
+            getJsonField(questionData, r'''$.subcategoryName'''),
+      );
+      final label = subject.isEmpty ? 'General' : subject;
+      if (!labels.contains(label)) {
+        labels.add(label);
+      }
+      if (labels.length == 3) break;
+    }
+
+    while (labels.length < 3) {
+      labels.add('Section ${labels.length + 1}');
+    }
+
+    return labels;
   }
 
   Future<void> _goHome() async {
@@ -124,6 +147,262 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
 
   int _rankForIndex(int index) {
     return index + 1;
+  }
+
+  String _cleanText(dynamic value) {
+    final text = value?.toString().trim() ?? '';
+    if (text.isEmpty) return '';
+    return text
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&quot;', '"')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  bool _isAnsweredQuestion(dynamic item) {
+    final userAnswer = _cleanText(getJsonField(item, r'''$.user_answer'''));
+    return userAnswer.isNotEmpty && userAnswer.toLowerCase() != 'skipped';
+  }
+
+  Map<String, dynamic> _optionMap(dynamic item) {
+    final options = getJsonField(item, r'''$.option''');
+    if (options is Map) {
+      return Map<String, dynamic>.from(options);
+    }
+    return <String, dynamic>{};
+  }
+
+  String _optionText(Map<String, dynamic> options, String key) {
+    final option = options[key];
+    if (option is Map) {
+      final textValue = getJsonField(option, r'''$.text''');
+      final nestedText = textValue is Map
+          ? getJsonField(textValue, r'''$.text''') ?? getJsonField(textValue, r'''$.value''')
+          : textValue;
+      final text =
+          _cleanText(nestedText ?? getJsonField(option, r'''$.value'''));
+      if (text.isNotEmpty) return text;
+    } else if (option != null) {
+      final text = _cleanText(option);
+      if (text.isNotEmpty) return text;
+    }
+    return '';
+  }
+
+  String? _normalizedAnswerKey(dynamic answer, Map<String, dynamic> options) {
+    final normalized = _cleanText(answer).toLowerCase();
+    if (normalized.isEmpty) return null;
+
+    for (final key in const ['a', 'b', 'c', 'd']) {
+      if (normalized == key) return key;
+      final optionText = _optionText(options, key).toLowerCase();
+      if (optionText.isNotEmpty && optionText == normalized) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  String _questionLabel(dynamic item, int index) {
+    final label = _cleanText(
+      getJsonField(item, r'''$.question_title''') ??
+          getJsonField(item, r'''$.question''') ??
+          getJsonField(item, r'''$.title'''),
+    );
+    return label.isNotEmpty ? label : 'Q${index + 1}';
+  }
+
+  Widget _answerKeyTabChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selected ? const Color(0xFF1D4ED8) : Colors.transparent,
+                width: 2.5,
+              ),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: selected ? const Color(0xFF1D4ED8) : const Color(0xFF6B7280),
+              fontSize: 14.0,
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _answerKeyOptionRow({
+    required String text,
+    required Color iconColor,
+    required IconData icon,
+    required bool emphasized,
+    String? suffix,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 30.0,
+            height: 30.0,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 18.0),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                text: text,
+                style: TextStyle(
+                  color: const Color(0xFF111827),
+                  fontSize: 14.0,
+                  fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
+                ),
+                children: [
+                  if (suffix != null)
+                    TextSpan(
+                      text: suffix,
+                      style: TextStyle(
+                        color: iconColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _answerKeyCard({
+    required dynamic item,
+    required int index,
+  }) {
+    final options = _optionMap(item);
+    final userAnswer = _cleanText(getJsonField(item, r'''$.user_answer'''));
+    final answer = getJsonField(item, r'''$.answer''');
+    final correctKey = _normalizedAnswerKey(answer, options);
+    final userKey = _normalizedAnswerKey(userAnswer, options);
+    final isAnswered = userAnswer.isNotEmpty && userAnswer.toLowerCase() != 'skipped';
+    final questionText = _questionLabel(item, index);
+    final optionKeys = const ['a', 'b', 'c', 'd'];
+
+    final visibleOptions = <String, String>{};
+    for (final key in optionKeys) {
+      final optionText = _optionText(options, key);
+      if (optionText.isNotEmpty) {
+        visibleOptions[key] = optionText;
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.0),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 14.0,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Q${index + 1}. $questionText',
+            style: const TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 15.0,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 14.0),
+          if (visibleOptions.isNotEmpty)
+            for (final entry in visibleOptions.entries)
+              Builder(
+                builder: (context) {
+                  final key = entry.key;
+                  final optionText = entry.value;
+                  final isCorrect = correctKey != null && key == correctKey;
+                  final isUser = isAnswered && userKey != null && key == userKey;
+
+                  if (!isAnswered && !isCorrect) {
+                    return _answerKeyOptionRow(
+                      text: optionText,
+                      iconColor: const Color(0xFF6B7280),
+                      icon: Icons.close_rounded,
+                      emphasized: false,
+                    );
+                  }
+
+                  if (isCorrect) {
+                    return _answerKeyOptionRow(
+                      text: optionText,
+                      iconColor: const Color(0xFF22C55E),
+                      icon: Icons.check_rounded,
+                      emphasized: true,
+                      suffix: ' (Correct Answer)',
+                    );
+                  }
+
+                  if (isUser) {
+                    return _answerKeyOptionRow(
+                      text: optionText,
+                      iconColor: const Color(0xFFEF4444),
+                      icon: Icons.close_rounded,
+                      emphasized: true,
+                      suffix: ' (Your Answer)',
+                    );
+                  }
+
+                  return _answerKeyOptionRow(
+                    text: optionText,
+                    iconColor: const Color(0xFF6B7280),
+                    icon: Icons.close_rounded,
+                    emphasized: false,
+                  );
+                },
+              )
+          else
+            Text(
+              isAnswered ? 'Answer recorded' : 'Skipped',
+              style: TextStyle(
+                color: isAnswered ? const Color(0xFF1D4ED8) : const Color(0xFF6B7280),
+                fontSize: 13.0,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _tabLabel(String text, bool selected, VoidCallback onTap) {
@@ -188,6 +467,177 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     );
   }
 
+  Widget _sectionTab({
+    required String text,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? const Color(0xFFF43F5E)
+                      : const Color(0xFF6B7280),
+                  fontSize: 11.0,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            Container(
+              height: 3.0,
+              width: 92.0,
+              decoration: BoxDecoration(
+                color: selected ? const Color(0xFFF43F5E) : Colors.transparent,
+                borderRadius: BorderRadius.circular(999.0),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryMetricCard({
+    required Color color,
+    required Color background,
+    required IconData icon,
+    required String title,
+    required String value,
+    String? badge,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: Container(
+              width: 28.0,
+              height: 28.0,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Icon(icon, color: color, size: 18.0),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 38.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 11.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                if (badge != null) ...[
+                  const SizedBox(height: 6.0),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 3.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(999.0),
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 10.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _timeTakenCard(String timeText) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3EEFF),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38.0,
+            height: 38.0,
+            decoration: BoxDecoration(
+              color: const Color(0xFFB04BFF).withOpacity(0.14),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.timelapse_rounded,
+              color: Color(0xFFB04BFF),
+              size: 22.0,
+            ),
+          ),
+          const SizedBox(width: 14.0),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Total Time Taken',
+                style: TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                timeText,
+                style: const TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 19.0,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _leaderboardRow({
     required int rank,
     required String name,
@@ -196,61 +646,75 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     bool crown = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 18.0),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          bottom: BorderSide(color: const Color(0xFFE5E7EB).withOpacity(0.8)),
+          bottom: BorderSide(color: const Color(0xFFE9EDF5).withOpacity(0.95)),
         ),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 22.0,
+            width: 28.0,
             child: Text(
               rank.toString(),
               style: TextStyle(
-                color: accent,
-                fontSize: 14.0,
+                color: rank == 1
+                    ? const Color(0xFF1D4ED8)
+                    : rank == 2
+                        ? const Color(0xFF2563EB)
+                        : rank == 3
+                            ? const Color(0xFFF97316)
+                            : const Color(0xFF64748B),
+                fontSize: 18.0,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-          const SizedBox(width: 10.0),
+          const SizedBox(width: 12.0),
           Container(
-            width: 34.0,
-            height: 34.0,
+            width: 52.0,
+            height: 52.0,
             decoration: BoxDecoration(
               color: const Color(0xFF64748B),
               shape: BoxShape.circle,
-              border: Border.all(color: accent, width: 2.0),
+              border: Border.all(color: accent, width: 3.0),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x12000000),
+                  blurRadius: 10.0,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-            child: const Icon(Icons.person, color: Colors.white, size: 20.0),
+            child: const Icon(Icons.person, color: Colors.white, size: 30.0),
           ),
-          const SizedBox(width: 12.0),
+          const SizedBox(width: 18.0),
           Expanded(
             child: Text(
               name,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 14.0,
-                fontWeight: FontWeight.w700,
+                fontSize: 16.0,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
+          const SizedBox(width: 12.0),
           Text(
             points,
             style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 13.0,
-              fontWeight: FontWeight.w700,
+              color: Color(0xFF172554),
+              fontSize: 16.0,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(width: 8.0),
+          const SizedBox(width: 14.0),
           Icon(
-            crown ? Icons.emoji_events_rounded : Icons.emoji_events_outlined,
-            color: accent,
-            size: 18.0,
+            crown ? Icons.emoji_events_rounded : Icons.verified_rounded,
+            color: crown ? const Color(0xFFF59E0B) : accent,
+            size: 28.0,
           ),
         ],
       ),
@@ -278,13 +742,20 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               decoration: BoxDecoration(
                 color: const Color(0xFF64748B),
                 shape: BoxShape.circle,
-                border: Border.all(color: accent, width: 3.0),
+                border: Border.all(color: accent, width: 4.0),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 12.0,
+                    offset: Offset(0, 6),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.person, color: Colors.white, size: 34.0),
+              child: const Icon(Icons.person, color: Colors.white, size: 38.0),
             ),
             Positioned(
-              top: -2.0,
-              right: -2.0,
+              top: 0.0,
+              right: 2.0,
               child: Container(
                 width: 22.0,
                 height: 22.0,
@@ -306,38 +777,42 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             ),
             if (crowned)
               const Positioned(
-                top: -26.0,
+                top: -34.0,
                 child: Icon(
                   Icons.workspace_premium_rounded,
                   color: Color(0xFFF59E0B),
-                  size: 28.0,
+                  size: 34.0,
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 12.0),
+        const SizedBox(height: 14.0),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           decoration: BoxDecoration(
             color: accent.withOpacity(0.20),
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(14.0),
           ),
           child: Text(
             name,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 12.0,
-              fontWeight: FontWeight.w700,
+              fontSize: 14.0,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
-        const SizedBox(height: 4.0),
+        const SizedBox(height: 8.0),
         Text(
           points,
           style: TextStyle(
-            color: accent,
-            fontSize: 13.0,
-            fontWeight: FontWeight.w700,
+            color: rank == '1'
+                ? const Color(0xFFF97316)
+                : rank == '2'
+                    ? const Color(0xFF1D4ED8)
+                    : const Color(0xFFF97316),
+            fontSize: 15.0,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
@@ -352,6 +827,11 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     required double percent,
   }) {
     final completion = total <= 0 ? 0 : (((correct + wrong + skipped) / total) * 100).clamp(0, 100).toInt();
+    final totalMarks = correct.toDouble();
+    final wrongPercentage = total <= 0 ? 0 : ((wrong / total) * 100).round().clamp(0, 100);
+    final timeText = _cleanText(widget.quizTime).isNotEmpty ? _cleanText(widget.quizTime) : '--:--';
+    final sectionLabels = _sectionLabels();
+    final activeSectionIndex = 1;
     return FutureBuilder<ApiCallResponse>(
       future: QuizGroup.getpointssettingApiCall.call(
         token: FFAppState().loginToken,
@@ -383,11 +863,18 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16.0, 18.0, 16.0, 18.0),
+                padding: const EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 18.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18.0),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  borderRadius: BorderRadius.circular(22.0),
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 18.0,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -399,11 +886,11 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                             'Great Job! 🎉',
                             style: TextStyle(
                               color: Color(0xFF16A34A),
-                              fontSize: 24.0,
+                              fontSize: 26.0,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          const SizedBox(height: 8.0),
+                          const SizedBox(height: 10.0),
                           const Text(
                             'You have completed the test successfully.',
                             style: TextStyle(
@@ -416,36 +903,55 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                         ],
                       ),
                     ),
-                    CircularPercentIndicator(
-                      percent: percent,
-                      radius: 58.0,
-                      lineWidth: 8.0,
-                      animation: true,
-                      animateFromLastPercent: true,
-                      progressColor: const Color(0xFF16A34A),
-                      backgroundColor: const Color(0xFFF3F4F6),
-                      circularStrokeCap: CircularStrokeCap.round,
-                      center: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '$correct/$total',
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 4.0),
-                          const Text(
-                            'Score',
-                            style: TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    Container(
+                      width: 120.0,
+                      height: 120.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFF1F5F9)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x12000000),
+                            blurRadius: 14.0,
+                            offset: Offset(0, 6),
                           ),
                         ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: CircularPercentIndicator(
+                          percent: percent,
+                          radius: 54.0,
+                          lineWidth: 8.0,
+                          animation: true,
+                          animateFromLastPercent: true,
+                          progressColor: const Color(0xFF16A34A),
+                          backgroundColor: const Color(0xFFF3F4F6),
+                          circularStrokeCap: CircularStrokeCap.round,
+                          center: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$correct/$total',
+                                style: const TextStyle(
+                                  color: Color(0xFF111827),
+                                  fontSize: 28.0,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 4.0),
+                              const Text(
+                                'Score',
+                                style: TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -456,7 +962,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 padding: const EdgeInsets.all(14.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.0),
+                  borderRadius: BorderRadius.circular(18.0),
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
                 child: Column(
@@ -477,21 +983,203 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                       physics: const NeverScrollableScrollPhysics(),
                       crossAxisSpacing: 10.0,
                       mainAxisSpacing: 10.0,
-                      childAspectRatio: 1.5,
+                      childAspectRatio: 1.42,
                       children: [
-                        _statCard('Total Questions', total.toString(),
-                            const Color(0xFF0B84FF), const Color(0xFFF1F6FF)),
-                        _statCard('Total Mark', totalMark,
-                            const Color(0xFF7C3AED), const Color(0xFFF7F1FF)),
-                        _statCard('Correct Answer', correct.toString(),
-                            const Color(0xFF16A34A), const Color(0xFFF0FBF4)),
-                        _statCard('Incorrect Answer', wrong.toString(),
-                            const Color(0xFFEF4444), const Color(0xFFFFF3F3)),
-                        _statCard('Skipped Question', skipped.toString(),
-                            const Color(0xFFF59E0B), const Color(0xFFFFFAEE)),
-                        _statCard('Completion', '$completion%',
-                            const Color(0xFF1D4ED8), const Color(0xFFF1F6FF)),
+                        _summaryMetricCard(
+                          color: const Color(0xFF2563EB),
+                          background: const Color(0xFFF1F6FF),
+                          icon: Icons.view_list_rounded,
+                          title: 'Total Questions',
+                          value: total.toString(),
+                        ),
+                        _summaryMetricCard(
+                          color: const Color(0xFF7C3AED),
+                          background: const Color(0xFFF7F1FF),
+                          icon: Icons.emoji_events_rounded,
+                          title: 'Total Marks',
+                          value: totalMark,
+                        ),
+                        _summaryMetricCard(
+                          color: const Color(0xFF16A34A),
+                          background: const Color(0xFFF0FBF4),
+                          icon: Icons.check_circle_rounded,
+                          title: 'Correct Answers',
+                          value: correct.toString(),
+                          badge: '${total <= 0 ? 0 : ((correct / total) * 100).round()}%',
+                        ),
+                        _summaryMetricCard(
+                          color: const Color(0xFFEF4444),
+                          background: const Color(0xFFFFF3F3),
+                          icon: Icons.cancel_rounded,
+                          title: 'Incorrect Answers',
+                          value: wrong.toString(),
+                          badge: '$wrongPercentage%',
+                        ),
+                        _summaryMetricCard(
+                          color: const Color(0xFFF59E0B),
+                          background: const Color(0xFFFFFAEE),
+                          icon: Icons.access_time_rounded,
+                          title: 'Skipped Questions',
+                          value: skipped.toString(),
+                          badge: '${total <= 0 ? 0 : ((skipped / total) * 100).round()}%',
+                        ),
+                        _summaryMetricCard(
+                          color: const Color(0xFF1D4ED8),
+                          background: const Color(0xFFF1F6FF),
+                          icon: Icons.radio_button_checked_rounded,
+                          title: 'Accuracy',
+                          value: '${total <= 0 ? 0 : ((correct / total) * 100).round()}%',
+                          badge: 'Low',
+                        ),
                       ],
+                    ),
+                    const SizedBox(height: 12.0),
+                    _timeTakenCard(timeText),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14.0),
+              Container(
+                padding: const EdgeInsets.all(14.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18.0),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Sectional Summary',
+                      style: TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        for (var i = 0; i < sectionLabels.length; i++)
+                          _sectionTab(
+                            text: sectionLabels[i],
+                            selected: activeSectionIndex == i,
+                            onTap: () {},
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 14.0),
+                    Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4FFF6),
+                        borderRadius: BorderRadius.circular(14.0),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 38.0,
+                            height: 38.0,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.14),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFF10B981),
+                              size: 22.0,
+                            ),
+                          ),
+                          const SizedBox(width: 12.0),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Your Score',
+                                  style: TextStyle(
+                                    color: Color(0xFF6B7280),
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4.0),
+                                Text(
+                                  '${(totalMarks - wrong).toStringAsFixed(1)}   |   $total',
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF4D4F),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Text(
+                              'Neg. Marks : -${(wrong * 0.5).toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.0,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10.0),
+                    Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4EEFF),
+                        borderRadius: BorderRadius.circular(14.0),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 38.0,
+                            height: 38.0,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFB04BFF).withOpacity(0.14),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.timelapse_rounded,
+                              color: Color(0xFFB04BFF),
+                              size: 22.0,
+                            ),
+                          ),
+                          const SizedBox(width: 12.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Time Spent',
+                                style: TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4.0),
+                              Text(
+                                timeText,
+                                style: const TextStyle(
+                                  color: Color(0xFF111827),
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -513,75 +1201,70 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             (index) => <String, dynamic>{'user_answer': 'skipped'},
           );
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
-      itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10.0),
-      itemBuilder: (context, index) {
-        final item = list[index];
-        final isAnswered = (getJsonField(item, r'''$.user_answer''') ?? '')
-                .toString() !=
-            'skipped';
-        final correct = (getJsonField(item, r'''$.correct_answer''') ??
-                getJsonField(item, r'''$.answer'''))
-            .toString();
-        return Container(
-          padding: const EdgeInsets.all(14.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14.0),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+    final answered = list.where(_isAnsweredQuestion).toList();
+    final skipped = list.where((item) => !_isAnsweredQuestion(item)).toList();
+    final visibleList = _answerKeyFilterIndex == 0 ? answered : skipped;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 10.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.0),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                _answerKeyTabChip(
+                  label: 'Answered',
+                  selected: _answerKeyFilterIndex == 0,
+                  onTap: () => setState(() => _answerKeyFilterIndex = 0),
+                ),
+                _answerKeyTabChip(
+                  label: 'Skipped',
+                  selected: _answerKeyFilterIndex == 1,
+                  onTap: () => setState(() => _answerKeyFilterIndex = 1),
+                ),
+              ],
+            ),
           ),
-          child: Row(
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
             children: [
-              Container(
-                width: 30.0,
-                height: 30.0,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1D4ED8),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${index + 1}',
-                  style: const TextStyle(
+              if (visibleList.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18.0),
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w800,
+                    borderRadius: BorderRadius.circular(18.0),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isAnswered ? 'Answered' : 'Not answered',
-                      style: TextStyle(
-                        color: isAnswered
-                            ? const Color(0xFF16A34A)
-                            : const Color(0xFF94A3B8),
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  child: Text(
+                    _answerKeyFilterIndex == 0
+                        ? 'No answered questions yet.'
+                        : 'No skipped questions found.',
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                      'Correct: ${correct.isEmpty ? '-' : correct}',
-                      style: const TextStyle(
-                        color: Color(0xFF374151),
-                        fontSize: 13.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                )
+              else
+                for (var i = 0; i < visibleList.length; i++)
+                  _answerKeyCard(
+                    item: visibleList[i],
+                    index: i,
+                  ),
             ],
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -600,70 +1283,97 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18.0),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      if (topThree.length > 1)
-                        Expanded(
-                          child: _podiumCard(
-                            rank: '2',
-                            name: _displayName(topThree[1], fallbackRank: 1),
-                            points: '${_pointsLabel(topThree[1])} / 25.0',
-                            accent: const Color(0xFF93C5FD),
-                            size: 66.0,
-                          ),
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(18.0, 20.0, 18.0, 18.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22.0),
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 18.0,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (topThree.length > 1)
+                      Expanded(
+                        child: _podiumCard(
+                          rank: '2',
+                          name: _displayName(topThree[1], fallbackRank: 1),
+                          points: '${_pointsLabel(topThree[1])} / 25.0',
+                          accent: const Color(0xFF9DBAF9),
+                          size: 88.0,
                         ),
-                      if (topThree.isNotEmpty)
-                        Expanded(
+                      ),
+                    if (topThree.isNotEmpty)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 2.0),
                           child: _podiumCard(
                             rank: '1',
                             name: _displayName(topThree[0], fallbackRank: 0),
                             points: '${_pointsLabel(topThree[0])} / 25.0',
-                            accent: const Color(0xFFF9D38C),
-                            size: 78.0,
+                            accent: const Color(0xFFF7C84A),
+                            size: 108.0,
                             crowned: true,
                           ),
                         ),
-                      if (topThree.length > 2)
-                        Expanded(
-                          child: _podiumCard(
-                            rank: '3',
-                            name: _displayName(topThree[2], fallbackRank: 2),
-                            points: '${_pointsLabel(topThree[2])} / 25.0',
-                            accent: const Color(0xFFF9B38B),
-                            size: 66.0,
-                          ),
+                      ),
+                    if (topThree.length > 2)
+                      Expanded(
+                        child: _podiumCard(
+                          rank: '3',
+                          name: _displayName(topThree[2], fallbackRank: 2),
+                          points: '${_pointsLabel(topThree[2])} / 25.0',
+                          accent: const Color(0xFFF7B08A),
+                          size: 88.0,
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
-                const Divider(height: 1.0, color: Color(0xFFE5E7EB)),
-                for (var i = 0; i < (users.length > 5 ? 5 : users.length); i++)
-                  _leaderboardRow(
-                    rank: _rankForIndex(i),
-                    name: _displayName(users[i], fallbackRank: i),
-                    points: '${_pointsLabel(users[i])} / 25',
-                    accent: i == 0
-                        ? const Color(0xFFF59E0B)
-                        : i == 1
-                            ? const Color(0xFF64748B)
-                            : i == 2
-                                ? const Color(0xFFB45309)
-                                : const Color(0xFF94A3B8),
-                    crown: i == 0,
-                  ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 14.0),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22.0),
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 18.0,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < (users.length > 5 ? 5 : users.length); i++)
+                      _leaderboardRow(
+                        rank: _rankForIndex(i),
+                        name: _displayName(users[i], fallbackRank: i),
+                        points: '${_pointsLabel(users[i])} / 25',
+                        accent: i == 0
+                            ? const Color(0xFFF59E0B)
+                            : i == 1
+                                ? const Color(0xFF64748B)
+                                : i == 2
+                                    ? const Color(0xFFF97316)
+                                    : const Color(0xFF94A3B8),
+                        crown: i == 0,
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },

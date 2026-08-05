@@ -450,6 +450,24 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () {
+                      final apiQuestions = QuizGroup.getquestionsbyquizidApiCall.questionDetailsList(
+                        (_model.quizRes?.jsonBody ?? ''),
+                      )?.toList() ?? [];
+                      if (apiQuestions.isNotEmpty) {
+                        final reviewList = apiQuestions.map((q) {
+                          final idx = apiQuestions.indexOf(q);
+                          final userAns = userAnswersPerQuestion[idx];
+                          return {
+                            'question': q,
+                            'user_answer': userAns ?? 'skipped',
+                            'correct_answer': getJsonField(q, r'''$.answer'''),
+                            'subcategoryName': getJsonField(q, r'''$.subcategoryName'''),
+                          };
+                        }).toList();
+                        FFAppState().quesReviewList = reviewList;
+                      } else if (FFAppState().quesList.isNotEmpty) {
+                        FFAppState().quesReviewList = FFAppState().quesList.toList();
+                      }
                       context.pushNamed(QuizReviewScreenWidget.routeName);
                     },
                     icon: const Icon(
@@ -2718,30 +2736,33 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                         }
                                                                       }
 
-                                                                      quesList
-                                                                          .add({
-                                                                        'question':
-                                                                            q,
-                                                                        'user_answer':
-                                                                            userAnswer,
-                                                                        'correct_answer':
-                                                                            correctAnswer,
-                                                                        'question_title': getJsonField(
-                                                                            q,
-                                                                            r'''$.question_title'''),
-                                                                        'question_type': getJsonField(
-                                                                            q,
-                                                                            r'''$.question_type'''),
-                                                                        'image': getJsonField(
-                                                                            q,
-                                                                            r'''$.image'''),
-                                                                        'audio': getJsonField(
-                                                                            q,
-                                                                            r'''$.audio'''),
-                                                                        'description': getJsonField(
-                                                                            q,
-                                                                            r'''$.description'''),
-                                                                      });
+                                                                       quesList
+                                                                           .add({
+                                                                         'question':
+                                                                             q,
+                                                                         'user_answer':
+                                                                             userAnswer,
+                                                                         'correct_answer':
+                                                                             correctAnswer,
+                                                                         'question_title': getJsonField(
+                                                                             q,
+                                                                             r'''$.question_title'''),
+                                                                         'question_type': getJsonField(
+                                                                             q,
+                                                                             r'''$.question_type'''),
+                                                                         'image': getJsonField(
+                                                                             q,
+                                                                             r'''$.image'''),
+                                                                         'audio': getJsonField(
+                                                                             q,
+                                                                             r'''$.audio'''),
+                                                                         'description': getJsonField(
+                                                                             q,
+                                                                             r'''$.description'''),
+                                                                         'subcategoryName': getJsonField(
+                                                                             q,
+                                                                             r'''$.subcategoryName'''),
+                                                                       });
                                                                     }
 
                                                                     // Update the counts with recalculated values
@@ -2873,6 +2894,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             ?.elementAtOrNull(_model.pageViewCurrentIndex),
                                                                         r'''$.question_type''',
                                                                       ),
+                                                                      'subcategoryName':
+                                                                          getJsonField(
+                                                                        QuizGroup
+                                                                            .getquestionsbyquizidApiCall
+                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
+                                                                                ''))
+                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                        r'''$.subcategoryName''',
+                                                                      ),
                                                                       'option':
                                                                           getJsonField(
                                                                         QuizGroup
@@ -2945,6 +2975,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             ?.elementAtOrNull(_model.pageViewCurrentIndex),
                                                                         r'''$.question_type''',
                                                                       ),
+                                                                      'subcategoryName':
+                                                                          getJsonField(
+                                                                        QuizGroup
+                                                                            .getquestionsbyquizidApiCall
+                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
+                                                                                ''))
+                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                        r'''$.subcategoryName''',
+                                                                      ),
                                                                       'option':
                                                                           getJsonField(
                                                                         QuizGroup
@@ -3012,6 +3051,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           getJsonField(
                                                                               q,
                                                                               r'''$.question_type'''),
+                                                                      'subcategoryName':
+                                                                          getJsonField(
+                                                                              q,
+                                                                              r'''$.subcategoryName'''),
                                                                       'option':
                                                                           getJsonField(
                                                                               q,

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import '/backend/api_requests/api_calls.dart';
+import '/custom_code/utils/html_stripper.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -331,10 +334,10 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     );
   }
 
-  Widget _buildSectionalSummary({
-    required int total,
-    required String timeLabel,
-  }) {
+  Widget _buildSectionalSummary() {
+    final sections = _sectionSummaryItems();
+    if (sections.isEmpty) return const SizedBox.shrink();
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -347,103 +350,122 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 10.0),
-            child: Text(
-              'Sectional Summary',
-              style: TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 16.0,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
+            child: Text('Sectional Summary', style: TextStyle(color: Color(0xFF111827), fontSize: 16.0, fontWeight: FontWeight.w900)),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Row(
               children: const [
-                Expanded(
-                  child: Text(
-                    'General Science',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    'Mathematics',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFFF3B55),
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    'General Intelligence',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                Expanded(flex: 2, child: Text('Subject', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.0, fontWeight: FontWeight.w700))),
+                Expanded(child: Text('Correct', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF16A34A), fontSize: 11.0, fontWeight: FontWeight.w700))),
+                Expanded(child: Text('Wrong', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFEF4444), fontSize: 11.0, fontWeight: FontWeight.w700))),
+                Expanded(child: Text('Marks', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF7C3AED), fontSize: 11.0, fontWeight: FontWeight.w700))),
               ],
             ),
           ),
-          const SizedBox(height: 10.0),
-          Stack(
-            children: [
-              Container(
-                height: 1.0,
-                color: const Color(0xFFE5E7EB),
-              ),
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  width: 110.0,
-                  height: 3.0,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF3B55),
-                    borderRadius: BorderRadius.circular(99.0),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 8.0),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
-              children: [
-                _buildSectionSummaryRow(
-                  icon: Icons.check_circle_outline_rounded,
-                  accentColor: const Color(0xFF10B981),
-                  backgroundColor: const Color(0xFFF1FFF8),
-                  title: 'Your Score',
-                  value: _score.toStringAsFixed(1),
-                  trailing: total.toString(),
-                  helper:
-                      'Neg. Marks : -${((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0)).toStringAsFixed(2)}',
-                ),
-                const SizedBox(height: 12.0),
-                _buildSectionSummaryRow(
-                  icon: Icons.timer_outlined,
-                  accentColor: const Color(0xFFA855F7),
-                  backgroundColor: const Color(0xFFF8F2FF),
-                  title: 'Time Spent',
-                  value: timeLabel,
-                ),
-              ],
+              children: sections.map((section) {
+                final correct = section['correct'] ?? 0;
+                final wrong = section['wrong'] ?? 0;
+                final total = section['total'] ?? 0;
+                final marks = section['marks'] ?? 0.0;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(flex: 2, child: Text(section['label'] ?? '', style: const TextStyle(color: Color(0xFF111827), fontSize: 13.0, fontWeight: FontWeight.w700))),
+                      Expanded(child: Text('$correct/$total', textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF16A34A), fontSize: 13.0, fontWeight: FontWeight.w600))),
+                      Expanded(child: Text('$wrong', textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13.0, fontWeight: FontWeight.w600))),
+                      Expanded(child: Text(marks.toStringAsFixed(1), textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF7C3AED), fontSize: 13.0, fontWeight: FontWeight.w600))),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ],
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _sectionSummaryItems() {
+    final source = FFAppState().quesList.isNotEmpty
+        ? FFAppState().quesList.toList()
+        : FFAppState().quesReviewList.toList();
+    if (source.isEmpty) return [];
+
+    final sectionLabels = _sectionLabelsFromData(source);
+    if (sectionLabels.isEmpty) return [];
+
+    final grouped = <String, List<dynamic>>{};
+    for (final item in source) {
+      final subject = _subjectName(item).trim();
+      final key = subject.isEmpty ? 'General' : subject;
+      grouped.putIfAbsent(key, () => <dynamic>[]).add(item);
+    }
+
+    final sections = <Map<String, dynamic>>[];
+    for (final label in sectionLabels) {
+      sections.add(_buildSectionSummaryItem(label, grouped[label] ?? <dynamic>[]));
+    }
+
+    return sections;
+  }
+
+  List<String> _sectionLabelsFromData(List<dynamic> source) {
+    final labels = <String>[];
+    for (final item in source) {
+      final subject = _subjectName(item).trim();
+      final label = subject.isEmpty ? 'General' : subject;
+      if (!labels.contains(label)) {
+        labels.add(label);
+      }
+    }
+    return labels;
+  }
+
+  Map<String, dynamic> _buildSectionSummaryItem(String label, List<dynamic> items) {
+    var correct = 0;
+    var wrong = 0;
+    var skipped = 0;
+
+    for (final item in items) {
+      final questionData = item is Map && item['question'] is Map ? item['question'] as Map : <String, dynamic>{};
+      final options = _optionMap(item);
+      final userAnswer = _cleanText((item is Map ? item['user_answer'] : null) ?? questionData['user_answer']).toLowerCase();
+      final correctAnswer = _cleanText(
+        (item is Map ? item['correct_answer'] : null) ??
+            (item is Map ? item['answer'] : null) ??
+            questionData['correct_answer'] ??
+            questionData['answer'],
+      );
+      final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
+      final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
+
+      if (userKey == 'skipped') {
+        skipped++;
+      } else if (userKey.isNotEmpty && userKey == correctKey) {
+        correct++;
+      } else {
+        wrong++;
+      }
+    }
+
+    final total = items.length;
+    final marks = (correct * (widget.correctAnsReward ?? 0.0)) -
+        (wrong * (widget.penaltyPerQuestion ?? 0.0));
+
+    return {
+      'label': label,
+      'correct': correct,
+      'wrong': wrong,
+      'skipped': skipped,
+      'total': total,
+      'marks': marks,
+    };
   }
 
   Widget _tabLabel(String text, bool selected, VoidCallback onTap) {
@@ -603,7 +625,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     ),
                   ),
                   const SizedBox(height: 18.0),
-                  _buildSectionalSummary(total: total, timeLabel: timeLabel),
+                  _buildSectionalSummary(),
                 ],
               ),
             ),
@@ -611,6 +633,46 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         ),
       ),
     );
+  }
+
+  bool get _hasSubjectData {
+    final questions = FFAppState().quesList;
+    if (questions.isEmpty) return false;
+    return questions.any((q) {
+      return _subjectName(q).isNotEmpty;
+    });
+  }
+
+  Map<String, Map<String, dynamic>> _groupBySubject() {
+    final Map<String, Map<String, dynamic>> groups = {};
+    final source = FFAppState().quesList.isNotEmpty
+        ? FFAppState().quesList.toList()
+        : FFAppState().quesReviewList.toList();
+    for (final q in source) {
+      final sub = _subjectName(q).isEmpty ? 'General' : _subjectName(q);
+      groups.putIfAbsent(sub, () => {'correct': 0, 'wrong': 0, 'skipped': 0, 'total': 0});
+      groups[sub]!['total'] = (groups[sub]!['total'] ?? 0) + 1;
+      final questionData = q is Map && q['question'] is Map ? q['question'] as Map : <String, dynamic>{};
+      final options = _optionMap(q);
+      final userAnswer = _cleanText((q is Map ? q['user_answer'] : null) ?? questionData['user_answer']).toLowerCase();
+      final correctAnswer = _cleanText(
+        (q is Map ? q['correct_answer'] : null) ??
+            (q is Map ? q['answer'] : null) ??
+            questionData['correct_answer'] ??
+            questionData['answer'],
+      );
+      final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
+      final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
+
+      if (userKey == 'skipped') {
+        groups[sub]!['skipped'] = (groups[sub]!['skipped'] ?? 0) + 1;
+      } else if (userKey.isNotEmpty && userKey == correctKey) {
+        groups[sub]!['correct'] = (groups[sub]!['correct'] ?? 0) + 1;
+      } else {
+        groups[sub]!['wrong'] = (groups[sub]!['wrong'] ?? 0) + 1;
+      }
+    }
+    return groups;
   }
 
   Widget _buildAnswerKeyTab() {
@@ -628,8 +690,40 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       separatorBuilder: (_, __) => const SizedBox(height: 10.0),
       itemBuilder: (context, index) {
         final item = list[index];
-        final isAnswered = (getJsonField(item, r'''$.user_answer''') ?? '').toString() != 'skipped';
-        final correct = (getJsonField(item, r'''$.correct_answer''') ?? getJsonField(item, r'''$.answer''')).toString();
+        final questionData = item['question'] is Map ? item['question'] as Map : item;
+        final questionTitle = _cleanText(
+          questionData['question_title'] ??
+              item['question_title'] ??
+              questionData['question'] ??
+              item['question'] ??
+              questionData['title'] ??
+              item['title'],
+        );
+        final description = _cleanText(questionData['description'] ?? item['description']);
+        final showQuestionTitle =
+            questionTitle.isNotEmpty && questionTitle != description;
+
+        final rawOptions = _optionMap(item).isNotEmpty ? item['option'] : questionData['option'];
+        Map<String, dynamic> options = _optionMap(item);
+        if (options.isEmpty && rawOptions is Map) {
+          options = Map<String, dynamic>.from(rawOptions);
+        } else if (options.isEmpty && rawOptions is String) {
+          try {
+            final parsed = json.decode(rawOptions);
+            if (parsed is Map) options = Map<String, dynamic>.from(parsed);
+          } catch (_) {}
+        }
+
+        final userAnswer = _cleanText(item['user_answer']).toLowerCase();
+        final correctAnswer = _cleanText(
+          item['correct_answer'] ?? item['answer'] ?? questionData['answer'],
+        );
+        final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
+        final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
+        final isAnswered = userKey != 'skipped' && userKey.isNotEmpty;
+        final isCorrect = isAnswered && userKey == correctKey;
+        final optionKeys = ['a', 'b', 'c', 'd'];
+
         return Container(
           padding: const EdgeInsets.all(14.0),
           decoration: BoxDecoration(
@@ -637,28 +731,124 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             borderRadius: BorderRadius.circular(14.0),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 30.0, height: 30.0,
-                decoration: const BoxDecoration(color: Color(0xFF1D4ED8), shape: BoxShape.circle),
-                alignment: Alignment.center,
-                child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.w800)),
-              ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isAnswered ? 'Answered' : 'Not answered',
-                      style: TextStyle(color: isAnswered ? const Color(0xFF16A34A) : const Color(0xFF94A3B8), fontSize: 12.0, fontWeight: FontWeight.w700),
+              Row(
+                children: [
+                  Container(
+                    width: 30.0, height: 30.0,
+                    decoration: BoxDecoration(
+                      color: isCorrect ? const Color(0xFF16A34A) : (isAnswered ? const Color(0xFFEF4444) : const Color(0xFF94A3B8)),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 4.0),
-                    Text('Correct: ${correct.isEmpty ? '-' : correct}', style: const TextStyle(color: Color(0xFF374151), fontSize: 13.0, fontWeight: FontWeight.w600)),
-                  ],
-                ),
+                    alignment: Alignment.center,
+                    child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.w800)),
+                  ),
+                  const SizedBox(width: 10.0),
+                  Icon(
+                    isCorrect ? Icons.check_circle_rounded : (isAnswered ? Icons.cancel_rounded : Icons.timer_rounded),
+                    color: isCorrect ? const Color(0xFF16A34A) : (isAnswered ? const Color(0xFFEF4444) : const Color(0xFF94A3B8)),
+                    size: 18.0,
+                  ),
+                  const SizedBox(width: 4.0),
+                  Text(
+                    isCorrect ? 'Correct' : (isAnswered ? 'Wrong' : 'Skipped'),
+                    style: TextStyle(
+                      color: isCorrect ? const Color(0xFF16A34A) : (isAnswered ? const Color(0xFFEF4444) : const Color(0xFF94A3B8)),
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
+              if (description.isNotEmpty) ...[
+                const SizedBox(height: 8.0),
+                Text(
+                  description,
+                  style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12.0, fontWeight: FontWeight.w500, height: 1.4),
+                ),
+              ],
+              if (showQuestionTitle) ...[
+                const SizedBox(height: 8.0),
+                Text(
+                  questionTitle,
+                  style: const TextStyle(color: Color(0xFF111827), fontSize: 14.0, fontWeight: FontWeight.w600, height: 1.4),
+                ),
+              ],
+              if (options is Map) ...[
+                const SizedBox(height: 10.0),
+                ...optionKeys.map((key) {
+                  final opt = (options as Map)[key];
+                  if (opt == null) return const SizedBox.shrink();
+                  String optText = '';
+                  if (opt is Map) {
+                    optText = _cleanText(opt['text'] ?? opt['value']);
+                  } else {
+                    optText = _cleanText(opt);
+                  }
+                  if (optText.isEmpty) return const SizedBox.shrink();
+
+                  final isOptCorrect = key == correctKey;
+                  final isOptSelected = key == userKey;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                    decoration: BoxDecoration(
+                      color: isOptCorrect
+                          ? const Color(0xFFF0FDF4)
+                          : (isOptSelected && !isCorrect
+                              ? const Color(0xFFFEF2F2)
+                              : const Color(0xFFF9FAFB)),
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(
+                        color: isOptCorrect
+                            ? const Color(0xFF16A34A)
+                            : (isOptSelected && !isCorrect
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFFE5E7EB)),
+                        width: isOptCorrect || (isOptSelected && !isCorrect) ? 1.5 : 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24.0, height: 24.0,
+                          decoration: BoxDecoration(
+                            color: isOptCorrect
+                                ? const Color(0xFF16A34A)
+                                : (isOptSelected && !isCorrect
+                                    ? const Color(0xFFEF4444)
+                                    : const Color(0xFFE5E7EB)),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: isOptCorrect
+                              ? const Icon(Icons.check, color: Colors.white, size: 16.0)
+                              : (isOptSelected && !isCorrect
+                                  ? const Icon(Icons.close, color: Colors.white, size: 16.0)
+                                  : Text(key.toUpperCase(), style: const TextStyle(color: Color(0xFF6B7280), fontSize: 11.0, fontWeight: FontWeight.w700))),
+                        ),
+                        const SizedBox(width: 10.0),
+                        Expanded(
+                          child: Text(
+                            optText,
+                            style: TextStyle(
+                              color: const Color(0xFF111827),
+                              fontSize: 13.0,
+                              fontWeight: isOptCorrect || isOptSelected ? FontWeight.w700 : FontWeight.w500,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                        if (isOptCorrect)
+                          const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 18.0),
+                      ],
+                    ),
+                  );
+                }),
+              ],
             ],
           ),
         );
@@ -678,73 +868,132 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
         final users = _sortedLeaderboard(snapshot.data!);
         final topThree = users.take(3).toList();
+        final maxScore = widget.totalQuestion ?? 0;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18.0),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      if (topThree.length > 1)
-                        Expanded(
-                          child: _podiumCard(
-                            rank: '2',
-                            name: _displayName(topThree[1], fallbackRank: 1),
-                            points: '${_pointsLabel(topThree[1])} / 25.0',
-                            accent: const Color(0xFF93C5FD),
-                            size: 66.0,
-                          ),
-                        ),
-                      if (topThree.isNotEmpty)
-                        Expanded(
-                          child: _podiumCard(
-                            rank: '1',
-                            name: _displayName(topThree[0], fallbackRank: 0),
-                            points: '${_pointsLabel(topThree[0])} / 25.0',
-                            accent: const Color(0xFFF9D38C),
-                            size: 78.0,
-                            crowned: true,
-                          ),
-                        ),
-                      if (topThree.length > 2)
-                        Expanded(
-                          child: _podiumCard(
-                            rank: '3',
-                            name: _displayName(topThree[2], fallbackRank: 2),
-                            points: '${_pointsLabel(topThree[2])} / 25.0',
-                            accent: const Color(0xFFF9B38B),
-                            size: 66.0,
-                          ),
-                        ),
-                    ],
-                  ),
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(12.0, 14.0, 12.0, 16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22.0),
+                  border: Border.all(color: const Color(0xFFF0F2F7)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A111827),
+                      blurRadius: 18.0,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
                 ),
-                const Divider(height: 1.0, color: Color(0xFFE5E7EB)),
-                for (var i = 0; i < (users.length > 5 ? 5 : users.length); i++)
-                  _leaderboardRow(
-                    rank: _rankForIndex(i),
-                    name: _displayName(users[i], fallbackRank: i),
-                    points: '${_pointsLabel(users[i])} / 25',
-                    accent: i == 0
-                        ? const Color(0xFFF59E0B)
-                        : i == 1
-                            ? const Color(0xFF64748B)
-                            : i == 2
-                                ? const Color(0xFFB45309)
-                                : const Color(0xFF94A3B8),
-                    crown: i == 0,
-                  ),
-              ],
-            ),
+                child: users.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 28.0),
+                        child: Center(
+                          child: Text(
+                            'No leaderboard data yet',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontFamily: 'Roboto',
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (topThree.length > 1)
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 18.0, right: 6.0),
+                                child: _podiumCard(
+                                  rank: '2',
+                                  name: _displayName(topThree[1], fallbackRank: 1),
+                                  points:
+                                      '${_pointsLabel(topThree[1])} / ${maxScore.toDouble().toStringAsFixed(1)}',
+                                  accent: const Color(0xFF8FB4F4),
+                                  nameBackground: const Color(0xFFD7E5FF),
+                                  scoreColor: const Color(0xFF1D4ED8),
+                                  size: 74.0,
+                                ),
+                              ),
+                            ),
+                          if (topThree.isNotEmpty)
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: _podiumCard(
+                                  rank: '1',
+                                  name: _displayName(topThree[0], fallbackRank: 0),
+                                  points:
+                                      '${_pointsLabel(topThree[0])} / ${maxScore.toDouble().toStringAsFixed(1)}',
+                                  accent: const Color(0xFFF7C74D),
+                                  nameBackground: const Color(0xFFF9E2A8),
+                                  scoreColor: const Color(0xFFF97316),
+                                  size: 88.0,
+                                  crowned: true,
+                                ),
+                              ),
+                            ),
+                          if (topThree.length > 2)
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 18.0, left: 6.0),
+                                child: _podiumCard(
+                                  rank: '3',
+                                  name: _displayName(topThree[2], fallbackRank: 2),
+                                  points:
+                                      '${_pointsLabel(topThree[2])} / ${maxScore.toDouble().toStringAsFixed(1)}',
+                                  accent: const Color(0xFFF59F80),
+                                  nameBackground: const Color(0xFFFAD9CC),
+                                  scoreColor: const Color(0xFFF97316),
+                                  size: 74.0,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 12.0),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22.0),
+                  border: Border.all(color: const Color(0xFFF0F2F7)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A111827),
+                      blurRadius: 18.0,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < (users.length > 5 ? 5 : users.length); i++)
+                      _leaderboardRow(
+                        rank: _rankForIndex(i),
+                        name: _displayName(users[i], fallbackRank: i),
+                        points: '${_pointsLabel(users[i])} / ${maxScore.toInt()}',
+                        accent: i == 0
+                            ? const Color(0xFF1D4ED8)
+                            : i == 1
+                                ? const Color(0xFF64748B)
+                                : i == 2
+                                    ? const Color(0xFFF97316)
+                                    : const Color(0xFF94A3B8),
+                        showBadge: i < 3,
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -781,49 +1030,186 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     return points % 1 == 0 ? points.toInt().toString() : points.toStringAsFixed(1);
   }
 
+  String _cleanText(dynamic value) {
+    final text = value?.toString().trim() ?? '';
+    if (text.isEmpty) return '';
+    return stripHtmlTagsAdvanced(text);
+  }
+
+  Map<String, dynamic> _optionMap(dynamic item) {
+    final options = getJsonField(item, r'''$.option''');
+    if (options is Map) {
+      return Map<String, dynamic>.from(options);
+    }
+    return <String, dynamic>{};
+  }
+
+  String _optionText(Map<String, dynamic> options, String key) {
+    final option = options[key];
+    if (option is Map) {
+      final textValue = getJsonField(option, r'''$.text''');
+      final nestedText = textValue is Map
+          ? getJsonField(textValue, r'''$.text''') ?? getJsonField(textValue, r'''$.value''')
+          : textValue;
+      final text = _cleanText(nestedText ?? getJsonField(option, r'''$.value'''));
+      if (text.isNotEmpty) return text;
+    } else if (option != null) {
+      final text = _cleanText(option);
+      if (text.isNotEmpty) return text;
+    }
+    return '';
+  }
+
+  String? _normalizedAnswerKey(dynamic answer, Map<String, dynamic> options) {
+    final normalized = _cleanText(answer).toLowerCase();
+    if (normalized.isEmpty) return null;
+
+    for (final key in const ['a', 'b', 'c', 'd']) {
+      if (normalized == key) return key;
+      final optionText = _optionText(options, key).toLowerCase();
+      if (optionText.isNotEmpty && optionText == normalized) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  String _subjectName(dynamic item) {
+    final questionData = item is Map ? (item['question'] ?? item) : item;
+    final subject = _cleanText(
+      (item is Map ? item['subcategoryName'] : null) ??
+          getJsonField(questionData, r'''$.subcategoryName'''),
+    );
+    return subject;
+  }
+
   Widget _podiumCard({
     required String rank,
     required String name,
     required String points,
     required Color accent,
+    required Color nameBackground,
+    required Color scoreColor,
     required double size,
     bool crowned = false,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (crowned)
+          const Icon(Icons.emoji_events_rounded, color: Color(0xFFF59E0B), size: 38.0),
+        if (crowned) const SizedBox(height: 4.0),
         Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
+            if (crowned)
+              Positioned(
+                top: -14.0,
+                left: 0.0,
+                right: 0.0,
+                child: IgnorePointer(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Icon(Icons.auto_awesome, color: Color(0xFFF7D98A), size: 34.0),
+                      Icon(Icons.auto_awesome, color: Color(0xFFF7D98A), size: 34.0),
+                    ],
+                  ),
+                ),
+              ),
             Container(
-              width: size, height: size,
+              width: size,
+              height: size,
               decoration: BoxDecoration(
                 color: const Color(0xFF64748B),
                 shape: BoxShape.circle,
-                border: Border.all(color: accent, width: 3.0),
+                border: Border.all(color: accent, width: 4.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: accent.withOpacity(0.18),
+                    blurRadius: 18.0,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.person, color: Colors.white, size: 34.0),
+              child: Icon(Icons.person, color: Colors.white, size: size * 0.38),
             ),
             Positioned(
-              top: -2.0, right: -2.0,
-              child: Container(
-                width: 22.0, height: 22.0,
-                decoration: BoxDecoration(
-                  color: accent,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2.0),
+              top: 0.0,
+              right: 0.0,
+              child: Transform.translate(
+                offset: const Offset(4.0, -4.0),
+                child: Container(
+                  width: 24.0,
+                  height: 24.0,
+                  decoration: BoxDecoration(
+                    color: accent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2.0),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    rank,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Roboto',
+                      fontSize: 10.0,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: Text(rank, style: const TextStyle(color: Colors.white, fontSize: 11.0, fontWeight: FontWeight.w800)),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
-        Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF111827), fontSize: 12.0, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 4.0),
-        Text(points, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 10.0, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12.0),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: nameBackground,
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF111827),
+              fontFamily: 'Roboto',
+              fontSize: 12.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6.0),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14.0),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A111827),
+                blurRadius: 12.0,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Text(
+            points,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: scoreColor,
+              fontFamily: 'Roboto',
+              fontSize: 12.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -833,28 +1219,77 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     required String name,
     required String points,
     required Color accent,
-    bool crown = false,
+    bool showBadge = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: const Color(0xFFE5E7EB).withOpacity(0.8))),
       ),
       child: Row(
         children: [
-          SizedBox(width: 22.0, child: Text(rank.toString(), style: TextStyle(color: accent, fontSize: 14.0, fontWeight: FontWeight.w800))),
+          SizedBox(
+            width: 20.0,
+            child: Text(
+              rank.toString(),
+              style: TextStyle(
+                color: accent,
+                fontFamily: 'Roboto',
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
           const SizedBox(width: 10.0),
           Container(
-            width: 34.0, height: 34.0,
-            decoration: BoxDecoration(color: const Color(0xFF64748B), shape: BoxShape.circle, border: Border.all(color: accent, width: 2.0)),
-            child: const Icon(Icons.person, color: Colors.white, size: 20.0),
+            width: 40.0,
+            height: 40.0,
+            decoration: BoxDecoration(
+              color: const Color(0xFF64748B),
+              shape: BoxShape.circle,
+              border: Border.all(color: accent, width: 2.0),
+            ),
+            child: const Icon(Icons.person, color: Colors.white, size: 22.0),
           ),
-          const SizedBox(width: 12.0),
-          Expanded(child: Text(name, style: const TextStyle(color: Color(0xFF111827), fontSize: 14.0, fontWeight: FontWeight.w700))),
-          Text(points, style: const TextStyle(color: Color(0xFF374151), fontSize: 13.0, fontWeight: FontWeight.w700)),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              name,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontFamily: 'Roboto',
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 62.0,
+            child: Text(
+              points,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontFamily: 'Roboto',
+                fontSize: 11.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
           const SizedBox(width: 8.0),
-          Icon(crown ? Icons.emoji_events_rounded : Icons.emoji_events_outlined, color: accent, size: 18.0),
+          SizedBox(
+            width: 22.0,
+            child: showBadge
+                ? Icon(
+                    rank == 1
+                        ? Icons.emoji_events_rounded
+                        : Icons.military_tech_rounded,
+                    color: accent,
+                    size: 18.0,
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
@@ -914,6 +1349,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 ),
               ),
             ),
+            const SizedBox(height: 12.0),
             Expanded(
               child: TabBarView(
                 controller: _tabController,

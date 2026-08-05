@@ -1425,12 +1425,13 @@ const GetQuestionsByQuizId = async (req, res) => {
     let questions = await Questions.find({
       quizId: req.body.quizId,
       is_active: 1,
-    }).populate(["categoryId", "quizId"]);
+    }).populate(["categoryId", "subcategoryId", "quizId"]);
     console.log("Questions found:", questions.length);
     if (questions.length > 0) {
       const questionsData = questions.map((question) => ({
         _id: question._id,
         categoryId: question.categoryId._id,
+        subcategoryName: question.subcategoryId?.name || '',
         quizId: {
           _id: question.quizId._id,
           timer_status: question.quizId.timer_status,

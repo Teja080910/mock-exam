@@ -2,6 +2,7 @@ import '/flutter_flow/flutter_flow_audio_player.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/componants/quit_quiz/quit_quiz_widget.dart';
+import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -125,7 +126,9 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   }
 
   List<dynamic> _reviewQuestions() {
-    return FFAppState().quesReviewList.toList();
+    final list = FFAppState().quesReviewList;
+    if (list.isNotEmpty) return list.toList();
+    return FFAppState().quesList.toList();
   }
 
   bool _isAnswered(dynamic question) {
@@ -246,6 +249,23 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     required List<dynamic> questions,
     required bool showSubmitButton,
   }) {
+    // Group questions by subcategoryName
+    final Map<String, List<dynamic>> grouped = {};
+    for (final q in questions) {
+      final questionData = q is Map ? (q['question'] ?? q) : q;
+      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString();
+      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
+      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+    }
+
+    final hasSubjects = grouped.length > 1 || (grouped.keys.first != 'General');
+    final subjectKeys = grouped.keys.toList();
+    if (_selectedSectionIndex >= subjectKeys.length) {
+      _selectedSectionIndex = 0;
+    }
+    final currentSubject = hasSubjects ? subjectKeys[_selectedSectionIndex] : null;
+    final displayQuestions = currentSubject != null ? grouped[currentSubject]! : questions;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -311,6 +331,50 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 ],
               ),
             ),
+            if (hasSubjects) ...[
+              const SizedBox(height: 14.0),
+              Row(
+                children: subjectKeys.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final name = entry.value;
+                  return Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedSectionIndex = idx),
+                      child: Column(
+                        children: [
+                          Text(
+                            name,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: _selectedSectionIndex == idx
+                                  ? const Color(0xFFF43F5E)
+                                  : const Color(0xFF4B5563),
+                              fontSize: 11.0,
+                              fontWeight: _selectedSectionIndex == idx
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8.0),
+                          Container(
+                            height: 3.0,
+                            width: 92.0,
+                            decoration: BoxDecoration(
+                              color: _selectedSectionIndex == idx
+                                  ? const Color(0xFFF43F5E)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(999.0),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
             const SizedBox(height: 14.0),
             LayoutBuilder(
               builder: (context, constraints) {
@@ -324,13 +388,13 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   spacing: itemSpacing,
                   runSpacing: itemSpacing,
                   children: [
-                    for (var i = 0; i < questions.length; i++)
+                    for (var i = 0; i < displayQuestions.length; i++)
                       SizedBox(
                         width: itemSize,
                         child: Center(
                           child: _buildNumberChip(
                             number: i + 1,
-                            filled: _isAnswered(questions[i]),
+                            filled: _isAnswered(displayQuestions[i]),
                           ),
                         ),
                       ),
@@ -344,7 +408,21 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 width: double.infinity,
                 height: 46.0,
                 child: ElevatedButton.icon(
-                  onPressed: _showQuitQuizDialog,
+                  onPressed: () {
+                    context.pushNamed(
+                      QuizResultWidget.routeName,
+                      queryParameters: {
+                        'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
+                        'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
+                        'totalQuestion': serializeParam(FFAppState().quesList.length, ParamType.int),
+                        'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
+                        'quizID': serializeParam('', ParamType.String),
+                        'title': serializeParam('', ParamType.String),
+                        'correctAnsReward': serializeParam(0.0, ParamType.double),
+                        'penaltyPerQuestion': serializeParam(0.0, ParamType.double),
+                      }.withoutNulls,
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
                     backgroundColor: const Color(0xFF1D66E5),
@@ -375,6 +453,21 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     required List<dynamic> questions,
   }) {
     final visibleCount = questions.isEmpty ? 25 : questions.length.clamp(0, 25);
+    final Map<String, List<dynamic>> grouped = {};
+    for (final q in questions) {
+      final questionData = q is Map ? (q['question'] ?? q) : q;
+      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString().trim();
+      final key = sub.isEmpty ? 'General' : sub;
+      grouped.putIfAbsent(key, () => []);
+      grouped[key]!.add(q);
+    }
+    final subjectKeys = grouped.keys.toList();
+    if (subjectKeys.isEmpty) subjectKeys.add('General');
+    if (_selectedSectionIndex >= subjectKeys.length) {
+      _selectedSectionIndex = 0;
+    }
+    final currentSubject = subjectKeys[_selectedSectionIndex];
+    final displayQuestions = grouped[currentSubject] ?? questions;
 
     return Container(
       width: double.infinity,
@@ -395,56 +488,17 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'General Science',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const Expanded(
-                  child: Text(
-                    'Mathematics',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const Expanded(
-                  child: Text(
-                    'General Intelligence and',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 2.0),
             Row(
-              children: [
-                _buildSectionTab(
-                  text: 'General Science',
-                  selected: _selectedSectionIndex == 0,
-                  onTap: () => setState(() => _selectedSectionIndex = 0),
-                ),
-                _buildSectionTab(
-                  text: 'Mathematics',
-                  selected: _selectedSectionIndex == 1,
-                  onTap: () => setState(() => _selectedSectionIndex = 1),
-                ),
-                _buildSectionTab(
-                  text: 'General Intelligence and',
-                  selected: _selectedSectionIndex == 2,
-                  onTap: () => setState(() => _selectedSectionIndex = 2),
-                ),
-              ],
+              children: subjectKeys.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final name = entry.value;
+                return _buildSectionTab(
+                  text: name,
+                  selected: _selectedSectionIndex == idx,
+                  onTap: () => setState(() => _selectedSectionIndex = idx),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 10.0),
             Row(
@@ -492,11 +546,9 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                         child: Center(
                           child: _buildNumberChip(
                             number: i + 1,
-                            filled: _isAnswered(
-                              questions.isEmpty
-                                  ? {'user_answer': 'skipped'}
-                                  : questions[i],
-                            ),
+                            filled: i < displayQuestions.length
+                                ? _isAnswered(displayQuestions[i])
+                                : false,
                           ),
                         ),
                       ),
