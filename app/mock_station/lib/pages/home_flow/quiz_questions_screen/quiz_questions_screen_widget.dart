@@ -170,6 +170,30 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     }
   }
 
+  String get _elapsedTimeLabel {
+    if (!timerInitialized || actualQuizDurationMinutes <= 0) {
+      return '';
+    }
+    try {
+      final elapsedMs = actualQuizDurationMinutes * 60 * 1000 -
+          _model.timerController.timer.rawTime.value;
+      if (elapsedMs < 0) {
+        return '';
+      }
+      final int hours = elapsedMs ~/ 3600000;
+      final int minutes = (elapsedMs % 3600000) ~/ 60000;
+      final int seconds = (elapsedMs % 60000) ~/ 1000;
+      final String mm = minutes.toString().padLeft(2, '0');
+      final String ss = seconds.toString().padLeft(2, '0');
+      if (hours > 0) {
+        return '$hours:$mm:$ss';
+      }
+      return '$mm:$ss';
+    } catch (e) {
+      return '';
+    }
+  }
+
   String _resolveQuestionHtml(dynamic questionItem) {
     final rawHtml = _selectedLang == 'en'
         ? getJsonField(questionItem, r'''$.question_title''').toString()
@@ -473,6 +497,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                         'title': serializeParam(widget.title, ParamType.String),
                         'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
                         'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                        'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
                       }.withoutNulls);
                       if (result != null && _model.pageViewController != null) {
                         _model.pageViewController!.animateToPage(
@@ -1314,6 +1339,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                                       'title': serializeParam(widget.title, ParamType.String),
                                                                                                                       'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
                                                                                                                       'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                                                                                                                      'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
                                                                                                                     }.withoutNulls,
                                                                                                                   );
                                                                                                                 },
@@ -1678,6 +1704,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                             'title': serializeParam(widget.title, ParamType.String),
                                                                                                             'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
                                                                                                             'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                                                                                                            'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
                                                                                                           }.withoutNulls,
                                                                                                         );
                                                                                                       },
@@ -2816,7 +2843,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             widget.quizID,
                                                                             ParamType.String),
                                                                         'quizTime': serializeParam(
-                                                                            quizDurationMinutes.toString(),
+                                                                            _elapsedTimeLabel,
                                                                             ParamType.String),
                                                                         'catID': serializeParam(
                                                                             widget.catId,

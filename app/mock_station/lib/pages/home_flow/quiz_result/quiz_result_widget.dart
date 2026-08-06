@@ -583,9 +583,16 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     required double percent,
   }) {
     final accuracyLabel = '${_accuracy.toStringAsFixed(0)}%';
-    final timeLabel = widget.quizTime != null && widget.quizTime!.isNotEmpty
-        ? '${widget.quizTime}:00'
-        : '10:21';
+    final quizTimeRaw = widget.quizTime ?? '';
+    String timeLabel;
+    if (quizTimeRaw.contains(':')) {
+      timeLabel = quizTimeRaw;
+    } else if (quizTimeRaw.isNotEmpty) {
+      final minutes = int.tryParse(quizTimeRaw) ?? 0;
+      timeLabel = '$minutes:00';
+    } else {
+      timeLabel = '10:21';
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 20.0),

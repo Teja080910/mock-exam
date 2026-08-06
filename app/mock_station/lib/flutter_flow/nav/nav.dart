@@ -474,6 +474,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'penaltyPerQuestion',
               ParamType.double,
             ),
+            quizTime: params.getParam(
+              'quizTime',
+              ParamType.String,
+            ),
           ),
         ),
         FFRoute(

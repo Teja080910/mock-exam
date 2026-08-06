@@ -19,6 +19,7 @@ class QuizReviewScreenWidget extends StatefulWidget {
     this.title,
     this.correctAnsReward,
     this.penaltyPerQuestion,
+    this.quizTime,
   });
 
   final String? catID;
@@ -26,6 +27,7 @@ class QuizReviewScreenWidget extends StatefulWidget {
   final String? title;
   final double? correctAnsReward;
   final double? penaltyPerQuestion;
+  final String? quizTime;
 
   static String routeName = 'quiz_review_screen';
   static String routePath = '/quizReviewScreen';
@@ -346,6 +348,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                         'title': serializeParam(widget.title ?? '', ParamType.String),
                         'correctAnsReward': serializeParam(widget.correctAnsReward ?? 0.0, ParamType.double),
                         'penaltyPerQuestion': serializeParam(widget.penaltyPerQuestion ?? 0.0, ParamType.double),
+                        'quizTime': serializeParam(widget.quizTime ?? '', ParamType.String),
                       }.withoutNulls,
                     );
                   },
