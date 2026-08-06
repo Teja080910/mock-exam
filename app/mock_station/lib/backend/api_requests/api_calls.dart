@@ -1079,7 +1079,7 @@ class StartquizApiCall {
     int? totalQuestions,
     int? correctAnswers,
     int? wrongAnswers,
-    int? score,
+    double? score,
     String? token = '',
   }) async {
     final baseUrl = QuizGroup.getBaseUrl(
@@ -1489,12 +1489,17 @@ class SelfchallangequizApiCall {
 
 class LeaderboardApiCall {
   Future<ApiCallResponse> call({
+    String? quizId = '',
     String? token = '',
   }) async {
     final baseUrl = QuizGroup.getBaseUrl(
       token: token,
     );
 
+    final ffApiRequestBody = '''
+{
+  "quizId": "${quizId}"
+}''';
     return ApiManager.instance.makeApiCall(
       callName: 'LeaderboardApi',
       apiUrl: '${baseUrl}leaderboard',
@@ -1503,6 +1508,7 @@ class LeaderboardApiCall {
         'Authorization': 'Bearer ${token}',
       },
       params: {},
+      body: ffApiRequestBody,
       bodyType: BodyType.JSON,
       returnBody: true,
       encodeBodyUtf8: false,
@@ -1523,6 +1529,7 @@ class LeaderboardApiCall {
 class GetuserrankApiCall {
   Future<ApiCallResponse> call({
     String? userId = '',
+    String? quizId = '',
     String? token = '',
   }) async {
     final baseUrl = QuizGroup.getBaseUrl(
@@ -1531,7 +1538,8 @@ class GetuserrankApiCall {
 
     final ffApiRequestBody = '''
 {
-  "userId": "${userId}"
+  "userId": "${userId}",
+  "quizId": "${quizId}"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'GetuserrankApi',

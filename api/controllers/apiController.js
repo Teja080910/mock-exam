@@ -2040,52 +2040,69 @@ const GetPoints = async (req, res) => {
 // Get User Points
 const LeaderBoard = async (req, res) => {
   try {
-    // Aggregate query to find the user with the highest points
-    const highestPointsUser = await User.aggregate([
+    const { quizId } = req.body;
+    if (!quizId) {
+      return res.status(400).json({
+        data: { success: 0, message: "quizId is required", error: 1 },
+      });
+    }
+    // Aggregate query to find users with the highest best score for the quiz
+    const leaderboard = await UserQuiz.aggregate([
       {
-        $sort: { points: -1 }, // Sort users in descending order of points
+        $match: { quizId: new (require("mongoose").Types.ObjectId)(quizId) },
       },
       {
-        $limit: 5, // Limit to the first user (highest points)
+        $group: { _id: "$userId", bestScore: { $max: "$score" } },
       },
-      // {
-      //     $addFields: { // Add a new field 'rank' based on the order of users
-      //         rank: { $add: [{ $indexOfArray: [[1, 2, 3, 4, 5], "$points"] }, 1] } // Calculate rank based on position in the sorted list
-      //     }
-      // },
+      {
+        $sort: { bestScore: -1 },
+      },
+      {
+        $limit: 5,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: "$user",
+      },
       {
         $project: {
-          // Project only the required fields
-          _id: 1,
-          firstname: 1,
-          lastname: 1,
-          image: { $ifNull: ["$image", ""] }, // Set default value for image if it's null,
-          points: 1,
+          _id: "$user._id",
+          firstname: "$user.firstname",
+          lastname: "$user.lastname",
+          image: { $ifNull: ["$user.image", ""] },
+          points: "$bestScore",
           rank: 1,
         },
       },
     ]);
 
-    if (highestPointsUser.length > 0) {
+    if (leaderboard.length > 0) {
       // Set the rank for each user in the array
-      highestPointsUser.forEach((user, index) => {
+      leaderboard.forEach((user, index) => {
         user.rank = index + 1; // Rank starts from 1
       });
-      // If user with highest points is found, return the details
+      // If users with best scores are found, return the details
       res.json({
         data: {
           success: 1,
-          message: "User with highest points found",
-          user: highestPointsUser, // First user in the array (highest points)
+          message: "Leaderboard found",
+          user: leaderboard,
           error: 0,
         },
       });
     } else {
-      // If no users found (empty collection), return appropriate message
+      // If no attempts found for the quiz, return appropriate message
       res.status(404).json({
         data: {
           success: 0,
-          message: "No users found",
+          message: "No attempts found for this quiz",
           error: 1,
         },
       });
@@ -2118,6 +2135,7 @@ const GetUserRank = async (req, res) => {
         .status(400)
         .json({ data: { success: 0, message: "Invalid userId", error: 1 } });
     }
+    const { quizId } = req.body;
     const user = await User.findOne({ _id: req.body.userId });
     console.log("User found:", user);
     if (!user) {
@@ -2126,10 +2144,60 @@ const GetUserRank = async (req, res) => {
         .status(404)
         .json({ data: { success: 0, message: "User Not Found", error: 1 } });
     }
-    const userPoints = user.points;
+    if (!quizId) {
+      const userPoints = user.points;
+      const userRank =
+        (await User.countDocuments({ points: { $gt: userPoints } })) + 1;
+      console.log("User points:", userPoints, "User rank:", userRank);
+      return res.json({
+        data: {
+          success: 1,
+          message: "User found",
+          user: {
+            id: user._id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            image: user.image ? user.image : "",
+            points: userPoints,
+            rank: userRank,
+          },
+          error: 0,
+        },
+      });
+    }
+    const bestScore = await UserQuiz.aggregate([
+      {
+        $match: {
+          userId: new (require("mongoose").Types.ObjectId)(req.body.userId),
+          quizId: new (require("mongoose").Types.ObjectId)(quizId),
+        },
+      },
+      {
+        $group: { _id: null, bestScore: { $max: "$score" } },
+      },
+    ]);
+    const userBestScore = bestScore.length > 0 ? bestScore[0].bestScore : 0;
     const userRank =
-      (await User.countDocuments({ points: { $gt: userPoints } })) + 1;
-    console.log("User points:", userPoints, "User rank:", userRank);
+      (await UserQuiz.aggregate([
+        {
+          $match: { quizId: new (require("mongoose").Types.ObjectId)(quizId) },
+        },
+        {
+          $group: { _id: "$userId", bestScore: { $max: "$score" } },
+        },
+        {
+          $match: { bestScore: { $gt: userBestScore } },
+        },
+        {
+          $count: "count",
+        },
+      ]))[0]?.count + 1 || 1;
+    console.log(
+      "User best score:",
+      userBestScore,
+      "User rank:",
+      userRank,
+    );
     return res.json({
       data: {
         success: 1,
@@ -2139,7 +2207,7 @@ const GetUserRank = async (req, res) => {
           firstname: user.firstname,
           lastname: user.lastname,
           image: user.image ? user.image : "",
-          points: userPoints,
+          points: userBestScore,
           rank: userRank,
         },
         error: 0,

@@ -184,7 +184,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
           fontFamily: 'Roboto',
           fontSize: 18.0,
           letterSpacing: 0.0,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w400,
           useGoogleFonts: false,
           lineHeight: 1.2,
         );
@@ -367,7 +367,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       style: const TextStyle(
                         color: Color(0xFF111827),
                         fontSize: 18.0,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -449,7 +449,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   child: IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    onPressed: () {
+                    onPressed: () async {
                       final apiQuestions = QuizGroup.getquestionsbyquizidApiCall.questionDetailsList(
                         (_model.quizRes?.jsonBody ?? ''),
                       )?.toList() ?? [];
@@ -468,7 +468,19 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       } else if (FFAppState().quesList.isNotEmpty) {
                         FFAppState().quesReviewList = FFAppState().quesList.toList();
                       }
-                      context.pushNamed(QuizReviewScreenWidget.routeName);
+                      final result = await context.pushNamed<int>(QuizReviewScreenWidget.routeName, queryParameters: {
+                        'quizID': serializeParam(widget.quizID, ParamType.String),
+                        'title': serializeParam(widget.title, ParamType.String),
+                        'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
+                        'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                      }.withoutNulls);
+                      if (result != null && _model.pageViewController != null) {
+                        _model.pageViewController!.animateToPage(
+                          result,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
                     },
                     icon: const Icon(
                       Icons.menu_rounded,
@@ -545,7 +557,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                         ? Colors.white
                         : const Color(0xFF111827),
                     fontSize: 17.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 ),
@@ -907,7 +919,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                     style: const TextStyle(
                                       color: Color(0xFF111827),
                                       fontSize: 20.0,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
@@ -977,7 +989,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                     fontFamily: 'Roboto',
                                     fontSize: 18.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w400,
                                     useGoogleFonts: false,
                                     lineHeight: 1.5,
                                   ),

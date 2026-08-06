@@ -31,8 +31,8 @@ const app = express();
 const http = require('http').Server(app);
 
 // Parse JSON and urlencoded bodies (must be before routes)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Load the express-session module
 const session = require('express-session');
@@ -68,11 +68,6 @@ app.use('/api', apiRoute);
 // Setting the Admin routes
 const adminRoute = require('./routes/adminRoute');
 app.use('/',adminRoute);
-
-
-// Increase payload size limit
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -134,9 +134,12 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
   }
 
   Widget _buildSubcategoryCard(dynamic subcategory) {
-    final imageUrl = widget.image != null && widget.image!.isNotEmpty
-        ? widget.image!
-        : 'https://picsum.photos/seed/alp/120';
+    final rawImage = getJsonField(subcategory, r'$.image').toString();
+    final imageUrl = rawImage.isNotEmpty
+        ? (rawImage.startsWith('http')
+            ? rawImage
+            : '${FFAppConstants.imageBaseURL}$rawImage')
+        : 'https://picsum.photos/seed/${getJsonField(subcategory, r'$._id')}/120';
 
     return GestureDetector(
       onTap: () {

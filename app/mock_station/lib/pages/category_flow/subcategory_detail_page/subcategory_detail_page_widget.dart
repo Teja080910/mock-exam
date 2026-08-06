@@ -137,7 +137,11 @@ class _SubcategoryDetailPageWidgetState
       queryParameters: {
         'quizID': quiz['_id'],
         'title': quiz['name'],
-        'image': '${FFAppConstants.imageBaseURL}${quiz['image']}',
+        'image': quiz['image'] != null && quiz['image'].toString().isNotEmpty
+            ? (quiz['image'].toString().startsWith('http')
+                ? quiz['image'].toString()
+                : '${FFAppConstants.imageBaseURL}${quiz['image']}')
+            : '',
         'quizTime': quiz['minutes_per_quiz'].toString(),
         'description': quiz['description'],
       },
@@ -188,8 +192,11 @@ class _SubcategoryDetailPageWidgetState
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
                             child: CachedNetworkImage(
-                              imageUrl:
-                                  '${FFAppConstants.imageBaseURL}${quiz['image']}',
+                              imageUrl: quiz['image'] != null && quiz['image'].toString().isNotEmpty
+                                  ? (quiz['image'].toString().startsWith('http')
+                                      ? quiz['image'].toString()
+                                      : '${FFAppConstants.imageBaseURL}${quiz['image']}')
+                                  : 'https://picsum.photos/seed/${quiz['_id']}/120',
                               fit: BoxFit.cover,
                               errorWidget: (context, url, error) => Container(
                                 color: const Color(0xFFF5F8FF),

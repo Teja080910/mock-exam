@@ -15,9 +15,17 @@ class QuizReviewScreenWidget extends StatefulWidget {
   const QuizReviewScreenWidget({
     super.key,
     this.catID,
+    this.quizID,
+    this.title,
+    this.correctAnsReward,
+    this.penaltyPerQuestion,
   });
 
   final String? catID;
+  final String? quizID;
+  final String? title;
+  final double? correctAnsReward;
+  final double? penaltyPerQuestion;
 
   static String routeName = 'quiz_review_screen';
   static String routePath = '/quizReviewScreen';
@@ -171,33 +179,37 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   Widget _buildNumberChip({
     required int number,
     required bool filled,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      width: 30.0,
-      height: 30.0,
-      decoration: BoxDecoration(
-        color: filled ? const Color(0xFF1D66E5) : Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: filled ? const Color(0xFF1D66E5) : const Color(0xFFD6DCE5),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 30.0,
+        height: 30.0,
+        decoration: BoxDecoration(
+          color: filled ? const Color(0xFF1D66E5) : Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: filled ? const Color(0xFF1D66E5) : const Color(0xFFD6DCE5),
+          ),
+          boxShadow: filled
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF1D66E5).withOpacity(0.16),
+                    blurRadius: 10.0,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : const [],
         ),
-        boxShadow: filled
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF1D66E5).withOpacity(0.16),
-                  blurRadius: 10.0,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : const [],
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        number.toString(),
-        style: TextStyle(
-          color: filled ? Colors.white : const Color(0xFF374151),
-          fontSize: 12.0,
-          fontWeight: FontWeight.w700,
+        alignment: Alignment.center,
+        child: Text(
+          number.toString(),
+          style: TextStyle(
+            color: filled ? Colors.white : const Color(0xFF374151),
+            fontSize: 12.0,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -330,10 +342,10 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                         'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
                         'totalQuestion': serializeParam(FFAppState().quesList.length, ParamType.int),
                         'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
-                        'quizID': serializeParam('', ParamType.String),
-                        'title': serializeParam('', ParamType.String),
-                        'correctAnsReward': serializeParam(0.0, ParamType.double),
-                        'penaltyPerQuestion': serializeParam(0.0, ParamType.double),
+                        'quizID': serializeParam(widget.quizID ?? '', ParamType.String),
+                        'title': serializeParam(widget.title ?? '', ParamType.String),
+                        'correctAnsReward': serializeParam(widget.correctAnsReward ?? 0.0, ParamType.double),
+                        'penaltyPerQuestion': serializeParam(widget.penaltyPerQuestion ?? 0.0, ParamType.double),
                       }.withoutNulls,
                     );
                   },
@@ -382,6 +394,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   child: _buildNumberChip(
                     number: i + 1,
                     filled: _isAnswered(questions[i]),
+                    onTap: () => context.pop(i),
                   ),
                 ),
               ),

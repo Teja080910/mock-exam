@@ -458,6 +458,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'catID',
               ParamType.String,
             ),
+            quizID: params.getParam(
+              'quizID',
+              ParamType.String,
+            ),
+            title: params.getParam(
+              'title',
+              ParamType.String,
+            ),
+            correctAnsReward: params.getParam(
+              'correctAnsReward',
+              ParamType.double,
+            ),
+            penaltyPerQuestion: params.getParam(
+              'penaltyPerQuestion',
+              ParamType.double,
+            ),
           ),
         ),
         FFRoute(

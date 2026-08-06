@@ -1277,10 +1277,12 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     return FutureBuilder<List<ApiCallResponse>>(
       future: Future.wait([
         QuizGroup.leaderboardApiCall.call(
+          quizId: widget.quizID,
           token: FFAppState().loginToken,
         ),
         QuizGroup.getuserrankApiCall.call(
           userId: FFAppState().userId,
+          quizId: widget.quizID,
           token: FFAppState().loginToken,
         ),
       ]),

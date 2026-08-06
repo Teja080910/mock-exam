@@ -1,12 +1,16 @@
 import 'dart:convert';
 
+import '/app_constants.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/custom_code/utils/html_stripper.dart';
+import '/flutter_flow/flutter_flow_audio_player.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
@@ -52,6 +56,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     with TickerProviderStateMixin {
   late QuizResultModel _model;
   late TabController _tabController;
+  late TabController _answerKeyTabController;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -73,6 +78,79 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       return 0;
     }
     return ((widget.correctAnswer ?? 0) / total) * 100;
+  }
+
+  // Helper function to extract option image
+  String extractOptionImage(dynamic optionData) {
+    if (optionData is Map) {
+      final image = getJsonField(optionData, r'$.image');
+      if (image != null && image.toString().isNotEmpty) {
+        return image.toString();
+      }
+    }
+    return '';
+  }
+
+  // Helper function to extract option text
+  String extractOptionText(dynamic optionData) {
+    if (optionData is Map) {
+      final text = getJsonField(optionData, r'$.text');
+      if (text is Map) {
+        return getJsonField(text, r'$.text')?.toString() ?? '';
+      } else if (text != null) {
+        return text.toString();
+      }
+    } else if (optionData != null) {
+      return optionData.toString();
+    }
+    return '';
+  }
+
+  // Helper function to build question HTML widget with images
+  Map<String, Style> _questionHtmlStyle(BuildContext context) {
+    final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          fontFamily: 'Roboto',
+          fontSize: 15.0,
+          letterSpacing: 0.0,
+          fontWeight: FontWeight.bold,
+          useGoogleFonts: false,
+          lineHeight: 1.5,
+        );
+
+    final style = Style(
+      margin: Margins.zero,
+      padding: HtmlPaddings.zero,
+      color: FlutterFlowTheme.of(context).primaryText,
+      fontFamily: baseTextStyle.fontFamily,
+      fontSize: FontSize(baseTextStyle.fontSize ?? 15.0),
+      fontWeight: baseTextStyle.fontWeight,
+      letterSpacing: baseTextStyle.letterSpacing,
+      lineHeight: LineHeight(baseTextStyle.height ?? 1.5),
+    );
+
+    return {
+      "body": style,
+      "p": style,
+      "span": style,
+    };
+  }
+
+  Widget _buildQuestionHtmlWidget({
+    required BuildContext context,
+    required String questionHtml,
+  }) {
+    final cleanedHtml = questionHtml.replaceAll('&quot;', '"');
+
+    return Container(
+      width: double.infinity,
+      child: Html(
+        data: cleanedHtml,
+        style: _questionHtmlStyle(context),
+        onLinkTap: (url, attributes, element) {
+          // Handle link taps if needed
+        },
+      ),
+    );
   }
 
   Future<void> _finishQuiz() async {
@@ -684,172 +762,553 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             (index) => <String, dynamic>{'user_answer': 'skipped'},
           );
 
+    final answered = list.where((q) =>
+        q['user_answer'] != null && q['user_answer'] != 'skipped').toList();
+    final skipped = list.where((q) =>
+        q['user_answer'] == null || q['user_answer'] == 'skipped').toList();
+
+    return Column(
+      children: [
+        Align(
+          alignment: const Alignment(0.0, 0),
+          child: TabBar(
+            labelColor: FlutterFlowTheme.of(context).primaryText,
+            unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
+            labelStyle: FlutterFlowTheme.of(context).titleMedium.override(
+                  fontFamily: 'Roboto',
+                  letterSpacing: 0.0,
+                  useGoogleFonts: false,
+                ),
+            unselectedLabelStyle: const TextStyle(),
+            indicatorColor: FlutterFlowTheme.of(context).primary,
+            padding: const EdgeInsets.all(4.0),
+            tabs: [
+              Tab(text: 'Answered (${answered.length})'),
+              Tab(text: 'Skipped (${skipped.length})'),
+            ],
+            controller: _answerKeyTabController,
+            onTap: (i) async {},
+          ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _answerKeyTabController,
+            children: [
+              _buildAnsweredList(answered),
+              _buildSkippedList(skipped),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAnsweredList(List<dynamic> questions) {
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
-      itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10.0),
-      itemBuilder: (context, index) {
-        final item = list[index];
-        final questionData = item['question'] is Map ? item['question'] as Map : item;
-        final questionTitle = _cleanText(
-          questionData['question_title'] ??
-              item['question_title'] ??
-              questionData['question'] ??
-              item['question'] ??
-              questionData['title'] ??
-              item['title'],
-        );
-        final description = _cleanText(questionData['description'] ?? item['description']);
-        final showQuestionTitle =
-            questionTitle.isNotEmpty && questionTitle != description;
-
-        final rawOptions = _optionMap(item).isNotEmpty ? item['option'] : questionData['option'];
-        Map<String, dynamic> options = _optionMap(item);
-        if (options.isEmpty && rawOptions is Map) {
-          options = Map<String, dynamic>.from(rawOptions);
-        } else if (options.isEmpty && rawOptions is String) {
-          try {
-            final parsed = json.decode(rawOptions);
-            if (parsed is Map) options = Map<String, dynamic>.from(parsed);
-          } catch (_) {}
-        }
-
-        final userAnswer = _cleanText(item['user_answer']).toLowerCase();
-        final correctAnswer = _cleanText(
-          item['correct_answer'] ?? item['answer'] ?? questionData['answer'],
-        );
-        final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
-        final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
-        final isAnswered = userKey != 'skipped' && userKey.isNotEmpty;
-        final isCorrect = isAnswered && userKey == correctKey;
-        final optionKeys = ['a', 'b', 'c', 'd'];
+      padding: const EdgeInsets.fromLTRB(10.0, 13.0, 10.0, 13.0),
+      primary: false,
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: questions.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16.0),
+      itemBuilder: (context, quesIndex) {
+        final quesItem = questions[quesIndex];
+        final options = quesItem['option'] ?? {};
+        final userAnswer = quesItem['user_answer'];
+        final correctAnswer = quesItem['correct_answer'] ?? quesItem['answer'];
 
         return Container(
-          padding: const EdgeInsets.all(14.0),
+          width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14.0),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            color: FlutterFlowTheme.of(context).white,
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 15.0,
+                color: Color(0x1A000000),
+                offset: Offset(0.0, 4.0),
+                spreadRadius: 0.0,
+              )
+            ],
+            borderRadius: BorderRadius.circular(12.0),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 30.0, height: 30.0,
-                    decoration: BoxDecoration(
-                      color: isCorrect ? const Color(0xFF16A34A) : (isAnswered ? const Color(0xFFEF4444) : const Color(0xFF94A3B8)),
-                      shape: BoxShape.circle,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Q${quesIndex + 1}. ',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'Roboto',
+                            fontSize: 15.0,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.bold,
+                            useGoogleFonts: false,
+                            lineHeight: 1.5,
+                          ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.w800)),
-                  ),
-                  const SizedBox(width: 10.0),
-                  Icon(
-                    isCorrect ? Icons.check_circle_rounded : (isAnswered ? Icons.cancel_rounded : Icons.timer_rounded),
-                    color: isCorrect ? const Color(0xFF16A34A) : (isAnswered ? const Color(0xFFEF4444) : const Color(0xFF94A3B8)),
-                    size: 18.0,
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    isCorrect ? 'Correct' : (isAnswered ? 'Wrong' : 'Skipped'),
-                    style: TextStyle(
-                      color: isCorrect ? const Color(0xFF16A34A) : (isAnswered ? const Color(0xFFEF4444) : const Color(0xFF94A3B8)),
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              if (description.isNotEmpty) ...[
-                const SizedBox(height: 8.0),
-                Text(
-                  description,
-                  style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12.0, fontWeight: FontWeight.w500, height: 1.4),
-                ),
-              ],
-              if (showQuestionTitle) ...[
-                const SizedBox(height: 8.0),
-                Text(
-                  questionTitle,
-                  style: const TextStyle(color: Color(0xFF111827), fontSize: 14.0, fontWeight: FontWeight.w600, height: 1.4),
-                ),
-              ],
-              if (options is Map) ...[
-                const SizedBox(height: 10.0),
-                ...optionKeys.map((key) {
-                  final opt = (options as Map)[key];
-                  if (opt == null) return const SizedBox.shrink();
-                  String optText = '';
-                  if (opt is Map) {
-                    optText = _cleanText(opt['text'] ?? opt['value']);
-                  } else {
-                    optText = _cleanText(opt);
-                  }
-                  if (optText.isEmpty) return const SizedBox.shrink();
-
-                  final isOptCorrect = key == correctKey;
-                  final isOptSelected = key == userKey;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 6.0),
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                    decoration: BoxDecoration(
-                      color: isOptCorrect
-                          ? const Color(0xFFF0FDF4)
-                          : (isOptSelected && !isCorrect
-                              ? const Color(0xFFFEF2F2)
-                              : const Color(0xFFF9FAFB)),
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: isOptCorrect
-                            ? const Color(0xFF16A34A)
-                            : (isOptSelected && !isCorrect
-                                ? const Color(0xFFEF4444)
-                                : const Color(0xFFE5E7EB)),
-                        width: isOptCorrect || (isOptSelected && !isCorrect) ? 1.5 : 1.0,
+                    Expanded(
+                      child: _buildQuestionHtmlWidget(
+                        context: context,
+                        questionHtml:
+                            getJsonField(quesItem, r'''$.question_title''')
+                                .toString(),
                       ),
                     ),
+                  ],
+                ),
+                if (getJsonField(quesItem, r'''$.image''') != null &&
+                    getJsonField(quesItem, r'''$.image''')
+                        .toString()
+                        .isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0.0, 16.0, 0.0, 16.0),
+                    child: Center(
+                      child: Container(
+                        width: double.infinity,
+                        constraints: BoxConstraints(
+                          maxWidth:
+                              MediaQuery.of(context).size.width - 64.0,
+                          maxHeight: 300.0,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                '${FFAppConstants.imageBaseURL}${getJsonField(quesItem, r'''$.image''').toString()}',
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                            alignment: const Alignment(0.0, 0.0),
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  FlutterFlowTheme.of(context).primary,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ...List.generate(options.length, (optionIndex) {
+                  final optionKeys = options.keys.toList();
+                  final optionKey = optionKeys[optionIndex];
+                  final option = options[optionKey];
+                  final normalize = (dynamic value) => (value ?? '')
+                      .toString()
+                      .replaceAll(RegExp(r'\s+'), ' ')
+                      .trim()
+                      .toLowerCase();
+
+                  final optionText = option != null && option['text'] != null
+                      ? (option['text'] is Map
+                          ? (option['text']['text'] ??
+                              option['text'].toString())
+                          : option['text'].toString())
+                      : '';
+
+                  final optionTextNormalized = normalize(optionText);
+                  final userAnswerNormalized = normalize(userAnswer);
+                  final correctAnswerNormalized = normalize(correctAnswer);
+                  final optionKeyNormalized = normalize(optionKey);
+
+                  final isCorrectAnswer =
+                      correctAnswerNormalized.isNotEmpty &&
+                          (optionKeyNormalized ==
+                                  correctAnswerNormalized ||
+                              optionTextNormalized ==
+                                  correctAnswerNormalized);
+
+                  final isUserSelected =
+                      userAnswerNormalized.isNotEmpty &&
+                          (optionKeyNormalized ==
+                                  userAnswerNormalized ||
+                              optionTextNormalized ==
+                                  userAnswerNormalized);
+
+                  final isUserCorrect =
+                      isUserSelected && isCorrectAnswer;
+
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
                     child: Row(
                       children: [
                         Container(
-                          width: 24.0, height: 24.0,
-                          decoration: BoxDecoration(
-                            color: isOptCorrect
-                                ? const Color(0xFF16A34A)
-                                : (isOptSelected && !isCorrect
-                                    ? const Color(0xFFEF4444)
-                                    : const Color(0xFFE5E7EB)),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: isOptCorrect
-                              ? const Icon(Icons.check, color: Colors.white, size: 16.0)
-                              : (isOptSelected && !isCorrect
-                                  ? const Icon(Icons.close, color: Colors.white, size: 16.0)
-                                  : Text(key.toUpperCase(), style: const TextStyle(color: Color(0xFF6B7280), fontSize: 11.0, fontWeight: FontWeight.w700))),
+                          width: 24.0,
+                          height: 24.0,
+                          child: isUserCorrect
+                              ? const Icon(Icons.check_circle,
+                                  color: Colors.green, size: 24.0)
+                              : isCorrectAnswer
+                                  ? const Icon(Icons.check_circle,
+                                      color: Colors.green, size: 24.0)
+                                  : isUserSelected
+                                      ? const Icon(Icons.cancel,
+                                          color: Colors.red, size: 24.0)
+                                      : Icon(Icons.cancel,
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryText,
+                                          size: 24.0),
                         ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 12.0),
                         Expanded(
-                          child: Text(
-                            optText,
-                            style: TextStyle(
-                              color: const Color(0xFF111827),
-                              fontSize: 13.0,
-                              fontWeight: isOptCorrect || isOptSelected ? FontWeight.w700 : FontWeight.w500,
-                              height: 1.3,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (getJsonField(quesItem,
+                                              r'''$.question_type''')
+                                          .toString() ==
+                                      'images' &&
+                                  option != null &&
+                                  option['image'] != null &&
+                                  option['image'].toString().isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      0.0, 0.0, 0.0, 8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          '${FFAppConstants.imageBaseURL}${option['image']}',
+                                      width: 50.0,
+                                      height: 50.0,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              RichText(
+                                textScaler:
+                                    MediaQuery.of(context).textScaler,
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: extractOptionText(option),
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'Roboto',
+                                            fontSize: 17.0,
+                                            letterSpacing: 0.0,
+                                            useGoogleFonts: false,
+                                            lineHeight: 1.5,
+                                          ),
+                                    ),
+                                    if (isUserCorrect)
+                                      const TextSpan(
+                                        text:
+                                            ' (Correct Answer & Your Answer)',
+                                        style: TextStyle(
+                                          color: Color(0xFF1D66E5),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                    else if (isCorrectAnswer)
+                                      const TextSpan(
+                                        text: ' (Correct Answer)',
+                                        style: TextStyle(
+                                          color: Color(0xFF1D66E5),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                    else if (isUserSelected)
+                                      const TextSpan(
+                                        text: ' (Your Answer)',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                  ],
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Roboto',
+                                        fontSize: 17.0,
+                                        letterSpacing: 0.0,
+                                        useGoogleFonts: false,
+                                        lineHeight: 1.5,
+                                      ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        if (isOptCorrect)
-                          const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 18.0),
                       ],
                     ),
                   );
                 }),
               ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSkippedList(List<dynamic> questions) {
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(10.0, 13.0, 10.0, 13.0),
+      primary: false,
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: questions.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16.0),
+      itemBuilder: (context, questionIndex) {
+        final questionItem = questions[questionIndex];
+        final options = questionItem['option'] ?? {};
+        final correctAnswer =
+            questionItem['correct_answer'] ?? questionItem['answer'];
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).white,
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 15.0,
+                color: Color(0x1A000000),
+                offset: Offset(0.0, 4.0),
+                spreadRadius: 0.0,
+              )
             ],
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Q${questionIndex + 1}. ',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'Roboto',
+                            fontSize: 15.0,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.bold,
+                            useGoogleFonts: false,
+                            lineHeight: 1.5,
+                          ),
+                    ),
+                    Expanded(
+                      child: _buildQuestionHtmlWidget(
+                        context: context,
+                        questionHtml:
+                            getJsonField(questionItem, r'''$.question_title''')
+                                .toString(),
+                      ),
+                    ),
+                  ],
+                ),
+                if (getJsonField(questionItem, r'''$.image''') != null &&
+                    getJsonField(questionItem, r'''$.image''')
+                        .toString()
+                        .isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0.0, 16.0, 0.0, 16.0),
+                    child: Center(
+                      child: Container(
+                        width: double.infinity,
+                        constraints: BoxConstraints(
+                          maxWidth:
+                              MediaQuery.of(context).size.width - 64.0,
+                          maxHeight: 300.0,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                '${FFAppConstants.imageBaseURL}${getJsonField(questionItem, r'''$.image''').toString()}',
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                            alignment: const Alignment(0.0, 0.0),
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  FlutterFlowTheme.of(context).primary,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                if ('audio' ==
+                    getJsonField(
+                      questionItem,
+                      r'''$.question_type''',
+                    ).toString())
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0.0, 16.0, 0.0, 0.0),
+                    child: FlutterFlowAudioPlayer(
+                      audio: Audio.network(
+                        getJsonField(
+                                      questionItem,
+                                      r'''$.audio''',
+                                    ) !=
+                                null
+                            ? '${FFAppConstants.imageBaseURL}${getJsonField(
+                                questionItem,
+                                r'''$.audio''',
+                              ).toString()}'
+                            : 'https://filesamples.com/samples/audio/mp3/sample3.mp3',
+                        metas: Metas(
+                          title: 'Title',
+                        ),
+                      ),
+                      titleTextStyle:
+                          FlutterFlowTheme.of(context).titleLarge.override(
+                                fontFamily: 'Roboto',
+                                letterSpacing: 0.0,
+                                useGoogleFonts: false,
+                              ),
+                      playbackDurationTextStyle:
+                          FlutterFlowTheme.of(context).labelMedium.override(
+                                fontFamily: 'Roboto',
+                                letterSpacing: 0.0,
+                                useGoogleFonts: false,
+                              ),
+                      fillColor:
+                          FlutterFlowTheme.of(context).secondaryBackground,
+                      playbackButtonColor:
+                          FlutterFlowTheme.of(context).primary,
+                      activeTrackColor:
+                          FlutterFlowTheme.of(context).primary,
+                      inactiveTrackColor:
+                          FlutterFlowTheme.of(context).alternate,
+                      elevation: 0.0,
+                      playInBackground: PlayInBackground
+                          .disabledRestoreOnForeground,
+                    ),
+                  ),
+                ...List.generate(options.length, (optionIndex) {
+                  final optionKeys = options.keys.toList();
+                  final optionKey = optionKeys[optionIndex];
+                  final option = options[optionKey];
+                  final normalize = (dynamic value) => (value ?? '')
+                      .toString()
+                      .replaceAll(RegExp(r'\s+'), ' ')
+                      .trim()
+                      .toLowerCase();
+
+                  final optionText = option != null && option['text'] != null
+                      ? (option['text'] is Map
+                          ? (option['text']['text'] ??
+                              option['text'].toString())
+                          : option['text'].toString())
+                      : '';
+
+                  final optionTextNormalized = normalize(optionText);
+                  final correctAnswerNormalized = normalize(correctAnswer);
+                  final optionKeyNormalized = normalize(optionKey);
+
+                  final isCorrectAnswer =
+                      correctAnswerNormalized.isNotEmpty &&
+                          (optionKeyNormalized ==
+                                  correctAnswerNormalized ||
+                              optionTextNormalized ==
+                                  correctAnswerNormalized);
+
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24.0,
+                          height: 24.0,
+                          child: isCorrectAnswer
+                              ? const Icon(Icons.check_circle,
+                                  color: Colors.green, size: 24.0)
+                              : Icon(Icons.radio_button_unchecked,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                  size: 24.0),
+                        ),
+                        const SizedBox(width: 12.0),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (getJsonField(questionItem,
+                                              r'''$.question_type''')
+                                          .toString() ==
+                                      'images' &&
+                                  option != null &&
+                                  option['image'] != null &&
+                                  option['image'].toString().isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      0.0, 0.0, 0.0, 8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          '${FFAppConstants.imageBaseURL}${option['image']}',
+                                      width: 50.0,
+                                      height: 50.0,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              RichText(
+                                textScaler:
+                                    MediaQuery.of(context).textScaler,
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: extractOptionText(option),
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'Roboto',
+                                            fontSize: 17.0,
+                                            letterSpacing: 0.0,
+                                            useGoogleFonts: false,
+                                            lineHeight: 1.5,
+                                          ),
+                                    ),
+                                    if (isCorrectAnswer)
+                                      const TextSpan(
+                                        text: ' (Correct Answer)',
+                                        style: TextStyle(
+                                          color: Color(0xFF1D66E5),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                  ],
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Roboto',
+                                        fontSize: 17.0,
+                                        letterSpacing: 0.0,
+                                        useGoogleFonts: false,
+                                        lineHeight: 1.5,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
           ),
         );
       },
@@ -860,10 +1319,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     return FutureBuilder<List<ApiCallResponse>>(
       future: Future.wait([
         QuizGroup.leaderboardApiCall.call(
+          quizId: widget.quizID,
           token: FFAppState().loginToken,
         ),
         QuizGroup.getuserrankApiCall.call(
           userId: FFAppState().userId,
+          quizId: widget.quizID,
           token: FFAppState().loginToken,
         ),
       ]),
@@ -1415,6 +1876,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     _model = createModel(context, () => QuizResultModel());
     _tabController = TabController(vsync: this, length: 3)
       ..addListener(() => safeSetState(() {}));
+    _answerKeyTabController = TabController(vsync: this, length: 2)
+      ..addListener(() => safeSetState(() {}));
 
     // DEBUG PRINTS
     print('RESULT DEBUG: correctAnswer=' + (widget.correctAnswer?.toString() ?? 'null'));
@@ -1439,7 +1902,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         totalQuestions: widget.totalQuestion,
         correctAnswers: widget.correctAnswer,
         wrongAnswers: widget.wrongAnswer,
-        score: ((((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) - ((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0))).toInt()),
+        score: (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) - ((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0))),
         token: FFAppState().loginToken,
       );
     });
@@ -1448,6 +1911,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   @override
   void dispose() {
     _tabController.dispose();
+    _answerKeyTabController.dispose();
     _model.dispose();
 
     super.dispose();
