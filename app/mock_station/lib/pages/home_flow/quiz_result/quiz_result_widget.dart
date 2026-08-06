@@ -857,18 +857,43 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   Widget _buildLeaderboardTab() {
-    return FutureBuilder<ApiCallResponse>(
-      future: QuizGroup.leaderboardApiCall.call(
-        token: FFAppState().loginToken,
-      ),
+    return FutureBuilder<List<ApiCallResponse>>(
+      future: Future.wait([
+        QuizGroup.leaderboardApiCall.call(
+          token: FFAppState().loginToken,
+        ),
+        QuizGroup.getuserrankApiCall.call(
+          userId: FFAppState().userId,
+          token: FFAppState().loginToken,
+        ),
+      ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final users = _sortedLeaderboard(snapshot.data!);
+        final leaderboardRes = snapshot.data![0];
+        final userRankRes = snapshot.data![1];
+
+        final users = _sortedLeaderboard(leaderboardRes);
         final topThree = users.take(3).toList();
         final maxScore = widget.totalQuestion ?? 0;
+
+        final currentUserId = FFAppState().userId;
+        final isInTop5 = users.any((u) =>
+            (getJsonField(u, r'''$._id''') ?? '').toString() == currentUserId);
+
+        dynamic currentUserData;
+        int? currentUserRank;
+        if (QuizGroup.getuserrankApiCall.success(
+              userRankRes.jsonBody,
+            ) ==
+            1) {
+          currentUserData =
+              QuizGroup.getuserrankApiCall.user(userRankRes.jsonBody);
+          currentUserRank =
+              castToType<int>(getJsonField(currentUserData, r'''$.rank'''));
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
@@ -989,6 +1014,21 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                     ? const Color(0xFFF97316)
                                     : const Color(0xFF94A3B8),
                         showBadge: i < 3,
+                        isCurrentUser: (getJsonField(users[i], r'''$._id''') ?? '').toString() == currentUserId,
+                      ),
+                    if (!isInTop5 && currentUserRank != null && currentUserData != null)
+                      Column(
+                        children: [
+                          const Divider(height: 1.0, color: Color(0xFFE5E7EB)),
+                          _leaderboardRow(
+                            rank: currentUserRank,
+                            name: _displayName(currentUserData, fallbackRank: currentUserRank - 1),
+                            points: '${_pointsLabel(currentUserData)} / ${maxScore.toInt()}',
+                            accent: const Color(0xFF1D66E5),
+                            showBadge: false,
+                            isCurrentUser: true,
+                          ),
+                        ],
                       ),
                   ],
                 ),
@@ -1220,11 +1260,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     required String points,
     required Color accent,
     bool showBadge = false,
+    bool isCurrentUser = false,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isCurrentUser ? const Color(0xFFEEF2FF) : Colors.white,
         border: Border(bottom: BorderSide(color: const Color(0xFFE5E7EB).withOpacity(0.8))),
       ),
       child: Row(
@@ -1246,7 +1287,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             width: 40.0,
             height: 40.0,
             decoration: BoxDecoration(
-              color: const Color(0xFF64748B),
+              color: isCurrentUser ? const Color(0xFF1D66E5) : const Color(0xFF64748B),
               shape: BoxShape.circle,
               border: Border.all(color: accent, width: 2.0),
             ),
@@ -1255,9 +1296,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           const SizedBox(width: 10.0),
           Expanded(
             child: Text(
-              name,
-              style: const TextStyle(
-                color: Color(0xFF111827),
+              isCurrentUser ? 'You' : name,
+              style: TextStyle(
+                color: const Color(0xFF111827),
                 fontFamily: 'Roboto',
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
@@ -1288,7 +1329,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     color: accent,
                     size: 18.0,
                   )
-                : const SizedBox.shrink(),
+                : isCurrentUser
+                    ? const Icon(Icons.person_pin, color: Color(0xFF1D66E5), size: 18.0)
+                    : const SizedBox.shrink(),
           ),
         ],
       ),

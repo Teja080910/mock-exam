@@ -249,23 +249,6 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     required List<dynamic> questions,
     required bool showSubmitButton,
   }) {
-    // Group questions by subcategoryName
-    final Map<String, List<dynamic>> grouped = {};
-    for (final q in questions) {
-      final questionData = q is Map ? (q['question'] ?? q) : q;
-      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString();
-      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
-      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
-    }
-
-    final hasSubjects = grouped.length > 1 || (grouped.keys.first != 'General');
-    final subjectKeys = grouped.keys.toList();
-    if (_selectedSectionIndex >= subjectKeys.length) {
-      _selectedSectionIndex = 0;
-    }
-    final currentSubject = hasSubjects ? subjectKeys[_selectedSectionIndex] : null;
-    final displayQuestions = currentSubject != null ? grouped[currentSubject]! : questions;
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -331,77 +314,8 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 ],
               ),
             ),
-            if (hasSubjects) ...[
-              const SizedBox(height: 14.0),
-              Row(
-                children: subjectKeys.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final name = entry.value;
-                  return Expanded(
-                    child: InkWell(
-                      onTap: () => setState(() => _selectedSectionIndex = idx),
-                      child: Column(
-                        children: [
-                          Text(
-                            name,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: _selectedSectionIndex == idx
-                                  ? const Color(0xFFF43F5E)
-                                  : const Color(0xFF4B5563),
-                              fontSize: 11.0,
-                              fontWeight: _selectedSectionIndex == idx
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          Container(
-                            height: 3.0,
-                            width: 92.0,
-                            decoration: BoxDecoration(
-                              color: _selectedSectionIndex == idx
-                                  ? const Color(0xFFF43F5E)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(999.0),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
             const SizedBox(height: 14.0),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                const itemSpacing = 8.0;
-                const columns = 5;
-                final itemSize =
-                    ((constraints.maxWidth - (itemSpacing * (columns - 1))) /
-                            columns)
-                        .floorToDouble();
-                return Wrap(
-                  spacing: itemSpacing,
-                  runSpacing: itemSpacing,
-                  children: [
-                    for (var i = 0; i < displayQuestions.length; i++)
-                      SizedBox(
-                        width: itemSize,
-                        child: Center(
-                          child: _buildNumberChip(
-                            number: i + 1,
-                            filled: _isAnswered(displayQuestions[i]),
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
+            _buildQuestionGrid(questions: questions),
             if (showSubmitButton) ...[
               const SizedBox(height: 14.0),
               SizedBox(
@@ -449,10 +363,76 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     );
   }
 
+  Widget _buildQuestionGrid({required List<dynamic> questions}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const itemSpacing = 8.0;
+        const columns = 5;
+        final itemSize =
+            ((constraints.maxWidth - (itemSpacing * (columns - 1))) / columns)
+                .floorToDouble();
+        return Wrap(
+          spacing: itemSpacing,
+          runSpacing: itemSpacing,
+          children: [
+            for (var i = 0; i < questions.length; i++)
+              SizedBox(
+                width: itemSize,
+                child: Center(
+                  child: _buildNumberChip(
+                    number: i + 1,
+                    filled: _isAnswered(questions[i]),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSubjectGridCard({
+    required String subject,
+    required List<dynamic> questions,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(color: const Color(0xFFE8EDF5)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 18.0,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              subject,
+              style: const TextStyle(
+                color: Color(0xFF1F2937),
+                fontSize: 16.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12.0),
+            _buildQuestionGrid(questions: questions),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionPanel({
     required List<dynamic> questions,
   }) {
-    final visibleCount = questions.isEmpty ? 25 : questions.length.clamp(0, 25);
     final Map<String, List<dynamic>> grouped = {};
     for (final q in questions) {
       final questionData = q is Map ? (q['question'] ?? q) : q;
@@ -463,11 +443,14 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     }
     final subjectKeys = grouped.keys.toList();
     if (subjectKeys.isEmpty) subjectKeys.add('General');
-    if (_selectedSectionIndex >= subjectKeys.length) {
+    final hasSubjectTabs = subjectKeys.length > 1 || subjectKeys.first != 'General';
+    final tabLabels = hasSubjectTabs ? ['All', ...subjectKeys] : subjectKeys;
+    if (_selectedSectionIndex >= tabLabels.length) {
       _selectedSectionIndex = 0;
     }
-    final currentSubject = subjectKeys[_selectedSectionIndex];
-    final displayQuestions = grouped[currentSubject] ?? questions;
+    final displayQuestions = hasSubjectTabs && _selectedSectionIndex > 0
+        ? grouped[subjectKeys[_selectedSectionIndex - 1]] ?? questions
+        : questions;
 
     return Container(
       width: double.infinity,
@@ -489,23 +472,33 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 2.0),
-            Row(
-              children: subjectKeys.asMap().entries.map((entry) {
-                final idx = entry.key;
-                final name = entry.value;
-                return _buildSectionTab(
-                  text: name,
-                  selected: _selectedSectionIndex == idx,
-                  onTap: () => setState(() => _selectedSectionIndex = idx),
-                );
-              }).toList(),
-            ),
+            if (hasSubjectTabs)
+              Row(
+                children: tabLabels.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final name = entry.value;
+                  return _buildSectionTab(
+                    text: name,
+                    selected: _selectedSectionIndex == idx,
+                    onTap: () => setState(() => _selectedSectionIndex = idx),
+                  );
+                }).toList(),
+              ),
             const SizedBox(height: 10.0),
             Row(
               children: [
                 const Text(
-                  'Questions: 25',
+                  'Questions:',
                   style: TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 4.0),
+                Text(
+                  displayQuestions.length.toString(),
+                  style: const TextStyle(
                     color: Color(0xFF1F2937),
                     fontSize: 12.0,
                     fontWeight: FontWeight.w500,
@@ -536,11 +529,12 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                             ((columns - 1) * spacing)) /
                         columns)
                     .floorToDouble();
+                final questionCount = displayQuestions.length.clamp(0, 25);
                 return Wrap(
                   spacing: spacing,
                   runSpacing: spacing,
                   children: [
-                    for (var i = 0; i < visibleCount; i++)
+                    for (var i = 0; i < questionCount; i++)
                       SizedBox(
                         width: itemSize,
                         child: Center(
@@ -639,6 +633,66 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildSubjectGridCards(List<dynamic> questions) {
+    final Map<String, List<dynamic>> grouped = {};
+    for (final q in questions) {
+      final questionData = q is Map ? (q['question'] ?? q) : q;
+      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString();
+      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
+      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+    }
+
+    final subjectKeys = grouped.keys.toList();
+    final hasSubjects = subjectKeys.length > 1;
+    if (!hasSubjects) return [];
+
+    final tabLabels = subjectKeys;
+    if (_selectedSectionIndex >= tabLabels.length) {
+      _selectedSectionIndex = 0;
+    }
+    final displayQuestions = grouped[tabLabels[_selectedSectionIndex]]!;
+
+    return [
+      const SizedBox(height: 16.0),
+      Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14.0),
+          border: Border.all(color: const Color(0xFFE8EDF5)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x12000000),
+              blurRadius: 18.0,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: tabLabels.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final name = entry.value;
+                  return _buildSectionTab(
+                    text: name,
+                    selected: _selectedSectionIndex == idx,
+                    onTap: () => setState(() => _selectedSectionIndex = idx),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14.0),
+              _buildQuestionGrid(questions: displayQuestions),
+            ],
+          ),
+        ),
+      ),
+    ];
   }
 
   @override
@@ -753,6 +807,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                               ),
                             ),
                           ),
+                          ..._buildSubjectGridCards(questions),
                         ],
                       ),
                     ),

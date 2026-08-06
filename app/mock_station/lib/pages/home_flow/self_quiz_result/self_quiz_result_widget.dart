@@ -644,11 +644,12 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     required String points,
     required Color accent,
     bool crown = false,
+    bool isCurrentUser = false,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 18.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isCurrentUser ? const Color(0xFFEEF2FF) : Colors.white,
         border: Border(
           bottom: BorderSide(color: const Color(0xFFE9EDF5).withOpacity(0.95)),
         ),
@@ -677,7 +678,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             width: 52.0,
             height: 52.0,
             decoration: BoxDecoration(
-              color: const Color(0xFF64748B),
+              color: isCurrentUser ? const Color(0xFF1D66E5) : const Color(0xFF64748B),
               shape: BoxShape.circle,
               border: Border.all(color: accent, width: 3.0),
               boxShadow: const [
@@ -693,7 +694,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
           const SizedBox(width: 18.0),
           Expanded(
             child: Text(
-              name,
+              isCurrentUser ? 'You' : name,
               style: const TextStyle(
                 color: Color(0xFF111827),
                 fontSize: 16.0,
@@ -712,8 +713,12 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
           ),
           const SizedBox(width: 14.0),
           Icon(
-            crown ? Icons.emoji_events_rounded : Icons.verified_rounded,
-            color: crown ? const Color(0xFFF59E0B) : accent,
+            isCurrentUser
+                ? Icons.person_pin
+                : (crown ? Icons.emoji_events_rounded : Icons.verified_rounded),
+            color: isCurrentUser
+                ? const Color(0xFF1D66E5)
+                : (crown ? const Color(0xFFF59E0B) : accent),
             size: 28.0,
           ),
         ],
@@ -1269,17 +1274,42 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
   }
 
   Widget _buildLeaderboardTab() {
-    return FutureBuilder<ApiCallResponse>(
-      future: QuizGroup.leaderboardApiCall.call(
-        token: FFAppState().loginToken,
-      ),
+    return FutureBuilder<List<ApiCallResponse>>(
+      future: Future.wait([
+        QuizGroup.leaderboardApiCall.call(
+          token: FFAppState().loginToken,
+        ),
+        QuizGroup.getuserrankApiCall.call(
+          userId: FFAppState().userId,
+          token: FFAppState().loginToken,
+        ),
+      ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final users = _sortedLeaderboard(snapshot.data!);
+        final leaderboardRes = snapshot.data![0];
+        final userRankRes = snapshot.data![1];
+
+        final users = _sortedLeaderboard(leaderboardRes);
         final topThree = users.take(3).toList();
+
+        final currentUserId = FFAppState().userId;
+        final isInTop5 = users.any((u) =>
+            (getJsonField(u, r'''$._id''') ?? '').toString() == currentUserId);
+
+        dynamic currentUserData;
+        int? currentUserRank;
+        if (QuizGroup.getuserrankApiCall.success(
+              userRankRes.jsonBody,
+            ) ==
+            1) {
+          currentUserData =
+              QuizGroup.getuserrankApiCall.user(userRankRes.jsonBody);
+          currentUserRank =
+              castToType<int>(getJsonField(currentUserData, r'''$.rank'''));
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
@@ -1369,6 +1399,21 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                     ? const Color(0xFFF97316)
                                     : const Color(0xFF94A3B8),
                         crown: i == 0,
+                        isCurrentUser: (getJsonField(users[i], r'''$._id''') ?? '').toString() == currentUserId,
+                      ),
+                    if (!isInTop5 && currentUserRank != null && currentUserData != null)
+                      Column(
+                        children: [
+                          const Divider(height: 1.0, color: Color(0xFFE9EDF5)),
+                          _leaderboardRow(
+                            rank: currentUserRank,
+                            name: _displayName(currentUserData, fallbackRank: currentUserRank - 1),
+                            points: '${_pointsLabel(currentUserData)} / 25',
+                            accent: const Color(0xFF1D66E5),
+                            crown: false,
+                            isCurrentUser: true,
+                          ),
+                        ],
                       ),
                   ],
                 ),
