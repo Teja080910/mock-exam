@@ -932,6 +932,18 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "share_plus",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/share_plus-12.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "share_plus_platform_interface",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/share_plus_platform_interface-6.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "shared_preferences",
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/shared_preferences-2.3.2",
       "packageUri": "lib/",

@@ -637,13 +637,23 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       mainAxisSize: MainAxisSize.min,
       children: [
         if (leadingIcon != null) ...[
-          Icon(leadingIcon, size: 18.0),
-          const SizedBox(width: 4.0),
+          Icon(leadingIcon, size: 14.0),
+          const SizedBox(width: 2.0),
         ],
-        Flexible(child: Text(text, overflow: TextOverflow.visible, textAlign: TextAlign.center)),
+        Flexible(
+          child: Text(
+            text,
+            overflow: TextOverflow.visible,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         if (trailingIcon != null) ...[
-          const SizedBox(width: 4.0),
-          Icon(trailingIcon, size: 18.0),
+          const SizedBox(width: 2.0),
+          Icon(trailingIcon, size: 14.0),
         ],
       ],
     );
@@ -660,6 +670,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
           ),
           child: buttonChild,
         ),
@@ -676,6 +687,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
         ),
         child: buttonChild,
       ),

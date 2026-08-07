@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'profile_screen_model.dart';
 export 'profile_screen_model.dart';
 
@@ -391,14 +392,17 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     context.pushNamed(HelplineCenterScreenWidget.routeName);
                   },
                 ),
-                _buildMenuTile(
-                  icon: Icons.share_outlined,
-                  label: 'Share App',
-                  color: const Color(0xFF7C3AED),
-                  onTap: () {
-                    launchURL('https://mockstation.blogspot.com/');
-                  },
-                ),
+                  _buildMenuTile(
+                    icon: Icons.share_outlined,
+                    label: 'Share App',
+                    color: const Color(0xFF7C3AED),
+                    onTap: () {
+                      Share.share(
+                        'Check out Mock Station app for your preparation! Download here: https://play.google.com/store/apps/details?id=com.mock.exam.app',
+                        subject: 'Mock Station App',
+                      );
+                    },
+                  ),
                 _buildMenuTile(
                   icon: Icons.settings_outlined,
                   label: 'Settings',
