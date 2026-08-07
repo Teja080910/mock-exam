@@ -362,44 +362,42 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     required String subtitle,
   }) {
     return Expanded(
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 48.0,
-            height: 48.0,
+            width: 38.0,
+            height: 38.0,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.14),
+              color: accent.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(icon, color: accent, size: 24.0),
+            child: Icon(icon, color: accent, size: 20.0),
           ),
-          const SizedBox(width: 10.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF1E3A8A),
-                  ),
-                ),
-                const SizedBox(height: 2.0),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10.0,
-                    color: FlutterFlowTheme.of(context).secondaryText,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 6.0),
+          Text(
+            title,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11.0,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E3A8A),
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 2.0),
+          Text(
+            subtitle,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 9.0,
+              fontWeight: FontWeight.w500,
+              color: FlutterFlowTheme.of(context).secondaryText,
+              height: 1.1,
             ),
           ),
         ],
@@ -620,11 +618,17 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                         ),
                       );
                     }
-                    final plans = QuizGroup.getPlanCall
+                    final rawPlans = QuizGroup.getPlanCall
                         .planDetailsList(snapshot.data!.jsonBody);
-                    if (plans == null || plans.isEmpty) {
+                    if (rawPlans == null || rawPlans.isEmpty) {
                       return const Center(child: Text('No plans available.'));
                     }
+                    final plans = List.from(rawPlans);
+                    plans.sort((a, b) {
+                      final aPrice = double.tryParse(getJsonField(a, r'''$.price''').toString()) ?? 0.0;
+                      final bPrice = double.tryParse(getJsonField(b, r'''$.price''').toString()) ?? 0.0;
+                      return aPrice.compareTo(bPrice);
+                    });
                     return ListView(
                       padding: EdgeInsets.zero,
                       children: [

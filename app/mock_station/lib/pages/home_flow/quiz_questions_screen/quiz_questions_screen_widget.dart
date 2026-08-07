@@ -442,13 +442,25 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   backgroundColor: const Color(0xFFEEEBFF),
                   textColor: const Color(0xFF4338CA),
                 ),
-                const SizedBox(width: 10.0),
+                                const SizedBox(width: 8.0),
+                Container(
+                  width: 1.5,
+                  height: 20.0,
+                  color: const Color(0xFFD1D5DB),
+                ),
+                const SizedBox(width: 8.0),
                 _buildScoreChip(
                   label: '+${correctAnsReward.toStringAsFixed(correctAnsReward.truncateToDouble() == correctAnsReward ? 0 : 1)}',
                   backgroundColor: const Color(0xFFEAF8EB),
                   textColor: const Color(0xFF16A34A),
                 ),
-                const SizedBox(width: 10.0),
+                const SizedBox(width: 8.0),
+                Container(
+                  width: 1.5,
+                  height: 20.0,
+                  color: const Color(0xFFD1D5DB),
+                ),
+                const SizedBox(width: 8.0),
                 _buildScoreChip(
                   label: '-${penaltyPerQuestion.toStringAsFixed(penaltyPerQuestion.truncateToDouble() == penaltyPerQuestion ? 0 : 2)}',
                   backgroundColor: const Color(0xFFFDEBEC),

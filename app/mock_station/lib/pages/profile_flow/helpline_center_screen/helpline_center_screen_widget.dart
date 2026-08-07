@@ -177,6 +177,71 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                                 .jsonBody,
                                           ) ?? '',
                                         ),
+                                        const SizedBox(height: 24.0),
+                                        Container(
+                                          padding: const EdgeInsets.all(16.0),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Contact Support',
+                                                style: TextStyle(
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF111827),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              const Text(
+                                                'If you have any questions, feedback, or need assistance, please feel free to contact us at:',
+                                                style: TextStyle(
+                                                  fontSize: 14.0,
+                                                  color: Colors.black54,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 16.0),
+                                              InkWell(
+                                                onTap: () {
+                                                  launchURL('mailto:freshersfind@gmail.com');
+                                                },
+                                                borderRadius: BorderRadius.circular(8.0),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFEFF6FF),
+                                                    borderRadius: BorderRadius.circular(8.0),
+                                                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.mail_outline_rounded,
+                                                        color: Color(0xFF2563EB),
+                                                        size: 18.0,
+                                                      ),
+                                                      const SizedBox(width: 8.0),
+                                                      const Text(
+                                                        'freshersfind@gmail.com',
+                                                        style: TextStyle(
+                                                          color: Color(0xFF2563EB),
+                                                          fontSize: 14.0,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ).animateOnPageLoad(animationsMap[
