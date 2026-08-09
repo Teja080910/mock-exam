@@ -84,6 +84,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   AppLifecycleState? _lastLifecycleState;
   DateTime? _backgroundTime;
 
+  int _selectedSubjectIndex = 0;
+
   Future<void> startQuizTimer() async {
     if (timerStarted) {
       return; // Prevent multiple timer starts
@@ -335,10 +337,110 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     );
   }
 
+  Widget _buildSubjectTab({
+    required String text,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? const Color(0xFFF43F5E)
+                      : const Color(0xFF4B5563),
+                  fontSize: 11.0,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            Container(
+              height: 3.0,
+              width: 92.0,
+              decoration: BoxDecoration(
+                color: selected ? const Color(0xFFF43F5E) : Colors.transparent,
+                borderRadius: BorderRadius.circular(999.0),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<String> _subjectKeys(List<dynamic> questions) {
+    final Map<String, List<dynamic>> grouped = {};
+    for (final q in questions) {
+      final sub =
+          (getJsonField(q, r'''$.subcategoryName''') ?? '').toString().trim();
+      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
+      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+    }
+    return grouped.keys.toList();
+  }
+
+  int _firstQuestionIndexOfSubject(
+      List<dynamic> questions, String subject) {
+    for (var i = 0; i < questions.length; i++) {
+      final sub = (getJsonField(questions[i], r'''$.subcategoryName''') ?? '')
+          .toString()
+          .trim();
+      final key = sub.isEmpty ? 'General' : sub;
+      if (key == subject) return i;
+    }
+    return 0;
+  }
+
+  Widget _buildSubjectTabsRow(List<dynamic> questions) {
+    final subjectKeys = _subjectKeys(questions);
+    if (subjectKeys.length < 2) return const SizedBox.shrink();
+    if (_selectedSubjectIndex >= subjectKeys.length) {
+      _selectedSubjectIndex = 0;
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
+      child: Row(
+        children: subjectKeys.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final name = entry.value;
+          return _buildSubjectTab(
+            text: name,
+            selected: _selectedSubjectIndex == idx,
+            onTap: () {
+              setState(() {
+                _selectedSubjectIndex = idx;
+              });
+              final targetIndex =
+                  _firstQuestionIndexOfSubject(questions, name);
+              if (_model.pageViewController != null) {
+                _model.pageViewController!.animateToPage(
+                  targetIndex,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildQuizHeader({
     required int totalQuestions,
     required double correctAnsReward,
     required double penaltyPerQuestion,
+    List<dynamic> questions = const [],
   }) {
     final currentQuestion = _model.pageViewCurrentIndex + 1;
     final title = widget.title ?? '';
@@ -433,6 +535,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
               ),
             ),
           ),
+          _buildSubjectTabsRow(questions),
           Padding(
             padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 8.0),
             child: Row(
@@ -454,13 +557,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   backgroundColor: const Color(0xFFEAF8EB),
                   textColor: const Color(0xFF16A34A),
                 ),
-                const SizedBox(width: 8.0),
-                Container(
-                  width: 1.5,
-                  height: 20.0,
-                  color: const Color(0xFFD1D5DB),
-                ),
-                const SizedBox(width: 8.0),
+                const SizedBox(width: 10.0),
                 _buildScoreChip(
                   label: '-${penaltyPerQuestion.toStringAsFixed(penaltyPerQuestion.truncateToDouble() == penaltyPerQuestion ? 0 : 2)}',
                   backgroundColor: const Color(0xFFFDEBEC),
@@ -1069,6 +1166,14 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                   });
                                 }
 
+                                final categorywisequiz = QuizGroup
+                                        .getquestionsbyquizidApiCall
+                                        .questionDetailsList(
+                                          (_model.quizRes?.jsonBody ?? ''),
+                                        )
+                                        ?.toList() ??
+                                    [];
+
                                 return Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
@@ -1076,6 +1181,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                       totalQuestions: totalQuestions,
                                       correctAnsReward: correctAnsReward,
                                       penaltyPerQuestion: penaltyPerQuestion,
+                                      questions: categorywisequiz,
                                     ),
                                     Expanded(
                                       child: Stack(
@@ -1112,15 +1218,6 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                       .bottom -
                                                                   220.0,
                                                             );
-                                                            final categorywisequiz = QuizGroup
-                                                                    .getquestionsbyquizidApiCall
-                                                                    .questionDetailsList(
-                                                                      (_model.quizRes
-                                                                              ?.jsonBody ??
-                                                                          ''),
-                                                                    )
-                                                                    ?.toList() ??
-                                                                [];
 
                                                             return SizedBox(
                                                               height:
@@ -2323,6 +2420,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                           children: [
                                                               // Back Button
                                                               Expanded(
+                                                                flex: 3,
                                                                 child:
                                                                     _buildFooterButton(
                                                                   onPressed:
@@ -2364,6 +2462,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                               SizedBox(width: 8.0),
                                                               // Skip Button
                                                               Expanded(
+                                                                flex: 3,
                                                                 child:
                                                                     _buildFooterButton(
                                                                   onPressed:
@@ -2413,6 +2512,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                               SizedBox(width: 8.0),
                                                               // Save & Next Button
                                                               Expanded(
+                                                               flex: 4,
                                                                child:
                                                                    _buildFooterButton(
                                                                 onPressed:
@@ -3142,13 +3242,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           .quesList
                                                                           .toList();
                                                                 },
-                                                                 text: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
-                                                                             0) ==
-                                                                         (_model.pageViewCurrentIndex +
-                                                                             1))
-                                                                     ? 'Submit'
-                                                                     : 'Next',
-                                                                isPrimary: true,
+                                                                  text: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
+                                                                              0) ==
+                                                                          (_model.pageViewCurrentIndex +
+                                                                              1))
+                                                                      ? 'Submit'
+                                                                      : 'Save & Next',
+                                                                 isPrimary: true,
                                                                 accentColor:
                                                                     const Color(
                                                                         0xFF2563EB),

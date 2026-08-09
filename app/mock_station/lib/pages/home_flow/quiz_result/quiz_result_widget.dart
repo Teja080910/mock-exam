@@ -214,7 +214,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     String? badge,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.0),
@@ -224,57 +224,58 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 32.0,
-            height: 32.0,
+            width: 28.0,
+            height: 28.0,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(11.0),
+              borderRadius: BorderRadius.circular(9.0),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x0D0F172A),
-                  blurRadius: 8.0,
-                  offset: Offset(0, 3),
+                  blurRadius: 6.0,
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
-            child: Icon(icon, color: accentColor, size: 19.0),
+            child: Icon(icon, color: accentColor, size: 16.0),
           ),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 8.0),
           Text(
             title,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 11.0,
-              fontWeight: FontWeight.w600,
+              fontSize: 10.0,
+              fontWeight: FontWeight.w700,
+              height: 1.1,
             ),
           ),
-          const SizedBox(height: 6.0),
+          const SizedBox(height: 4.0),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: accentColor,
-              fontSize: 20.0,
+              fontSize: 16.0,
               fontWeight: FontWeight.w800,
             ),
           ),
           if (badge != null) ...[
-            const SizedBox(height: 6.0),
+            const SizedBox(height: 4.0),
             Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
               decoration: BoxDecoration(
                 color: accentColor.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(6.0),
               ),
               child: Text(
                 badge,
                 style: TextStyle(
                   color: accentColor,
-                  fontSize: 9.5,
+                  fontSize: 9.0,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -414,7 +415,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
   Widget _buildSectionalSummary() {
     final sections = _sectionSummaryItems();
-    if (sections.isEmpty) return const SizedBox.shrink();
+    if (sections.length < 2) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
@@ -673,12 +674,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                    mainAxisExtent: 168.0,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                    mainAxisExtent: 125.0,
                     children: [
                       _buildMetricCard(title: 'Total Questions', value: total.toString(), icon: Icons.article_rounded, accentColor: const Color(0xFF0B84FF), backgroundColor: const Color(0xFFF1F6FF)),
-                      _buildMetricCard(title: 'Total Marks', value: _score.toStringAsFixed(4), icon: Icons.emoji_events_rounded, accentColor: const Color(0xFF7C3AED), backgroundColor: const Color(0xFFF7F1FF)),
+                      _buildMetricCard(title: 'Total Marks', value: _score.toStringAsFixed(_score.truncateToDouble() == _score ? 0 : 2), icon: Icons.emoji_events_rounded, accentColor: const Color(0xFF7C3AED), backgroundColor: const Color(0xFFF7F1FF)),
                       _buildMetricCard(title: 'Correct Answers', value: correct.toString(), icon: Icons.check_circle_rounded, accentColor: const Color(0xFF16A34A), backgroundColor: const Color(0xFFF0FBF4), badge: accuracyLabel),
                       _buildMetricCard(title: 'Incorrect Answers', value: wrong.toString(), icon: Icons.cancel_rounded, accentColor: const Color(0xFFEF4444), backgroundColor: const Color(0xFFFFF3F3), badge: '${(total <= 0 ? 0 : (wrong / total) * 100).toStringAsFixed(0)}%'),
                       _buildMetricCard(title: 'Skipped Questions', value: skipped.toString(), icon: Icons.timer_rounded, accentColor: const Color(0xFFF59E0B), backgroundColor: const Color(0xFFFFFAEE), badge: '${(total <= 0 ? 0 : (skipped / total) * 100).toStringAsFixed(0)}%'),

@@ -378,7 +378,10 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     );
   }
 
-  Widget _buildQuestionGrid({required List<dynamic> questions}) {
+  Widget _buildQuestionGrid({
+    required List<dynamic> questions,
+    List<dynamic>? allQuestions,
+  }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         const itemSpacing = 8.0;
@@ -395,9 +398,14 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 width: itemSize,
                 child: Center(
                   child: _buildNumberChip(
-                    number: i + 1,
+                    number: (allQuestions != null
+                            ? allQuestions.indexOf(questions[i])
+                            : i) +
+                        1,
                     filled: _isAnswered(questions[i]),
-                    onTap: () => context.pop(i),
+                    onTap: () => context.pop(allQuestions != null
+                        ? allQuestions.indexOf(questions[i])
+                        : i),
                   ),
                 ),
               ),
@@ -703,7 +711,78 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 }).toList(),
               ),
               const SizedBox(height: 14.0),
-              _buildQuestionGrid(questions: displayQuestions),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FBFF),
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(color: const Color(0xFFE4EAF4)),
+                ),
+                child: Row(
+                  children: [
+                    _buildLegendDot(
+                      color: const Color(0xFF1D66E5),
+                      label: 'Answered',
+                    ),
+                    Container(
+                      width: 1.0,
+                      height: 16.0,
+                      color: const Color(0xFFE5E7EB),
+                    ),
+                    _buildLegendDot(
+                      color: const Color(0xFF8EA0BF),
+                      label: 'Not Answered',
+                      outlined: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14.0),
+              _buildQuestionGrid(
+                questions: displayQuestions,
+                allQuestions: questions,
+              ),
+              const SizedBox(height: 14.0),
+              SizedBox(
+                width: double.infinity,
+                height: 46.0,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    context.pushNamed(
+                      QuizResultWidget.routeName,
+                      queryParameters: {
+                        'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
+                        'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
+                        'totalQuestion': serializeParam(FFAppState().quesList.length, ParamType.int),
+                        'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
+                        'quizID': serializeParam(widget.quizID ?? '', ParamType.String),
+                        'title': serializeParam(widget.title ?? '', ParamType.String),
+                        'correctAnsReward': serializeParam(widget.correctAnsReward ?? 0.0, ParamType.double),
+                        'penaltyPerQuestion': serializeParam(widget.penaltyPerQuestion ?? 0.0, ParamType.double),
+                        'quizTime': serializeParam(widget.quizTime ?? '', ParamType.String),
+                      }.withoutNulls,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: const Color(0xFF1D66E5),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  icon: const Icon(Icons.description_outlined, size: 18.0),
+                  label: const Text(
+                    'SUBMIT TEST',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -732,6 +811,15 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     final sectionTabCount = questions.isEmpty ? 25 : questions.length.clamp(0, 25).toInt();
     final answeredCount = questions.where(_isAnswered).length;
     final notAnsweredCount = (questions.isEmpty ? 25 : questions.length) - answeredCount;
+
+    final Map<String, List<dynamic>> grouped = {};
+    for (final q in questions) {
+      final questionData = q is Map ? (q['question'] ?? q) : q;
+      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString();
+      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
+      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+    }
+    final hasSubjects = grouped.keys.length > 1;
 
     return GestureDetector(
       onTap: () {
@@ -801,29 +889,45 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                       padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
                       child: Column(
                         children: [
-                          _buildQuestionGridCard(
-                            title: 'Grid View',
-                            questions: questions.isEmpty
-                                ? List.generate(
-                                    25,
-                                    (index) => {'user_answer': 'skipped'},
-                                  )
-                                : questions,
-                            showSubmitButton: true,
-                          ),
-                          const SizedBox(height: 12.0),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                            child: Text(
-                              'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
-                              style: const TextStyle(
-                                color: Color(0xFF64748B),
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w500,
+                          if (!hasSubjects) ...[
+                            _buildQuestionGridCard(
+                              title: 'Grid View',
+                              questions: questions.isEmpty
+                                  ? List.generate(
+                                      25,
+                                      (index) => {'user_answer': 'skipped'},
+                                    )
+                                  : questions,
+                              showSubmitButton: true,
+                            ),
+                            const SizedBox(height: 12.0),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                              child: Text(
+                                'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                           ..._buildSubjectGridCards(questions),
+                          if (hasSubjects) ...[
+                            const SizedBox(height: 12.0),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                              child: Text(
+                                'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

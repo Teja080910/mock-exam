@@ -80,17 +80,11 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
         (item is Map ? item['subcategoryName'] : null) ??
             getJsonField(questionData, r'''$.subcategoryName'''),
       );
-      final label = subject.isEmpty ? 'General' : subject;
-      if (!labels.contains(label)) {
-        labels.add(label);
+      if (subject.isEmpty) continue;
+      if (!labels.contains(subject)) {
+        labels.add(subject);
       }
-      if (labels.length == 3) break;
     }
-
-    while (labels.length < 3) {
-      labels.add('Section ${labels.length + 1}');
-    }
-
     return labels;
   }
 
@@ -543,10 +537,13 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               children: [
                 Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 11.0,
                     fontWeight: FontWeight.w500,
+                    height: 1.1,
                   ),
                 ),
                 const SizedBox(height: 8.0),
@@ -847,7 +844,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
         }
 
         final pointsResponse = snapshot.data!;
-        final totalMark = ((((widget.correctAnswer ?? 0) *
+        final double totalMarkVal = ((((widget.correctAnswer ?? 0) *
                         (QuizGroup.getpointssettingApiCall.selfChallengePoints(
                               pointsResponse.jsonBody,
                             ) ??
@@ -858,8 +855,8 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                               pointsResponse.jsonBody,
                             ) ??
                             0)))
-                .toDouble())
-            .toStringAsFixed(4);
+                .toDouble());
+        final totalMark = totalMarkVal.toStringAsFixed(totalMarkVal.truncateToDouble() == totalMarkVal ? 0 : 2);
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 18.0),
@@ -988,7 +985,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                       physics: const NeverScrollableScrollPhysics(),
                       crossAxisSpacing: 10.0,
                       mainAxisSpacing: 10.0,
-                      childAspectRatio: 1.42,
+                      childAspectRatio: 1.65,
                       children: [
                         _summaryMetricCard(
                           color: const Color(0xFF2563EB),
@@ -1044,24 +1041,25 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 ),
               ),
               const SizedBox(height: 14.0),
-              Container(
-                padding: const EdgeInsets.all(14.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18.0),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Sectional Summary',
-                      style: TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w800,
+              if (sectionLabels.length >= 2)
+                Container(
+                  padding: const EdgeInsets.all(14.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18.0),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Sectional Summary',
+                        style: TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 8.0),
                     Row(
                       children: [
