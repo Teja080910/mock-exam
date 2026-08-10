@@ -2,8 +2,8 @@ class AppConfig {
   // ============================================
   // Backend API
   // ============================================
-  static const String baseURL = 'http://172.16.69.1:6900/';
-  static const String imageBaseURL = 'http://172.16.69.1:6900/assets/userImages/';
+  static const String baseURL = 'https://app.mockstation.com/';
+  static const String imageBaseURL = 'https://app.mockstation.com/assets/userImages/';
 
   // ============================================
   // Firebase
