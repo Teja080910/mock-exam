@@ -73,8 +73,6 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
               Expanded(
                 child: Text(
                   widget.title ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF111827),
@@ -214,8 +212,6 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                 children: [
                   Text(
                     getJsonField(subcategory, r'$.name').toString(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16.0,

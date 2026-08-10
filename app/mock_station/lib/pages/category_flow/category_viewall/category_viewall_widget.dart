@@ -414,7 +414,6 @@ class _CategoryViewallWidgetState extends State<CategoryViewallWidget>
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,
-                                                              maxLines: 2,
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium

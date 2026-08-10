@@ -126,7 +126,6 @@ class _CompletedquizzesScreenDetailWidgetState
                                         'Message',
                                       ),
                                       textAlign: TextAlign.center,
-                                      maxLines: 1,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
@@ -247,7 +246,6 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                           1.5,
                                                                     ),
                                                               ),
-                                                              maxLines: 2,
                                                             ),
                                                           ),
                                                           Expanded(
@@ -302,7 +300,6 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                   textAlign:
                                                                       TextAlign
                                                                           .start,
-                                                                  maxLines: 2,
                                                                 ),
                                                               ),
                                                             ),

@@ -178,8 +178,6 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
               Flexible(
                 child: Text(
                   _displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF10213F),
                     fontSize: 21.0,

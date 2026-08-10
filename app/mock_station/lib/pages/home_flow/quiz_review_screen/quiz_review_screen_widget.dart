@@ -232,8 +232,6 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
               child: Text(
                 text,
                 textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: selected
                       ? const Color(0xFFF43F5E)
@@ -663,9 +661,14 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     final Map<String, List<dynamic>> grouped = {};
     for (final q in questions) {
       final questionData = q is Map ? (q['question'] ?? q) : q;
-      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString();
-      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
-      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+      final sub = (getJsonField(questionData, r'''$.subject''') ??
+              getJsonField(questionData, r'''$.subcategoryName''') ??
+              '')
+          .toString()
+          .trim();
+      if (sub.isEmpty) continue;
+      grouped.putIfAbsent(sub, () => []);
+      grouped[sub]!.add(q);
     }
 
     final subjectKeys = grouped.keys.toList();
@@ -815,9 +818,14 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     final Map<String, List<dynamic>> grouped = {};
     for (final q in questions) {
       final questionData = q is Map ? (q['question'] ?? q) : q;
-      final sub = (getJsonField(questionData, r'''$.subcategoryName''') ?? '').toString();
-      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
-      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+      final sub = (getJsonField(questionData, r'''$.subject''') ??
+              getJsonField(questionData, r'''$.subcategoryName''') ??
+              '')
+          .toString()
+          .trim();
+      if (sub.isEmpty) continue;
+      grouped.putIfAbsent(sub, () => []);
+      grouped[sub]!.add(q);
     }
     final hasSubjects = grouped.keys.length > 1;
 

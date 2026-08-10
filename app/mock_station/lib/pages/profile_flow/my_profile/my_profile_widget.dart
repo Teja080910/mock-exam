@@ -286,7 +286,6 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                             r'''$.lastname''',
                                           ).toString()}',
                                           textAlign: TextAlign.start,
-                                          maxLines: 1,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -341,7 +340,6 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                             r'''$.email''',
                                           ).toString(),
                                           textAlign: TextAlign.start,
-                                          maxLines: 1,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(

@@ -415,7 +415,6 @@ class _DetailCategoryViewallWidgetState
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,
-                                                              maxLines: 2,
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium

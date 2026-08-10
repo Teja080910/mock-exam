@@ -294,7 +294,6 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                                                               textAlign:
                                                                   TextAlign
                                                                       .start,
-                                                              maxLines: 2,
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium

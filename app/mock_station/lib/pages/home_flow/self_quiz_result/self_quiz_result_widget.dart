@@ -77,7 +77,9 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     for (final item in _questions()) {
       final questionData = item is Map ? (item['question'] ?? item) : item;
       final subject = _cleanText(
-        (item is Map ? item['subcategoryName'] : null) ??
+        (item is Map ? item['subject'] : null) ??
+            getJsonField(questionData, r'''$.subject''') ??
+            (item is Map ? item['subcategoryName'] : null) ??
             getJsonField(questionData, r'''$.subcategoryName'''),
       );
       if (subject.isEmpty) continue;
@@ -476,8 +478,6 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               child: Text(
                 text,
                 textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: selected
                       ? const Color(0xFFF43F5E)
@@ -537,8 +537,6 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               children: [
                 Text(
                   title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 11.0,

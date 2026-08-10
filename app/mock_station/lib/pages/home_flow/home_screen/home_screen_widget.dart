@@ -403,8 +403,6 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                                 child: Text(
                                                   category.displayName.isNotEmpty ? category.displayName : category.name,
                                                   textAlign: TextAlign.center,
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
                                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
                                                 ),
                                               ),

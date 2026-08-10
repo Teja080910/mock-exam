@@ -153,7 +153,15 @@ const importQuestionsCSV = async (req, res) => {
         }
 
         // Process and save the data to MongoDB
+        let importedCount = 0;
+        let skippedCount = 0;
         for (const row of results) {
+            // Skip rows with missing required fields instead of aborting the whole import
+            if (!row.question_title || !row.answer) {
+                skippedCount++;
+                continue;
+            }
+
             let option = {};
             if (row.question_type === "text_only" || row.question_type === "images" || row.question_type === "audio") {
                 option = {
@@ -180,8 +188,14 @@ const importQuestionsCSV = async (req, res) => {
                 audioPath = row.audio;
             }
 
+            // Question's subcategory = the one selected in the admin modal (the quiz's subcategory).
+            // Excel 'subcategory' column = SUBJECT name, stored as a plain string on the question
+            // (no subcategory docs auto-created), so the selected category's subcategory list
+            // stays clean while the app still shows subject-wise tabs/summary.
             const question = new Questions({
                 categoryId: req.body.categoryId,
+                subcategoryId: req.body.subcategoryId || null,
+                subject: row.subcategory ? row.subcategory.toString().trim() : '',
                 quizId: req.body.quizId,
                 question_title: row.question_title,
                 question_type: row.question_type,
@@ -193,6 +207,13 @@ const importQuestionsCSV = async (req, res) => {
                 audio: audioPath || null
             });
             await question.save();
+            importedCount++;
+        }
+
+        // Update the Quiz's subcategoryId so the quiz appears under the subcategory
+        // selected in the import modal (matches the subcategory detail page query).
+        if (req.body.subcategoryId) {
+            await Quiz.findByIdAndUpdate(req.body.quizId, { subcategoryId: req.body.subcategoryId });
         }
 
         // Delete uploaded file after processing
@@ -200,10 +221,10 @@ const importQuestionsCSV = async (req, res) => {
             if (err) console.error(`Error deleting file: ${err}`);
         });
 
-        req.flash('message', `Questions imported successfully from ${ext === '.csv' ? 'CSV' : 'Excel'} file`);
+        req.flash('message', `${importedCount} questions imported successfully${skippedCount > 0 ? `, ${skippedCount} rows skipped (missing required fields)` : ''} from ${ext === '.csv' ? 'CSV' : 'Excel'} file`);
         res.redirect('/view-questions');
     } catch (error) {
-        console.log(error.message);
+        console.log("IMPORT ERROR:", error.message, error.stack);
         req.flash('error', `An error occurred while importing questions: ${error.message}`);
         res.redirect('/view-questions');
     }
@@ -436,6 +457,7 @@ const viewQuestions = async (req, res) => {
                     select: 'name _id'
                 })
                 .populate('categoryId')
+                .populate('subcategoryId')
                 .sort({updatedAt: -1});
             res.render('viewQuestions',{questions:QuestionsData,loginData: loginData,quiz:QuizData,category:CategoryData});
         });

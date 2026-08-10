@@ -170,8 +170,6 @@ class _FeaturedCategoryDetailWidgetState
               Expanded(
                 child: Text(
                   widget.title ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 18.0,
@@ -315,8 +313,6 @@ class _FeaturedCategoryDetailWidgetState
                             padding: const EdgeInsets.only(top: 2.0, right: 6.0),
                             child: Text(
                               name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Color(0xFF111827),
                                 fontSize: 17.0,

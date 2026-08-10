@@ -10,6 +10,10 @@ const QuizSchema = mongoose.Schema({
         ref: 'Subcategory',
         required: false
     },
+    subject: {
+        type: String,
+        default: ''
+    },
     quizId:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Quiz'

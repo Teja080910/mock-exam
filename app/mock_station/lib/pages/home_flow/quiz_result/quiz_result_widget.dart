@@ -242,8 +242,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           const SizedBox(height: 8.0),
           Text(
             title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF111827),
               fontSize: 10.0,
@@ -254,8 +252,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           const SizedBox(height: 4.0),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: accentColor,
               fontSize: 16.0,
@@ -1586,7 +1582,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   String _subjectName(dynamic item) {
     final questionData = item is Map ? (item['question'] ?? item) : item;
     final subject = _cleanText(
-      (item is Map ? item['subcategoryName'] : null) ??
+      (item is Map ? item['subject'] : null) ??
+          getJsonField(questionData, r'''$.subject''') ??
+          (item is Map ? item['subcategoryName'] : null) ??
           getJsonField(questionData, r'''$.subcategoryName'''),
     );
     return subject;
@@ -1682,8 +1680,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           ),
           child: Text(
             name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFF111827),

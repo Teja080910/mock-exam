@@ -58,8 +58,6 @@ class _SubcategoryDetailPageWidgetState
               Expanded(
                 child: Text(
                   title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 18.0,
@@ -218,8 +216,6 @@ class _SubcategoryDetailPageWidgetState
                                 padding: const EdgeInsets.only(top: 2.0, right: 6.0),
                                 child: Text(
                                   quiz['name'] ?? '',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: 17.0,
@@ -351,9 +347,6 @@ class _SubcategoryDetailPageWidgetState
                         [];
                 final quizzes = quizzesList.toList();
                 quizzes.sort((a, b) {
-                  String nameA = a['name'] ?? '';
-                  String nameB = b['name'] ?? '';
-
                   DateTime? parseDate(String name) {
                     final monthMap = {
                       'jan': 1,
@@ -411,8 +404,22 @@ class _SubcategoryDetailPageWidgetState
                     return 0;
                   }
 
-                  DateTime? dateA = parseDate(nameA);
-                  DateTime? dateB = parseDate(nameB);
+                  final createdAtA =
+                      DateTime.tryParse(a['createdAt']?.toString() ?? '');
+                  final createdAtB =
+                      DateTime.tryParse(b['createdAt']?.toString() ?? '');
+
+                  if (createdAtA != null && createdAtB != null) {
+                    int createdComp = createdAtB.compareTo(createdAtA);
+                    if (createdComp != 0) return createdComp;
+                  } else if (createdAtA != null) {
+                    return -1;
+                  } else if (createdAtB != null) {
+                    return 1;
+                  }
+
+                  DateTime? dateA = parseDate(a['name'] ?? '');
+                  DateTime? dateB = parseDate(b['name'] ?? '');
 
                   if (dateA != null && dateB != null) {
                     int dateComp = dateB.compareTo(dateA);
@@ -423,8 +430,8 @@ class _SubcategoryDetailPageWidgetState
                     return 1;
                   }
 
-                  int shiftA = parseShift(nameA);
-                  int shiftB = parseShift(nameB);
+                  int shiftA = parseShift(a['name'] ?? '');
+                  int shiftB = parseShift(b['name'] ?? '');
                   return shiftB.compareTo(shiftA);
                 });
 

@@ -274,7 +274,6 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                               textAlign:
                                                                   TextAlign
                                                                       .start,
-                                                              maxLines: 2,
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium

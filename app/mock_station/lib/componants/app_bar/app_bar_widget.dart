@@ -128,8 +128,6 @@ class _AppBarWidgetState extends State<AppBarWidget>
                       'tittle',
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
                           fontSize: 20.0,

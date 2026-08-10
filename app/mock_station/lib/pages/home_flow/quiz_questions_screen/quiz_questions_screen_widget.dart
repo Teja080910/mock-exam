@@ -158,8 +158,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     if (timerStarted && timerInitialized) {
       try {
         _model.timerController.onStopTimer();
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }
 
@@ -167,8 +166,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     if (timerStarted && timerInitialized) {
       try {
         _model.timerController.onStartTimer();
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }
 
@@ -208,7 +206,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   Map<String, Style> _questionHtmlStyle(BuildContext context) {
     final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
           fontFamily: 'Roboto',
-          fontSize: 18.0,
+          fontSize: 16.0,
           letterSpacing: 0.0,
           fontWeight: FontWeight.w400,
           useGoogleFonts: false,
@@ -220,7 +218,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       padding: HtmlPaddings.zero,
       color: FlutterFlowTheme.of(context).primaryText,
       fontFamily: baseTextStyle.fontFamily,
-      fontSize: FontSize(baseTextStyle.fontSize ?? 18.0),
+      fontSize: FontSize(baseTextStyle.fontSize ?? 16.0),
       fontWeight: baseTextStyle.fontWeight,
       letterSpacing: baseTextStyle.letterSpacing,
       lineHeight: LineHeight(baseTextStyle.height ?? 1.2),
@@ -266,6 +264,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   }
 
   Future<void> _showQuitQuizDialog() async {
+    if (quizAutoSubmitted) return;
     await showDialog(
       context: context,
       builder: (dialogContext) {
@@ -352,8 +351,6 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
               child: Text(
                 text,
                 textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: selected
                       ? const Color(0xFFF43F5E)
@@ -381,22 +378,26 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   List<String> _subjectKeys(List<dynamic> questions) {
     final Map<String, List<dynamic>> grouped = {};
     for (final q in questions) {
-      final sub =
-          (getJsonField(q, r'''$.subcategoryName''') ?? '').toString().trim();
-      grouped.putIfAbsent(sub.isEmpty ? 'General' : sub, () => []);
-      grouped[sub.isEmpty ? 'General' : sub]!.add(q);
+      final sub = (getJsonField(q, r'''$.subject''') ??
+              getJsonField(q, r'''$.subcategoryName''') ??
+              '')
+          .toString()
+          .trim();
+      if (sub.isEmpty) continue;
+      grouped.putIfAbsent(sub, () => []);
+      grouped[sub]!.add(q);
     }
     return grouped.keys.toList();
   }
 
-  int _firstQuestionIndexOfSubject(
-      List<dynamic> questions, String subject) {
+  int _firstQuestionIndexOfSubject(List<dynamic> questions, String subject) {
     for (var i = 0; i < questions.length; i++) {
-      final sub = (getJsonField(questions[i], r'''$.subcategoryName''') ?? '')
+      final sub = (getJsonField(questions[i], r'''$.subject''') ??
+              getJsonField(questions[i], r'''$.subcategoryName''') ??
+              '')
           .toString()
           .trim();
-      final key = sub.isEmpty ? 'General' : sub;
-      if (key == subject) return i;
+      if (sub == subject) return i;
     }
     return 0;
   }
@@ -417,11 +418,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             text: name,
             selected: _selectedSubjectIndex == idx,
             onTap: () {
+              if (quizAutoSubmitted) return;
               setState(() {
                 _selectedSubjectIndex = idx;
               });
-              final targetIndex =
-                  _firstQuestionIndexOfSubject(questions, name);
+              final targetIndex = _firstQuestionIndexOfSubject(questions, name);
               if (_model.pageViewController != null) {
                 _model.pageViewController!.animateToPage(
                   targetIndex,
@@ -487,12 +488,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   Expanded(
                     child: Text(
                       title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF111827),
-                        fontSize: 18.0,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -545,7 +544,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   backgroundColor: const Color(0xFFEEEBFF),
                   textColor: const Color(0xFF4338CA),
                 ),
-                                const SizedBox(width: 8.0),
+                const SizedBox(width: 8.0),
                 Container(
                   width: 1.5,
                   height: 20.0,
@@ -553,13 +552,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                 ),
                 const SizedBox(width: 8.0),
                 _buildScoreChip(
-                  label: '+${correctAnsReward.toStringAsFixed(correctAnsReward.truncateToDouble() == correctAnsReward ? 0 : 1)}',
+                  label:
+                      '+${correctAnsReward.toStringAsFixed(correctAnsReward.truncateToDouble() == correctAnsReward ? 0 : 1)}',
                   backgroundColor: const Color(0xFFEAF8EB),
                   textColor: const Color(0xFF16A34A),
                 ),
                 const SizedBox(width: 10.0),
                 _buildScoreChip(
-                  label: '-${penaltyPerQuestion.toStringAsFixed(penaltyPerQuestion.truncateToDouble() == penaltyPerQuestion ? 0 : 2)}',
+                  label:
+                      '-${penaltyPerQuestion.toStringAsFixed(penaltyPerQuestion.truncateToDouble() == penaltyPerQuestion ? 0 : 2)}',
                   backgroundColor: const Color(0xFFFDEBEC),
                   textColor: const Color(0xFFEF4444),
                 ),
@@ -583,9 +584,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () async {
-                      final apiQuestions = QuizGroup.getquestionsbyquizidApiCall.questionDetailsList(
-                        (_model.quizRes?.jsonBody ?? ''),
-                      )?.toList() ?? [];
+                      if (quizAutoSubmitted) return;
+                      final apiQuestions = QuizGroup.getquestionsbyquizidApiCall
+                              .questionDetailsList(
+                                (_model.quizRes?.jsonBody ?? ''),
+                              )
+                              ?.toList() ??
+                          [];
                       if (apiQuestions.isNotEmpty) {
                         final reviewList = apiQuestions.map((q) {
                           final idx = apiQuestions.indexOf(q);
@@ -594,20 +599,30 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                             'question': q,
                             'user_answer': userAns ?? 'skipped',
                             'correct_answer': getJsonField(q, r'''$.answer'''),
-                            'subcategoryName': getJsonField(q, r'''$.subcategoryName'''),
+                            'subcategoryName':
+                                getJsonField(q, r'''$.subcategoryName'''),
+                            'subject': getJsonField(q, r'''$.subject'''),
                           };
                         }).toList();
                         FFAppState().quesReviewList = reviewList;
                       } else if (FFAppState().quesList.isNotEmpty) {
-                        FFAppState().quesReviewList = FFAppState().quesList.toList();
+                        FFAppState().quesReviewList =
+                            FFAppState().quesList.toList();
                       }
-                      final result = await context.pushNamed<int>(QuizReviewScreenWidget.routeName, queryParameters: {
-                        'quizID': serializeParam(widget.quizID, ParamType.String),
-                        'title': serializeParam(widget.title, ParamType.String),
-                        'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
-                        'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
-                        'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
-                      }.withoutNulls);
+                      final result = await context.pushNamed<int>(
+                          QuizReviewScreenWidget.routeName,
+                          queryParameters: {
+                            'quizID':
+                                serializeParam(widget.quizID, ParamType.String),
+                            'title':
+                                serializeParam(widget.title, ParamType.String),
+                            'correctAnsReward': serializeParam(
+                                correctAnsReward, ParamType.double),
+                            'penaltyPerQuestion': serializeParam(
+                                penaltyPerQuestion, ParamType.double),
+                            'quizTime': serializeParam(
+                                _elapsedTimeLabel, ParamType.String),
+                          }.withoutNulls);
                       if (result != null && _model.pageViewController != null) {
                         _model.pageViewController!.animateToPage(
                           result,
@@ -647,7 +662,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFF3F7FF) : Colors.white,
               borderRadius: BorderRadius.circular(14.0),
@@ -674,9 +690,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   height: 36.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected
-                        ? const Color(0xFF2563EB)
-                        : Colors.white,
+                    color: isSelected ? const Color(0xFF2563EB) : Colors.white,
                     border: Border.all(
                       color: isSelected
                           ? const Color(0xFF2563EB)
@@ -684,16 +698,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     ),
                   ),
                   alignment: Alignment.center,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : const Color(0xFF111827),
-                    fontSize: 17.0,
-                    fontWeight: FontWeight.w500,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF111827),
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
                 ),
                 const SizedBox(width: 14.0),
                 Container(
@@ -707,7 +720,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     text,
                     style: const TextStyle(
                       color: Color(0xFF111827),
-                      fontSize: 16.0,
+                      fontSize: 14.0,
                       fontWeight: FontWeight.w500,
                       height: 1.35,
                     ),
@@ -818,7 +831,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     // Handle background/foreground transitions for timer
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
@@ -828,7 +841,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       }
     } else if (state == AppLifecycleState.resumed) {
       if (_backgroundTime != null && timerStarted && timerInitialized) {
-        final timeInMemory = DateTime.now().difference(_backgroundTime!).inMilliseconds;
+        final timeInMemory =
+            DateTime.now().difference(_backgroundTime!).inMilliseconds;
         _backgroundTime = null;
 
         // Adjust the timer by subtracting the time spent in background
@@ -836,22 +850,22 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
           try {
             final currentMs = _model.timerController.timer.rawTime.value;
             int newMs = currentMs - timeInMemory;
-            
+
             if (newMs <= 0) {
               newMs = 0;
             }
-            
+
             // Update the timer with the new remaining time
             _model.timerController.timer.setPresetTime(mSec: newMs, add: false);
           } catch (e) {
             // Handle error gracefully
           }
         }
-        
+
         _resumeTimer();
       }
     }
-    
+
     _lastLifecycleState = state;
   }
 
@@ -958,1466 +972,1449 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       actualQuizDurationMinutes = quizDurationMinutes;
     }
 
-
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        body: showBody
-            ? Scaffold(
-                bottomNavigationBar: Padding(
-                  padding:
-                      const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 40),
-                  child: SizedBox(
-                    height: 50.0,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                FlutterFlowTheme.of(context).primary,
-                            foregroundColor: Colors.white),
-                        onPressed: () {
-                          setState(() {
-                            showBody = false;
-                            SchedulerBinding.instance
-                                .addPostFrameCallback((_) async {
-                              FFAppState().quesIndex =
-                                  _model.pageViewCurrentIndex + 1;
-                              safeSetState(() {});
-                              try {
-                                _model.quizRes = await QuizGroup
-                                    .getquestionsbyquizidApiCall
-                                    .call(
-                                  quizId: widget.quizID,
-                                  token: FFAppState().loginToken,
-                                );
-                              } catch (e) {
-
-                              }
-                              FFAppState().questionType = getJsonField(
-                                (_model.quizRes?.jsonBody ?? ''),
-                                r'''$.question_type''',
-                              ).toString().toString();
-                              safeSetState(() {});
-                              _model.isLoading = false;
-                              safeSetState(() {});
-
-                              // Start the quiz timer immediately after quiz data is loaded
-                              // Start timer right away to ensure it starts on first question
-                              if (!timerStarted &&
-                                  _model.quizRes?.jsonBody != null) {
-                                // Start timer synchronously
-                                await startQuizTimer();
-                                // Force state update to ensure timer widget rebuilds
+      child: PopScope(
+        canPop: false,
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          body: showBody
+              ? Scaffold(
+                  bottomNavigationBar: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 8.0, right: 8.0, bottom: 40),
+                    child: SizedBox(
+                      height: 50.0,
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  FlutterFlowTheme.of(context).primary,
+                              foregroundColor: Colors.white),
+                          onPressed: () {
+                            if (quizAutoSubmitted) return;
+                            setState(() {
+                              showBody = false;
+                              SchedulerBinding.instance
+                                  .addPostFrameCallback((_) async {
+                                FFAppState().quesIndex =
+                                    _model.pageViewCurrentIndex + 1;
                                 safeSetState(() {});
-                              }
+                                try {
+                                  _model.quizRes = await QuizGroup
+                                      .getquestionsbyquizidApiCall
+                                      .call(
+                                    quizId: widget.quizID,
+                                    token: FFAppState().loginToken,
+                                  );
+                                } catch (e) {}
+                                FFAppState().questionType = getJsonField(
+                                  (_model.quizRes?.jsonBody ?? ''),
+                                  r'''$.question_type''',
+                                ).toString().toString();
+                                safeSetState(() {});
+                                _model.isLoading = false;
+                                safeSetState(() {});
 
-                              await Future.delayed(
-                                  const Duration(milliseconds: 1000));
+                                // Start the quiz timer immediately after quiz data is loaded
+                                // Start timer right away to ensure it starts on first question
+                                if (!timerStarted &&
+                                    _model.quizRes?.jsonBody != null) {
+                                  // Start timer synchronously
+                                  await startQuizTimer();
+                                  // Force state update to ensure timer widget rebuilds
+                                  safeSetState(() {});
+                                }
+
+                                await Future.delayed(
+                                    const Duration(milliseconds: 1000));
+                              });
+
+                              WidgetsBinding.instance.addPostFrameCallback(
+                                  (_) => safeSetState(() {}));
                             });
-
-                            WidgetsBinding.instance.addPostFrameCallback(
-                                (_) => safeSetState(() {}));
-                          });
-                        },
-                        child: Text('Agree & Continue')),
+                          },
+                          child: Text('Agree & Continue')),
+                    ),
                   ),
-                ),
-                body: Column(
-                  children: [
-                    SafeArea(
-                      bottom: false,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            12.0, 8.0, 12.0, 8.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(22.0),
-                                    onTap: () => context.safePop(),
-                                    child: Container(
-                                      width: 40.0,
-                                      height: 40.0,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFF5F8FF),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.arrow_back_rounded,
-                                        color: Color(0xFF111827),
-                                        size: 22.0,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12.0),
-                                Expanded(
-                                  child: Text(
-                                    widget.title ?? '',
-                                    style: const TextStyle(
-                                      color: Color(0xFF111827),
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                if (widget.image != null && widget.image!.isNotEmpty)
-                                  const SizedBox(width: 12.0),
-                                if (widget.image != null && widget.image!.isNotEmpty)
-                                  Container(
-                                    width: 40.0,
-                                    height: 40.0,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF5F8FF),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(6.0),
-                                      child: CachedNetworkImage(
-                                        imageUrl: widget.image!,
-                                        fit: BoxFit.cover,
-                                        errorWidget: (context, url, error) => Container(
-                                          color: const Color(0xFFF5F8FF),
-                                          alignment: Alignment.center,
-                                          child: const Icon(
-                                            Icons.image_outlined,
-                                            color: Color(0xFF94A3B8),
-                                          ),
+                  body: Column(
+                    children: [
+                      SafeArea(
+                        bottom: false,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(22.0),
+                                      onTap: () => context.safePop(),
+                                      child: Container(
+                                        width: 40.0,
+                                        height: 40.0,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFF5F8FF),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.arrow_back_rounded,
+                                          color: Color(0xFF111827),
+                                          size: 22.0,
                                         ),
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                            const SizedBox(height: 16.0),
-                            custom_widgets.HtmlConverterExp(
-                              width: double.infinity,
-                              height: null,
-                              text: widget.description!,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Builder(
-                builder: (context) {
-                  if (QuizGroup.getquestionsbyquizidApiCall.success(
-                        (_model.quizRes?.jsonBody ?? ''),
-                      ) ==
-                      2) {
-                    return Align(
-                      alignment: AlignmentDirectional(0.0, 0.0),
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        child: Text(
-                          valueOrDefault<String>(
-                            QuizGroup.getquestionsbyquizidApiCall.message(
-                              (_model.quizRes?.jsonBody ?? ''),
-                            ),
-                            'Message',
-                          ),
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Roboto',
-                                    fontSize: 18.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w400,
-                                    useGoogleFonts: false,
-                                    lineHeight: 1.5,
-                                  ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return Builder(
-                      builder: (context) {
-                        if (_model.isLoading == false) {
-                          return Builder(
-                            builder: (context) {
-                              if (QuizGroup.getquestionsbyquizidApiCall.success(
-                                    (_model.quizRes?.jsonBody ?? ''),
-                                  ) ==
-                                  1) {
-                                // Start timer once when quiz data is loaded (only if not already started)
-                                // This is a backup in case timer didn't start in the button callback
-                                if (!timerStarted &&
-                                    _model.quizRes?.jsonBody != null &&
-                                    actualQuizDurationMinutes > 0) {
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) async {
-                                    if (!timerStarted) {
-                                      await startQuizTimer();
-                                      safeSetState(() {});
-                                    }
-                                  });
-                                }
-
-                                final categorywisequiz = QuizGroup
-                                        .getquestionsbyquizidApiCall
-                                        .questionDetailsList(
-                                          (_model.quizRes?.jsonBody ?? ''),
-                                        )
-                                        ?.toList() ??
-                                    [];
-
-                                return Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    _buildQuizHeader(
-                                      totalQuestions: totalQuestions,
-                                      correctAnsReward: correctAnsReward,
-                                      penaltyPerQuestion: penaltyPerQuestion,
-                                      questions: categorywisequiz,
+                                  const SizedBox(width: 12.0),
+                                  Expanded(
+                                    child: Text(
+                                      widget.title ?? '',
+                                      style: const TextStyle(
+                                        color: Color(0xFF111827),
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
-                                    Expanded(
-                                      child: Stack(
-                                        children: [
-                                          Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Expanded(
-                                                child: SingleChildScrollView(
-                                                  primary: false,
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Container(
-                                                        decoration:
-                                                            BoxDecoration(),
-                                                        child: Builder(
-                                                          builder: (context) {
-                                                            final availableHeight =
-                                                                max(
-                                                              0.0,
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .height -
-                                                                  MediaQuery.of(context)
-                                                                      .padding
-                                                                      .top -
-                                                                  MediaQuery.of(context)
-                                                                      .padding
-                                                                      .bottom -
-                                                                  220.0,
-                                                            );
+                                  ),
+                                  if (widget.image != null &&
+                                      widget.image!.isNotEmpty)
+                                    const SizedBox(width: 12.0),
+                                  if (widget.image != null &&
+                                      widget.image!.isNotEmpty)
+                                    Container(
+                                      width: 40.0,
+                                      height: 40.0,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF5F8FF),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(6.0),
+                                        child: CachedNetworkImage(
+                                          imageUrl: widget.image!,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (context, url, error) =>
+                                              Container(
+                                            color: const Color(0xFFF5F8FF),
+                                            alignment: Alignment.center,
+                                            child: const Icon(
+                                              Icons.image_outlined,
+                                              color: Color(0xFF94A3B8),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16.0),
+                              custom_widgets.HtmlConverterExp(
+                                width: double.infinity,
+                                height: null,
+                                text: widget.description!,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Builder(
+                  builder: (context) {
+                    if (QuizGroup.getquestionsbyquizidApiCall.success(
+                          (_model.quizRes?.jsonBody ?? ''),
+                        ) ==
+                        2) {
+                      return Align(
+                        alignment: AlignmentDirectional(0.0, 0.0),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              16.0, 0.0, 16.0, 0.0),
+                          child: Text(
+                            valueOrDefault<String>(
+                              QuizGroup.getquestionsbyquizidApiCall.message(
+                                (_model.quizRes?.jsonBody ?? ''),
+                              ),
+                              'Message',
+                            ),
+                            textAlign: TextAlign.center,
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Roboto',
+                                  fontSize: 18.0,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.w400,
+                                  useGoogleFonts: false,
+                                  lineHeight: 1.5,
+                                ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      return Builder(
+                        builder: (context) {
+                          if (_model.isLoading == false) {
+                            return Builder(
+                              builder: (context) {
+                                if (QuizGroup.getquestionsbyquizidApiCall
+                                        .success(
+                                      (_model.quizRes?.jsonBody ?? ''),
+                                    ) ==
+                                    1) {
+                                  // Start timer once when quiz data is loaded (only if not already started)
+                                  // This is a backup in case timer didn't start in the button callback
+                                  if (!timerStarted &&
+                                      _model.quizRes?.jsonBody != null &&
+                                      actualQuizDurationMinutes > 0) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) async {
+                                      if (!timerStarted) {
+                                        await startQuizTimer();
+                                        safeSetState(() {});
+                                      }
+                                    });
+                                  }
 
-                                                            return SizedBox(
-                                                              height:
-                                                                  availableHeight,
-                                                              width: double
-                                                                  .infinity,
-                                                              child: Padding(
-                                                                padding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            40.0),
-                                                                child: PageView
-                                                                    .builder(
-                                                                  physics:
-                                                                      const NeverScrollableScrollPhysics(),
-                                                                  controller: _model
-                                                                          .pageViewController ??=
-                                                                      PageController(
-                                                                          initialPage: max(
-                                                                              0,
-                                                                              min(0, categorywisequiz.length - 1))),
-                                                                  onPageChanged:
-                                                                      (idx) async {
-                                                                    FFAppState()
-                                                                            .selectedColorIndex =
-                                                                        selectedOptionPerQuestion[idx] ??
-                                                                            -1;
-                                                                    FFAppState()
-                                                                        .update(
-                                                                            () {});
-                                                                    FFAppState()
-                                                                            .questionType =
-                                                                        getJsonField(
-                                                                      categorywisequiz
-                                                                          .elementAtOrNull(
-                                                                              idx),
-                                                                      r'''$.question_type''',
-                                                                    ).toString();
-                                                                    safeSetState(
-                                                                        () {});
-                                                                  },
-                                                                  scrollDirection:
-                                                                      Axis.horizontal,
-                                                                  itemCount:
-                                                                      categorywisequiz
-                                                                          .length,
-                                                                  itemBuilder:
-                                                                      (context,
-                                                                          categorywisequizIndex) {
-                                                                    final categorywisequizItem =
-                                                                        categorywisequiz[
-                                                                            categorywisequizIndex];
-                                                                    final selectedIndex =
-                                                                        selectedOptionPerQuestion[
-                                                                            categorywisequizIndex];
-                                                                    // At the top of the builder function for image-based questions:
-                                                                    final optionA =
-                                                                        getJsonField(
-                                                                            categorywisequizItem,
-                                                                            r'''$.option.a''');
-                                                                    final optionB =
-                                                                        getJsonField(
-                                                                            categorywisequizItem,
-                                                                            r'''$.option.b''');
-                                                                    final optionC =
-                                                                        getJsonField(
-                                                                            categorywisequizItem,
-                                                                            r'''$.option.c''');
-                                                                    final optionD =
-                                                                        getJsonField(
-                                                                            categorywisequizItem,
-                                                                            r'''$.option.d''');
+                                  final categorywisequiz =
+                                      QuizGroup.getquestionsbyquizidApiCall
+                                              .questionDetailsList(
+                                                (_model.quizRes?.jsonBody ??
+                                                    ''),
+                                              )
+                                              ?.toList() ??
+                                          [];
 
-                                                                    String extractOptionText(
-                                                                        dynamic
-                                                                            option) {
-                                                                      if (option
-                                                                              is Map &&
-                                                                          option['text']
-                                                                              is String) {
-                                                                        return option[
-                                                                            'text'];
-                                                                      } else if (option
-                                                                              is Map &&
-                                                                          option['text']
-                                                                              is Map &&
-                                                                          option['text']['text']
-                                                                              is String) {
-                                                                        return option['text']
-                                                                            [
-                                                                            'text'];
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.max,
+                                    children: [
+                                      _buildQuizHeader(
+                                        totalQuestions: totalQuestions,
+                                        correctAnsReward: correctAnsReward,
+                                        penaltyPerQuestion: penaltyPerQuestion,
+                                        questions: categorywisequiz,
+                                      ),
+                                      Expanded(
+                                        child: Stack(
+                                          children: [
+                                            Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                Expanded(
+                                                  child: SingleChildScrollView(
+                                                    primary: false,
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Container(
+                                                          decoration:
+                                                              BoxDecoration(),
+                                                          child: Builder(
+                                                            builder: (context) {
+                                                              final availableHeight =
+                                                                  max(
+                                                                0.0,
+                                                                MediaQuery.sizeOf(
+                                                                            context)
+                                                                        .height -
+                                                                    MediaQuery.of(
+                                                                            context)
+                                                                        .padding
+                                                                        .top -
+                                                                    MediaQuery.of(
+                                                                            context)
+                                                                        .padding
+                                                                        .bottom -
+                                                                    220.0,
+                                                              );
+
+                                                              return SizedBox(
+                                                                height:
+                                                                    availableHeight,
+                                                                width: double
+                                                                    .infinity,
+                                                                child: Padding(
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          40.0),
+                                                                  child: PageView
+                                                                      .builder(
+                                                                    physics:
+                                                                        const NeverScrollableScrollPhysics(),
+                                                                    controller: _model
+                                                                            .pageViewController ??=
+                                                                        PageController(
+                                                                            initialPage:
+                                                                                max(0, min(0, categorywisequiz.length - 1))),
+                                                                    onPageChanged:
+                                                                        (idx) async {
+                                                                      FFAppState()
+                                                                              .selectedColorIndex =
+                                                                          selectedOptionPerQuestion[idx] ??
+                                                                              -1;
+                                                                      FFAppState()
+                                                                          .update(
+                                                                              () {});
+                                                                      FFAppState()
+                                                                              .questionType =
+                                                                          getJsonField(
+                                                                        categorywisequiz
+                                                                            .elementAtOrNull(idx),
+                                                                        r'''$.question_type''',
+                                                                      ).toString();
+                                                                      safeSetState(
+                                                                          () {});
+                                                                    },
+                                                                    scrollDirection:
+                                                                        Axis.horizontal,
+                                                                    itemCount:
+                                                                        categorywisequiz
+                                                                            .length,
+                                                                    itemBuilder:
+                                                                        (context,
+                                                                            categorywisequizIndex) {
+                                                                      final categorywisequizItem =
+                                                                          categorywisequiz[
+                                                                              categorywisequizIndex];
+                                                                      final selectedIndex =
+                                                                          selectedOptionPerQuestion[
+                                                                              categorywisequizIndex];
+                                                                      // At the top of the builder function for image-based questions:
+                                                                      final optionA = getJsonField(
+                                                                          categorywisequizItem,
+                                                                          r'''$.option.a''');
+                                                                      final optionB = getJsonField(
+                                                                          categorywisequizItem,
+                                                                          r'''$.option.b''');
+                                                                      final optionC = getJsonField(
+                                                                          categorywisequizItem,
+                                                                          r'''$.option.c''');
+                                                                      final optionD = getJsonField(
+                                                                          categorywisequizItem,
+                                                                          r'''$.option.d''');
+
+                                                                      String extractOptionText(
+                                                                          dynamic
+                                                                              option) {
+                                                                        if (option
+                                                                                is Map &&
+                                                                            option['text']
+                                                                                is String) {
+                                                                          return option[
+                                                                              'text'];
+                                                                        } else if (option
+                                                                                is Map &&
+                                                                            option['text']
+                                                                                is Map &&
+                                                                            option['text']['text']
+                                                                                is String) {
+                                                                          return option['text']
+                                                                              [
+                                                                              'text'];
+                                                                        }
+                                                                        return '';
                                                                       }
-                                                                      return '';
-                                                                    }
 
-                                                                    final optionAImage = (optionA
-                                                                                is Map &&
-                                                                            optionA['image'] !=
-                                                                                null)
-                                                                        ? optionA['image']
-                                                                            .toString()
-                                                                        : '';
-                                                                    final optionAText =
-                                                                        extractOptionText(
-                                                                            optionA);
-                                                                    final optionBImage = (optionB
-                                                                                is Map &&
-                                                                            optionB['image'] !=
-                                                                                null)
-                                                                        ? optionB['image']
-                                                                            .toString()
-                                                                        : '';
-                                                                    final optionBText =
-                                                                        extractOptionText(
-                                                                            optionB);
-                                                                    final optionCImage = (optionC
-                                                                                is Map &&
-                                                                            optionC['image'] !=
-                                                                                null)
-                                                                        ? optionC['image']
-                                                                            .toString()
-                                                                        : '';
-                                                                    final optionCText =
-                                                                        extractOptionText(
-                                                                            optionC);
-                                                                    final optionDImage = (optionD
-                                                                                is Map &&
-                                                                            optionD['image'] !=
-                                                                                null)
-                                                                        ? optionD['image']
-                                                                            .toString()
-                                                                        : '';
-                                                                    final optionDText =
-                                                                        extractOptionText(
-                                                                            optionD);
-                                                                    final questionHtml =
-                                                                        _resolveQuestionHtml(
-                                                                            categorywisequizItem);
-                                                                    return Builder(
-                                                                      builder:
-                                                                          (context) {
-                                                                        if ('${getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.question_type''',
-                                                                            ).toString()}' ==
-                                                                            'text_only') {
-                                                                          return Container(
-                                                                            decoration:
-                                                                                BoxDecoration(),
-                                                                            child:
-                                                                                Padding(
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 0.0),
-                                                                              child: SingleChildScrollView(
-                                                                                physics: const ClampingScrollPhysics(),
-                                                                                child: Column(
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                  /// question widget
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 18.0),
-                                                                                    child: _buildQuestionHtmlWidget(
-                                                                                      context: context,
-                                                                                      questionHtml: questionHtml,
-                                                                                      questionIndex: categorywisequizIndex,
-                                                                                      variantKey: 'text',
-                                                                                    ),
-                                                                                  ),
-                                                                                  if (timerStatus == 1)
-                                                                                    Align(
-                                                                                      alignment: AlignmentDirectional(1.0, 0.0),
-                                                                                      child: Padding(
+                                                                      final optionAImage = (optionA is Map &&
+                                                                              optionA['image'] !=
+                                                                                  null)
+                                                                          ? optionA['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionAText =
+                                                                          extractOptionText(
+                                                                              optionA);
+                                                                      final optionBImage = (optionB is Map &&
+                                                                              optionB['image'] !=
+                                                                                  null)
+                                                                          ? optionB['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionBText =
+                                                                          extractOptionText(
+                                                                              optionB);
+                                                                      final optionCImage = (optionC is Map &&
+                                                                              optionC['image'] !=
+                                                                                  null)
+                                                                          ? optionC['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionCText =
+                                                                          extractOptionText(
+                                                                              optionC);
+                                                                      final optionDImage = (optionD is Map &&
+                                                                              optionD['image'] !=
+                                                                                  null)
+                                                                          ? optionD['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionDText =
+                                                                          extractOptionText(
+                                                                              optionD);
+                                                                      final questionHtml =
+                                                                          _resolveQuestionHtml(
+                                                                              categorywisequizItem);
+                                                                      return Builder(
+                                                                        builder:
+                                                                            (context) {
+                                                                          if ('${getJsonField(
+                                                                                categorywisequizItem,
+                                                                                r'''$.question_type''',
+                                                                              ).toString()}' ==
+                                                                              'text_only') {
+                                                                            return Container(
+                                                                              decoration: BoxDecoration(),
+                                                                              child: Padding(
+                                                                                padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 0.0),
+                                                                                child: SingleChildScrollView(
+                                                                                  physics: const ClampingScrollPhysics(),
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      /// question widget
+                                                                                      Padding(
                                                                                         padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 18.0),
-                                                                                        child: Stack(
-                                                                                          alignment: Alignment.center,
-                                                                                          children: [
-                                                                                            _buildTimerChip(),
-                                                                                            if (timerInitialized && actualQuizDurationMinutes > 0)
-                                                                                              Opacity(
-                                                                                                opacity: 0.0,
-                                                                                                child: SizedBox(
-                                                                                                  width: 110.0,
-                                                                                                  height: 40.0,
-                                                                                                  child: FlutterFlowTimer(
-                                                                                                    key: const ValueKey('quiz-timer-main'),
-                                                                                                    initialTime: actualQuizDurationMinutes * 60 * 1000,
-                                                                                                    getDisplayTime: (value) => StopWatchTimer.getDisplayTime(
-                                                                                                      value,
-                                                                                                      hours: false,
-                                                                                                      milliSecond: false,
-                                                                                                    ),
-                                                                                                    controller: _model.timerController,
-                                                                                                    updateStateInterval: Duration(milliseconds: 1000),
-                                                                                                    onChanged: (value, displayTime, shouldUpdate) {
-                                                                                                      _model.timerMilliseconds = value;
-                                                                                                      _model.timerValue = displayTime;
-                                                                                                      if (shouldUpdate) safeSetState(() {});
-                                                                                                    },
-                                                                                                    textAlign: TextAlign.center,
-                                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                          fontFamily: 'Roboto',
-                                                                                                          color: Colors.transparent,
-                                                                                                          fontSize: 16.0,
-                                                                                                          useGoogleFonts: false,
+                                                                                        child: _buildQuestionHtmlWidget(
+                                                                                          context: context,
+                                                                                          questionHtml: questionHtml,
+                                                                                          questionIndex: categorywisequizIndex,
+                                                                                          variantKey: 'text',
+                                                                                        ),
+                                                                                      ),
+                                                                                      if (timerStatus == 1)
+                                                                                        Align(
+                                                                                          alignment: AlignmentDirectional(1.0, 0.0),
+                                                                                          child: Padding(
+                                                                                            padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 18.0),
+                                                                                            child: Stack(
+                                                                                              alignment: Alignment.center,
+                                                                                              children: [
+                                                                                                _buildTimerChip(),
+                                                                                                if (timerInitialized && actualQuizDurationMinutes > 0)
+                                                                                                  Opacity(
+                                                                                                    opacity: 0.0,
+                                                                                                    child: SizedBox(
+                                                                                                      width: 110.0,
+                                                                                                      height: 40.0,
+                                                                                                      child: FlutterFlowTimer(
+                                                                                                        key: const ValueKey('quiz-timer-main'),
+                                                                                                        initialTime: actualQuizDurationMinutes * 60 * 1000,
+                                                                                                        getDisplayTime: (value) => StopWatchTimer.getDisplayTime(
+                                                                                                          value,
+                                                                                                          hours: false,
+                                                                                                          milliSecond: false,
                                                                                                         ),
-                                                                                                    onEnded: () async {
-                                                                                                      if (quizAutoSubmitted) {
-                                                                                                        return;
-                                                                                                      }
-
-                                                                                                      quizAutoSubmitted = true;
-
-                                                                                                      await showDialog(
-                                                                                                        barrierDismissible: false,
-                                                                                                        context: context,
-                                                                                                        builder: (dialogContext) {
-                                                                                                          return Dialog(
-                                                                                                            elevation: 0,
-                                                                                                            insetPadding: EdgeInsets.zero,
-                                                                                                            backgroundColor: Colors.transparent,
-                                                                                                            alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                                                            child: GestureDetector(
-                                                                                                              onTap: () {
-                                                                                                                FocusScope.of(dialogContext).unfocus();
-                                                                                                                FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                              },
-                                                                                                              child: TimeoutDialogWidget(
-                                                                                                                istimeout: () async {
-                                                                                                                  FFAppState().clearCoinsCache();
-                                                                                                                  context.pushNamed(
-                                                                                                                    QuizResultWidget.routeName,
-                                                                                                                    queryParameters: {
-                                                                                                                      'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
-                                                                                                                      'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
-                                                                                                                      'totalQuestion': serializeParam(questions is List ? questions.length : 0, ParamType.int),
-                                                                                                                      'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
-                                                                                                                      'quizID': serializeParam(widget.quizID, ParamType.String),
-                                                                                                                      'title': serializeParam(widget.title, ParamType.String),
-                                                                                                                      'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
-                                                                                                                      'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
-                                                                                                                      'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
-                                                                                                                    }.withoutNulls,
-                                                                                                                  );
-                                                                                                                },
-                                                                                                              ),
+                                                                                                        controller: _model.timerController,
+                                                                                                        updateStateInterval: Duration(milliseconds: 1000),
+                                                                                                        onChanged: (value, displayTime, shouldUpdate) {
+                                                                                                          _model.timerMilliseconds = value;
+                                                                                                          _model.timerValue = displayTime;
+                                                                                                          if (shouldUpdate) safeSetState(() {});
+                                                                                                        },
+                                                                                                        textAlign: TextAlign.center,
+                                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                              fontFamily: 'Roboto',
+                                                                                                              color: Colors.transparent,
+                                                                                                              fontSize: 16.0,
+                                                                                                              useGoogleFonts: false,
                                                                                                             ),
+                                                                                                        onEnded: () async {
+                                                                                                          if (quizAutoSubmitted) {
+                                                                                                            return;
+                                                                                                          }
+
+                                                                                                          quizAutoSubmitted = true;
+
+                                                                                                          await showDialog(
+                                                                                                            barrierDismissible: false,
+                                                                                                            context: context,
+                                                                                                            builder: (dialogContext) {
+                                                                                                              return Dialog(
+                                                                                                                elevation: 0,
+                                                                                                                insetPadding: EdgeInsets.zero,
+                                                                                                                backgroundColor: Colors.transparent,
+                                                                                                                alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
+                                                                                                                child: GestureDetector(
+                                                                                                                  onTap: () {
+                                                                                                                    FocusScope.of(dialogContext).unfocus();
+                                                                                                                    FocusManager.instance.primaryFocus?.unfocus();
+                                                                                                                  },
+                                                                                                                  child: TimeoutDialogWidget(
+                                                                                                                    istimeout: () async {
+                                                                                                                      FFAppState().clearCoinsCache();
+                                                                                                                      context.pushNamed(
+                                                                                                                        QuizResultWidget.routeName,
+                                                                                                                        queryParameters: {
+                                                                                                                          'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
+                                                                                                                          'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
+                                                                                                                          'totalQuestion': serializeParam(questions is List ? questions.length : 0, ParamType.int),
+                                                                                                                          'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
+                                                                                                                          'quizID': serializeParam(widget.quizID, ParamType.String),
+                                                                                                                          'title': serializeParam(widget.title, ParamType.String),
+                                                                                                                          'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
+                                                                                                                          'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                                                                                                                          'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
+                                                                                                                        }.withoutNulls,
+                                                                                                                      );
+                                                                                                                    },
+                                                                                                                  ),
+                                                                                                                ),
+                                                                                                              );
+                                                                                                            },
                                                                                                           );
                                                                                                         },
-                                                                                                      );
-                                                                                                    },
+                                                                                                      ),
+                                                                                                    ),
+                                                                                                  ),
+                                                                                              ],
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      _buildOptionTile(
+                                                                                        label: 'A',
+                                                                                        text: _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
+                                                                                        isSelected: selectedIndex == 0,
+                                                                                        onTap: () async {
+                                                                                          if (quizAutoSubmitted) return;
+                                                                                          if (selectedIndex == 0) {
+                                                                                            _model.userAnswer = null;
+                                                                                            _model.actualAnswer = null;
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                            FFAppState().selectedColorIndex = -1;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                          } else {
+                                                                                            _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.a''').toString();
+                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = 0;
+                                                                                            FFAppState().selectedColorIndex = 0;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'a';
+                                                                                          }
+                                                                                          safeSetState(() {});
+                                                                                          FFAppState().update(() {});
+                                                                                        },
+                                                                                      ),
+                                                                                      _buildOptionTile(
+                                                                                        label: 'B',
+                                                                                        text: _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
+                                                                                        isSelected: selectedIndex == 1,
+                                                                                        onTap: () async {
+                                                                                          if (quizAutoSubmitted) return;
+                                                                                          if (selectedIndex == 1) {
+                                                                                            _model.userAnswer = null;
+                                                                                            _model.actualAnswer = null;
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                            FFAppState().selectedColorIndex = -1;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                          } else {
+                                                                                            _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.b''').toString();
+                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = 1;
+                                                                                            FFAppState().selectedColorIndex = 1;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'b';
+                                                                                          }
+                                                                                          safeSetState(() {});
+                                                                                          FFAppState().update(() {});
+                                                                                        },
+                                                                                      ),
+                                                                                      _buildOptionTile(
+                                                                                        label: 'C',
+                                                                                        text: _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
+                                                                                        isSelected: selectedIndex == 2,
+                                                                                        onTap: () async {
+                                                                                          if (quizAutoSubmitted) return;
+                                                                                          if (selectedIndex == 2) {
+                                                                                            _model.userAnswer = null;
+                                                                                            _model.actualAnswer = null;
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                            FFAppState().selectedColorIndex = -1;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                          } else {
+                                                                                            _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.c''').toString();
+                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = 2;
+                                                                                            FFAppState().selectedColorIndex = 2;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'c';
+                                                                                          }
+                                                                                          safeSetState(() {});
+                                                                                          FFAppState().update(() {});
+                                                                                        },
+                                                                                      ),
+                                                                                      _buildOptionTile(
+                                                                                        label: 'D',
+                                                                                        text: _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
+                                                                                        isSelected: selectedIndex == 3,
+                                                                                        onTap: () async {
+                                                                                          if (quizAutoSubmitted) return;
+                                                                                          if (selectedIndex == 3) {
+                                                                                            _model.userAnswer = null;
+                                                                                            _model.actualAnswer = null;
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                            FFAppState().selectedColorIndex = -1;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                          } else {
+                                                                                            _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.d''').toString();
+                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = 3;
+                                                                                            FFAppState().selectedColorIndex = 3;
+                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'd';
+                                                                                          }
+                                                                                          safeSetState(() {});
+                                                                                          FFAppState().update(() {});
+                                                                                        },
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            );
+                                                                          } else if ('${getJsonField(
+                                                                                categorywisequizItem,
+                                                                                r'''$.question_type''',
+                                                                              ).toString()}' ==
+                                                                              'true_false') {
+                                                                            return Padding(
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(16.0, 50.0, 16.0, 20.0),
+                                                                              child: Container(
+                                                                                width: double.infinity,
+                                                                                decoration: BoxDecoration(
+                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                  borderRadius: BorderRadius.circular(16.0),
+                                                                                ),
+                                                                                alignment: AlignmentDirectional(0.0, -1.0),
+                                                                                child: SingleChildScrollView(
+                                                                                  physics: const ClampingScrollPhysics(),
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      Align(
+                                                                                        alignment: AlignmentDirectional(-1.0, 0.0),
+                                                                                        child: Padding(
+                                                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
+                                                                                          child: _buildQuestionHtmlWidget(
+                                                                                            context: context,
+                                                                                            questionHtml: questionHtml,
+                                                                                            questionIndex: categorywisequizIndex,
+                                                                                            variantKey: 'boolean',
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                        child: InkWell(
+                                                                                          splashColor: Colors.transparent,
+                                                                                          focusColor: Colors.transparent,
+                                                                                          hoverColor: Colors.transparent,
+                                                                                          highlightColor: Colors.transparent,
+                                                                                          onTap: () async {
+                                                                                            if (selectedIndex == 0) {
+                                                                                              // Deselect if already selected
+                                                                                              _model.userAnswer = null;
+                                                                                              _model.actualAnswer = null;
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                              FFAppState().selectedColorIndex = -1;
+                                                                                            } else {
+                                                                                              _model.userAnswer = 'True';
+                                                                                              _model.actualAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.answer''',
+                                                                                              ).toString();
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = 0;
+                                                                                              FFAppState().selectedColorIndex = 0;
+                                                                                            }
+                                                                                            safeSetState(() {});
+                                                                                            FFAppState().update(() {});
+                                                                                          },
+                                                                                          child: Container(
+                                                                                            width: 369.0,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: FlutterFlowTheme.of(context).grey,
+                                                                                              borderRadius: BorderRadius.circular(12.0),
+                                                                                              border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                            ),
+                                                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                            child: Align(
+                                                                                              alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                              child: Padding(
+                                                                                                padding: EdgeInsets.all(16.0),
+                                                                                                child: Text(
+                                                                                                  'True',
+                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                        fontFamily: 'Roboto',
+                                                                                                        fontSize: 16.0,
+                                                                                                        letterSpacing: 0.0,
+                                                                                                        fontWeight: FontWeight.normal,
+                                                                                                        useGoogleFonts: false,
+                                                                                                        lineHeight: 1.5,
+                                                                                                      ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                        child: InkWell(
+                                                                                          splashColor: Colors.transparent,
+                                                                                          focusColor: Colors.transparent,
+                                                                                          hoverColor: Colors.transparent,
+                                                                                          highlightColor: Colors.transparent,
+                                                                                          onTap: () async {
+                                                                                            if (selectedIndex == 1) {
+                                                                                              // Deselect if already selected
+                                                                                              _model.userAnswer = null;
+                                                                                              _model.actualAnswer = null;
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                              FFAppState().selectedColorIndex = -1;
+                                                                                            } else {
+                                                                                              _model.userAnswer = 'False';
+                                                                                              _model.actualAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.answer''',
+                                                                                              ).toString();
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = 1;
+                                                                                              FFAppState().selectedColorIndex = 1;
+                                                                                            }
+                                                                                            safeSetState(() {});
+                                                                                            FFAppState().update(() {});
+                                                                                          },
+                                                                                          child: Container(
+                                                                                            width: 369.0,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: FlutterFlowTheme.of(context).grey,
+                                                                                              borderRadius: BorderRadius.circular(12.0),
+                                                                                              border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                            ),
+                                                                                            child: Align(
+                                                                                              alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                              child: Padding(
+                                                                                                padding: EdgeInsets.all(16.0),
+                                                                                                child: Text(
+                                                                                                  'False',
+                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                        fontFamily: 'Roboto',
+                                                                                                        fontSize: 16.0,
+                                                                                                        letterSpacing: 0.0,
+                                                                                                        fontWeight: FontWeight.normal,
+                                                                                                        useGoogleFonts: false,
+                                                                                                        lineHeight: 1.5,
+                                                                                                      ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            );
+                                                                          } else if ('${getJsonField(
+                                                                                categorywisequizItem,
+                                                                                r'''$.question_type''',
+                                                                              ).toString()}' ==
+                                                                              'images') {
+                                                                            return Padding(
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(16.0, 50.0, 16.0, 20.0),
+                                                                              child: Container(
+                                                                                width: double.infinity,
+                                                                                decoration: BoxDecoration(
+                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                  borderRadius: BorderRadius.circular(16.0),
+                                                                                ),
+                                                                                alignment: AlignmentDirectional(0.0, -1.0),
+                                                                                child: SingleChildScrollView(
+                                                                                  physics: const ClampingScrollPhysics(),
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      Align(
+                                                                                        alignment: AlignmentDirectional(-1.0, 0.0),
+                                                                                        child: Padding(
+                                                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                          child: _buildQuestionHtmlWidget(
+                                                                                            context: context,
+                                                                                            questionHtml: questionHtml,
+                                                                                            questionIndex: categorywisequizIndex,
+                                                                                            variantKey: 'image',
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      // Timer for image-based questions
+                                                                                      Align(
+                                                                                        alignment: AlignmentDirectional(1.0, 0.0),
+                                                                                        child: Padding(
+                                                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                          child: Container(
+                                                                                            width: 100.0,
+                                                                                            height: 34.0,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: FlutterFlowTheme.of(context).primary,
+                                                                                              borderRadius: BorderRadius.circular(20.0),
+                                                                                            ),
+                                                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                            child: FlutterFlowTimer(
+                                                                                              key: const ValueKey('quiz-timer-image'),
+                                                                                              initialTime: actualQuizDurationMinutes * 60 * 1000,
+                                                                                              getDisplayTime: (value) => StopWatchTimer.getDisplayTime(
+                                                                                                value,
+                                                                                                hours: false,
+                                                                                                milliSecond: false,
+                                                                                              ),
+                                                                                              controller: _model.timerController,
+                                                                                              updateStateInterval: Duration(milliseconds: 1000),
+                                                                                              onChanged: (value, displayTime, shouldUpdate) {
+                                                                                                _model.timerMilliseconds = value;
+                                                                                                _model.timerValue = displayTime;
+                                                                                                if (shouldUpdate) safeSetState(() {});
+                                                                                              },
+                                                                                              textAlign: TextAlign.center,
+                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                    fontFamily: 'Roboto',
+                                                                                                    color: Colors.white,
+                                                                                                    fontSize: 16.0,
+                                                                                                    useGoogleFonts: false,
+                                                                                                  ),
+                                                                                              onEnded: () async {
+                                                                                                // Prevent multiple auto-submits
+                                                                                                if (quizAutoSubmitted) {
+                                                                                                  return;
+                                                                                                }
+
+                                                                                                quizAutoSubmitted = true;
+
+                                                                                                await showDialog(
+                                                                                                  barrierDismissible: false,
+                                                                                                  context: context,
+                                                                                                  builder: (dialogContext) {
+                                                                                                    return Dialog(
+                                                                                                      elevation: 0,
+                                                                                                      insetPadding: EdgeInsets.zero,
+                                                                                                      backgroundColor: Colors.transparent,
+                                                                                                      alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
+                                                                                                      child: GestureDetector(
+                                                                                                        onTap: () {
+                                                                                                          FocusScope.of(dialogContext).unfocus();
+                                                                                                          FocusManager.instance.primaryFocus?.unfocus();
+                                                                                                        },
+                                                                                                        child: TimeoutDialogWidget(
+                                                                                                          istimeout: () async {
+                                                                                                            FFAppState().clearCoinsCache();
+                                                                                                            context.pushNamed(
+                                                                                                              QuizResultWidget.routeName,
+                                                                                                              queryParameters: {
+                                                                                                                'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
+                                                                                                                'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
+                                                                                                                'totalQuestion': serializeParam(questions is List ? questions.length : 0, ParamType.int),
+                                                                                                                'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
+                                                                                                                'quizID': serializeParam(widget.quizID, ParamType.String),
+                                                                                                                'title': serializeParam(widget.title, ParamType.String),
+                                                                                                                'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
+                                                                                                                'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
+                                                                                                                'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
+                                                                                                              }.withoutNulls,
+                                                                                                            );
+                                                                                                          },
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                    );
+                                                                                                  },
+                                                                                                );
+                                                                                              },
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      if (getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.image''',
+                                                                                              ) !=
+                                                                                              null &&
+                                                                                          getJsonField(
+                                                                                            categorywisequizItem,
+                                                                                            r'''$.image''',
+                                                                                          ).toString().isNotEmpty)
+                                                                                        Padding(
+                                                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
+                                                                                          child: Center(
+                                                                                            child: Container(
+                                                                                              width: double.infinity,
+                                                                                              constraints: BoxConstraints(
+                                                                                                maxWidth: MediaQuery.of(context).size.width - 32.0,
+                                                                                                maxHeight: 300.0,
+                                                                                              ),
+                                                                                              child: ClipRRect(
+                                                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                                                child: CachedNetworkImage(
+                                                                                                  fadeInDuration: Duration(milliseconds: 500),
+                                                                                                  fadeOutDuration: Duration(milliseconds: 500),
+                                                                                                  imageUrl: '${FFAppConstants.imageBaseURL}${getJsonField(
+                                                                                                    categorywisequizItem,
+                                                                                                    r'''$.image''',
+                                                                                                  ).toString()}',
+                                                                                                  width: double.infinity,
+                                                                                                  fit: BoxFit.contain,
+                                                                                                  alignment: Alignment(0.0, 0.0),
+                                                                                                  placeholder: (context, url) => Center(
+                                                                                                    child: Padding(
+                                                                                                      padding: EdgeInsets.all(20.0),
+                                                                                                      child: CircularProgressIndicator(
+                                                                                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                                                                                          FlutterFlowTheme.of(context).primary,
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                    ),
+                                                                                                  ),
+                                                                                                  errorWidget: (context, url, error) => Container(
+                                                                                                    width: double.infinity,
+                                                                                                    height: 200.0,
+                                                                                                    decoration: BoxDecoration(
+                                                                                                      color: FlutterFlowTheme.of(context).alternate,
+                                                                                                      borderRadius: BorderRadius.circular(12.0),
+                                                                                                    ),
+                                                                                                    child: Icon(
+                                                                                                      Icons.error_outline,
+                                                                                                      color: FlutterFlowTheme.of(context).secondaryText,
+                                                                                                      size: 48.0,
+                                                                                                    ),
                                                                                                   ),
                                                                                                 ),
                                                                                               ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      // For image-based questions, extract option images and texts as strings:
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+                                                                                        child: Wrap(
+                                                                                          spacing: 16.0,
+                                                                                          runSpacing: 16.0,
+                                                                                          children: [
+                                                                                            SizedBox(
+                                                                                              width: (MediaQuery.of(context).size.width - 64) / 2, // 16 padding on each side + 16 spacing
+                                                                                              child: GestureDetector(
+                                                                                                onTap: () {
+                                                                                                  _model.userAnswer = 'a';
+                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  selectedOptionPerQuestion[categorywisequizIndex] = 0;
+                                                                                                  FFAppState().selectedColorIndex = 0;
+                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  safeSetState(() {});
+                                                                                                  FFAppState().update(() {});
+                                                                                                },
+                                                                                                child: Container(
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                                    borderRadius: BorderRadius.circular(12.0),
+                                                                                                  ),
+                                                                                                  child: Column(
+                                                                                                    children: [
+                                                                                                      if (optionAImage.isNotEmpty)
+                                                                                                        CachedNetworkImage(
+                                                                                                          imageUrl: '${FFAppConstants.imageBaseURL}${optionAImage}',
+                                                                                                          width: 80,
+                                                                                                          height: 80,
+                                                                                                          fit: BoxFit.contain,
+                                                                                                        ),
+                                                                                                      Text(optionAText),
+                                                                                                    ],
+                                                                                                  ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                            SizedBox(
+                                                                                              width: (MediaQuery.of(context).size.width - 64) / 2,
+                                                                                              child: GestureDetector(
+                                                                                                onTap: () {
+                                                                                                  _model.userAnswer = 'b';
+                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  selectedOptionPerQuestion[categorywisequizIndex] = 1;
+                                                                                                  FFAppState().selectedColorIndex = 1;
+                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  safeSetState(() {});
+                                                                                                  FFAppState().update(() {});
+                                                                                                },
+                                                                                                child: Container(
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                                    borderRadius: BorderRadius.circular(12.0),
+                                                                                                  ),
+                                                                                                  child: Column(
+                                                                                                    children: [
+                                                                                                      if (optionBImage.isNotEmpty)
+                                                                                                        CachedNetworkImage(
+                                                                                                          imageUrl: '${FFAppConstants.imageBaseURL}${optionBImage}',
+                                                                                                          width: 80,
+                                                                                                          height: 80,
+                                                                                                          fit: BoxFit.contain,
+                                                                                                        ),
+                                                                                                      Text(optionBText),
+                                                                                                    ],
+                                                                                                  ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                            SizedBox(
+                                                                                              width: (MediaQuery.of(context).size.width - 64) / 2,
+                                                                                              child: GestureDetector(
+                                                                                                onTap: () {
+                                                                                                  _model.userAnswer = 'c';
+                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  selectedOptionPerQuestion[categorywisequizIndex] = 2;
+                                                                                                  FFAppState().selectedColorIndex = 2;
+                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  safeSetState(() {});
+                                                                                                  FFAppState().update(() {});
+                                                                                                },
+                                                                                                child: Container(
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    border: selectedIndex == 2 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                                    borderRadius: BorderRadius.circular(12.0),
+                                                                                                  ),
+                                                                                                  child: Column(
+                                                                                                    children: [
+                                                                                                      if (optionCImage.isNotEmpty)
+                                                                                                        CachedNetworkImage(
+                                                                                                          imageUrl: '${FFAppConstants.imageBaseURL}${optionCImage}',
+                                                                                                          width: 80,
+                                                                                                          height: 80,
+                                                                                                          fit: BoxFit.contain,
+                                                                                                        ),
+                                                                                                      Text(optionCText),
+                                                                                                    ],
+                                                                                                  ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                            SizedBox(
+                                                                                              width: (MediaQuery.of(context).size.width - 64) / 2,
+                                                                                              child: GestureDetector(
+                                                                                                onTap: () {
+                                                                                                  _model.userAnswer = 'd';
+                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  selectedOptionPerQuestion[categorywisequizIndex] = 3;
+                                                                                                  FFAppState().selectedColorIndex = 3;
+                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  safeSetState(() {});
+                                                                                                  FFAppState().update(() {});
+                                                                                                },
+                                                                                                child: Container(
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    border: selectedIndex == 3 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                                    borderRadius: BorderRadius.circular(12.0),
+                                                                                                  ),
+                                                                                                  child: Column(
+                                                                                                    children: [
+                                                                                                      if (optionDImage.isNotEmpty)
+                                                                                                        CachedNetworkImage(
+                                                                                                          imageUrl: '${FFAppConstants.imageBaseURL}${optionDImage}',
+                                                                                                          width: 80,
+                                                                                                          height: 80,
+                                                                                                          fit: BoxFit.contain,
+                                                                                                        ),
+                                                                                                      Text(optionDText),
+                                                                                                    ],
+                                                                                                  ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
                                                                                           ],
                                                                                         ),
                                                                                       ),
-                                                                                    ),
-                                                                                  _buildOptionTile(
-                                                                                    label: 'A',
-                                                                                    text: _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
-                                                                                    isSelected: selectedIndex == 0,
-                                                                                    onTap: () async {
-                                                                                        if (selectedIndex == 0) {
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
-                                                                                        } else {
-                                                                                          _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.a''').toString();
-                                                                                          _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 0;
-                                                                                          FFAppState().selectedColorIndex = 0;
-                                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'a';
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
+                                                                                    ],
                                                                                   ),
-                                                                                  _buildOptionTile(
-                                                                                    label: 'B',
-                                                                                    text: _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
-                                                                                    isSelected: selectedIndex == 1,
-                                                                                    onTap: () async {
-                                                                                      if (selectedIndex == 1) {
-                                                                                        _model.userAnswer = null;
-                                                                                        _model.actualAnswer = null;
-                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                        FFAppState().selectedColorIndex = -1;
-                                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
-                                                                                      } else {
-                                                                                        _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.b''').toString();
-                                                                                        _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
-                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = 1;
-                                                                                        FFAppState().selectedColorIndex = 1;
-                                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'b';
-                                                                                      }
-                                                                                      safeSetState(() {});
-                                                                                      FFAppState().update(() {});
-                                                                                    },
-                                                                                  ),
-                                                                                  _buildOptionTile(
-                                                                                    label: 'C',
-                                                                                    text: _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
-                                                                                    isSelected: selectedIndex == 2,
-                                                                                    onTap: () async {
-                                                                                        if (selectedIndex == 2) {
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
-                                                                                        } else {
-                                                                                          _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.c''').toString();
-                                                                                          _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 2;
-                                                                                          FFAppState().selectedColorIndex = 2;
-                                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'c';
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                  ),
-                                                                                  _buildOptionTile(
-                                                                                    label: 'D',
-                                                                                    text: _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
-                                                                                    isSelected: selectedIndex == 3,
-                                                                                    onTap: () async {
-                                                                                      if (selectedIndex == 3) {
-                                                                                        _model.userAnswer = null;
-                                                                                        _model.actualAnswer = null;
-                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                        FFAppState().selectedColorIndex = -1;
-                                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
-                                                                                      } else {
-                                                                                        _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.d''').toString();
-                                                                                        _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
-                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = 3;
-                                                                                        FFAppState().selectedColorIndex = 3;
-                                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'd';
-                                                                                      }
-                                                                                      safeSetState(() {});
-                                                                                      FFAppState().update(() {});
-                                                                                    },
-                                                                                  ),
-                                                                                  ],
                                                                                 ),
                                                                               ),
-                                                                            ),
-                                                                          );
-                                                                        } else if ('${getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.question_type''',
-                                                                            ).toString()}' ==
-                                                                            'true_false') {
-                                                                          return Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                16.0,
-                                                                                50.0,
-                                                                                16.0,
-                                                                                20.0),
-                                                                            child:
-                                                                                Container(
-                                                                              width: double.infinity,
-                                                                              decoration: BoxDecoration(
-                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                borderRadius: BorderRadius.circular(16.0),
-                                                                              ),
-                                                                              alignment: AlignmentDirectional(0.0, -1.0),
-                                                                              child: SingleChildScrollView(
-                                                                                physics: const ClampingScrollPhysics(),
-                                                                                child: Column(
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                  Align(
-                                                                                    alignment: AlignmentDirectional(-1.0, 0.0),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
-                                                                                      child: _buildQuestionHtmlWidget(
-                                                                                        context: context,
-                                                                                        questionHtml: questionHtml,
-                                                                                        questionIndex: categorywisequizIndex,
-                                                                                        variantKey: 'boolean',
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
-                                                                                        if (selectedIndex == 0) {
-                                                                                          // Deselect if already selected
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                        } else {
-                                                                                          _model.userAnswer = 'True';
-                                                                                          _model.actualAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.answer''',
-                                                                                          ).toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 0;
-                                                                                          FFAppState().selectedColorIndex = 0;
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                            );
+                                                                          } else if ('${getJsonField(
+                                                                                categorywisequizItem,
+                                                                                r'''$.question_type''',
+                                                                              ).toString()}' ==
+                                                                              'audio') {
+                                                                            // Extract option variables for audio questions
+                                                                            final optionA =
+                                                                                getJsonField(categorywisequizItem, r'''$.option.a''');
+                                                                            final optionB =
+                                                                                getJsonField(categorywisequizItem, r'''$.option.b''');
+                                                                            final optionC =
+                                                                                getJsonField(categorywisequizItem, r'''$.option.c''');
+                                                                            final optionD =
+                                                                                getJsonField(categorywisequizItem, r'''$.option.d''');
+
+                                                                            String
+                                                                                extractOptionText(dynamic option) {
+                                                                              if (option is Map && option['text'] is String) {
+                                                                                return option['text'];
+                                                                              } else if (option is Map && option['text'] is Map && option['text']['text'] is String) {
+                                                                                return option['text']['text'];
+                                                                              }
+                                                                              return '';
+                                                                            }
+
+                                                                            final optionAText =
+                                                                                extractOptionText(optionA);
+                                                                            final optionBText =
+                                                                                extractOptionText(optionB);
+                                                                            final optionCText =
+                                                                                extractOptionText(optionC);
+                                                                            final optionDText =
+                                                                                extractOptionText(optionD);
+                                                                            final questionHtml =
+                                                                                _resolveQuestionHtml(categorywisequizItem);
+                                                                            final selectedIndex =
+                                                                                selectedOptionPerQuestion[categorywisequizIndex];
+
+                                                                            return Padding(
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(16.0, 50.0, 16.0, 20.0),
+                                                                              child: Container(
+                                                                                width: double.infinity,
+                                                                                decoration: BoxDecoration(
+                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                  borderRadius: BorderRadius.circular(16.0),
+                                                                                ),
+                                                                                alignment: AlignmentDirectional(0.0, -1.0),
+                                                                                child: SingleChildScrollView(
+                                                                                  physics: const ClampingScrollPhysics(),
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      Align(
+                                                                                        alignment: AlignmentDirectional(-1.0, 0.0),
+                                                                                        child: Padding(
+                                                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
+                                                                                          child: _buildQuestionHtmlWidget(
+                                                                                            context: context,
+                                                                                            questionHtml: questionHtml,
+                                                                                            questionIndex: categorywisequizIndex,
+                                                                                            variantKey: 'audio',
+                                                                                          ),
                                                                                         ),
-                                                                                        alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              'True',
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
+                                                                                      ),
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
+                                                                                        child: FlutterFlowAudioPlayer(
+                                                                                          audio: Audio.network(
+                                                                                            getJsonField(
+                                                                                                      categorywisequizItem,
+                                                                                                      r'''$.audio''',
+                                                                                                    ) !=
+                                                                                                    null
+                                                                                                ? '${FFAppConstants.imageBaseURL}${getJsonField(
+                                                                                                    categorywisequizItem,
+                                                                                                    r'''$.audio''',
+                                                                                                  ).toString()}'
+                                                                                                : 'https://filesamples.com/samples/audio/mp3/sample3.mp3',
+                                                                                            metas: Metas(
+                                                                                              title: 'Audio',
                                                                                             ),
                                                                                           ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
-                                                                                        if (selectedIndex == 1) {
-                                                                                          // Deselect if already selected
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                        } else {
-                                                                                          _model.userAnswer = 'False';
-                                                                                          _model.actualAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.answer''',
-                                                                                          ).toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 1;
-                                                                                          FFAppState().selectedColorIndex = 1;
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              'False',
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  ],
-                                                                              ),
-                                                                            ),
-                                                                            ),
-                                                                          );
-                                                                        } else if ('${getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.question_type''',
-                                                                            ).toString()}' ==
-                                                                            'images') {
-                                                                          return Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                16.0,
-                                                                                50.0,
-                                                                                16.0,
-                                                                                20.0),
-                                                                            child:
-                                                                                Container(
-                                                                              width: double.infinity,
-                                                                              decoration: BoxDecoration(
-                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                borderRadius: BorderRadius.circular(16.0),
-                                                                              ),
-                                                                              alignment: AlignmentDirectional(0.0, -1.0),
-                                                                              child: SingleChildScrollView(
-                                                                                physics: const ClampingScrollPhysics(),
-                                                                                child: Column(
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                  Align(
-                                                                                    alignment: AlignmentDirectional(-1.0, 0.0),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                      child: _buildQuestionHtmlWidget(
-                                                                                        context: context,
-                                                                                        questionHtml: questionHtml,
-                                                                                        questionIndex: categorywisequizIndex,
-                                                                                        variantKey: 'image',
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  // Timer for image-based questions
-                                                                                  Align(
-                                                                                    alignment: AlignmentDirectional(1.0, 0.0),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                      child: Container(
-                                                                                        width: 100.0,
-                                                                                        height: 34.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).primary,
-                                                                                          borderRadius: BorderRadius.circular(20.0),
-                                                                                        ),
-                                                                                        alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                        child: FlutterFlowTimer(
-                                                                                          key: const ValueKey('quiz-timer-image'),
-                                                                                          initialTime: actualQuizDurationMinutes * 60 * 1000,
-                                                                                          getDisplayTime: (value) => StopWatchTimer.getDisplayTime(
-                                                                                            value,
-                                                                                            hours: false,
-                                                                                            milliSecond: false,
-                                                                                          ),
-                                                                                          controller: _model.timerController,
-                                                                                          updateStateInterval: Duration(milliseconds: 1000),
-                                                                                          onChanged: (value, displayTime, shouldUpdate) {
-                                                                                            _model.timerMilliseconds = value;
-                                                                                            _model.timerValue = displayTime;
-                                                                                            if (shouldUpdate) safeSetState(() {});
-                                                                                          },
-                                                                                          textAlign: TextAlign.center,
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                          titleTextStyle: FlutterFlowTheme.of(context).titleLarge.override(
                                                                                                 fontFamily: 'Roboto',
-                                                                                                color: Colors.white,
-                                                                                                fontSize: 16.0,
+                                                                                                letterSpacing: 0.0,
                                                                                                 useGoogleFonts: false,
                                                                                               ),
-                                                                                          onEnded: () async {
-                                                                                            // Prevent multiple auto-submits
-                                                                                            if (quizAutoSubmitted) {
-                                                                                              return;
-                                                                                            }
-
-                                                                                            quizAutoSubmitted = true;
-
-                                                                                            await showDialog(
-                                                                                              barrierDismissible: false,
-                                                                                              context: context,
-                                                                                              builder: (dialogContext) {
-                                                                                                return Dialog(
-                                                                                                  elevation: 0,
-                                                                                                  insetPadding: EdgeInsets.zero,
-                                                                                                  backgroundColor: Colors.transparent,
-                                                                                                  alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                                                  child: GestureDetector(
-                                                                                                    onTap: () {
-                                                                                                      FocusScope.of(dialogContext).unfocus();
-                                                                                                      FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                    },
-                                                                                                    child: TimeoutDialogWidget(
-                                                                                                      istimeout: () async {
-                                                                                                        FFAppState().clearCoinsCache();
-                                                                                                        context.pushNamed(
-                                                                                                          QuizResultWidget.routeName,
-                                                                                                          queryParameters: {
-                                                                                                            'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
-                                                                                                            'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
-                                                                                                            'totalQuestion': serializeParam(questions is List ? questions.length : 0, ParamType.int),
-                                                                                                            'notAnswer': serializeParam(FFAppState().notAnswerQues, ParamType.int),
-                                                                                                            'quizID': serializeParam(widget.quizID, ParamType.String),
-                                                                                                            'title': serializeParam(widget.title, ParamType.String),
-                                                                                                            'correctAnsReward': serializeParam(correctAnsReward, ParamType.double),
-                                                                                                            'penaltyPerQuestion': serializeParam(penaltyPerQuestion, ParamType.double),
-                                                                                                            'quizTime': serializeParam(_elapsedTimeLabel, ParamType.String),
-                                                                                                          }.withoutNulls,
-                                                                                                        );
-                                                                                                      },
-                                                                                                    ),
-                                                                                                  ),
-                                                                                                );
-                                                                                              },
-                                                                                            );
-                                                                                          },
+                                                                                          playbackDurationTextStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                                                                fontFamily: 'Roboto',
+                                                                                                letterSpacing: 0.0,
+                                                                                                useGoogleFonts: false,
+                                                                                              ),
+                                                                                          fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                          playbackButtonColor: FlutterFlowTheme.of(context).primary,
+                                                                                          activeTrackColor: FlutterFlowTheme.of(context).primary,
+                                                                                          inactiveTrackColor: FlutterFlowTheme.of(context).alternate,
+                                                                                          elevation: 0.0,
+                                                                                          playInBackground: PlayInBackground.disabledRestoreOnForeground,
                                                                                         ),
                                                                                       ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  if (getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.image''',
-                                                                                          ) !=
-                                                                                          null &&
-                                                                                      getJsonField(
-                                                                                        categorywisequizItem,
-                                                                                        r'''$.image''',
-                                                                                      ).toString().isNotEmpty)
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
-                                                                                      child: Center(
-                                                                                        child: Container(
-                                                                                          width: double.infinity,
-                                                                                          constraints: BoxConstraints(
-                                                                                            maxWidth: MediaQuery.of(context).size.width - 32.0,
-                                                                                            maxHeight: 300.0,
-                                                                                          ),
-                                                                                          child: ClipRRect(
-                                                                                            borderRadius: BorderRadius.circular(12.0),
-                                                                                            child: CachedNetworkImage(
-                                                                                              fadeInDuration: Duration(milliseconds: 500),
-                                                                                              fadeOutDuration: Duration(milliseconds: 500),
-                                                                                              imageUrl: '${FFAppConstants.imageBaseURL}${getJsonField(
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                        child: InkWell(
+                                                                                          splashColor: Colors.transparent,
+                                                                                          focusColor: Colors.transparent,
+                                                                                          hoverColor: Colors.transparent,
+                                                                                          highlightColor: Colors.transparent,
+                                                                                          onTap: () async {
+                                                                                            if (selectedIndex == 0) {
+                                                                                              // Deselect if already selected
+                                                                                              _model.userAnswer = null;
+                                                                                              _model.actualAnswer = null;
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                              FFAppState().selectedColorIndex = -1;
+                                                                                            } else {
+                                                                                              _model.userAnswer = getJsonField(
                                                                                                 categorywisequizItem,
-                                                                                                r'''$.image''',
-                                                                                              ).toString()}',
-                                                                                              width: double.infinity,
-                                                                                              fit: BoxFit.contain,
-                                                                                              alignment: Alignment(0.0, 0.0),
-                                                                                              placeholder: (context, url) => Center(
-                                                                                                child: Padding(
-                                                                                                  padding: EdgeInsets.all(20.0),
-                                                                                                  child: CircularProgressIndicator(
-                                                                                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                                                                                      FlutterFlowTheme.of(context).primary,
-                                                                                                    ),
-                                                                                                  ),
-                                                                                                ),
-                                                                                              ),
-                                                                                              errorWidget: (context, url, error) => Container(
-                                                                                                width: double.infinity,
-                                                                                                height: 200.0,
-                                                                                                decoration: BoxDecoration(
-                                                                                                  color: FlutterFlowTheme.of(context).alternate,
-                                                                                                  borderRadius: BorderRadius.circular(12.0),
-                                                                                                ),
-                                                                                                child: Icon(
-                                                                                                  Icons.error_outline,
-                                                                                                  color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                  size: 48.0,
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  // For image-based questions, extract option images and texts as strings:
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-                                                                                    child: Wrap(
-                                                                                      spacing: 16.0,
-                                                                                      runSpacing: 16.0,
-                                                                                      children: [
-                                                                                        SizedBox(
-                                                                                          width: (MediaQuery.of(context).size.width - 64) / 2, // 16 padding on each side + 16 spacing
-                                                                                          child: GestureDetector(
-                                                                                            onTap: () {
-                                                                                              _model.userAnswer = 'a';
-                                                                                              _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                r'''$.option.a''',
+                                                                                              ).toString();
+                                                                                              _model.actualAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.answer''',
+                                                                                              ).toString();
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                               FFAppState().selectedColorIndex = 0;
-                                                                                              userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
-                                                                                              safeSetState(() {});
-                                                                                              FFAppState().update(() {});
-                                                                                            },
-                                                                                            child: Container(
-                                                                                              decoration: BoxDecoration(
-                                                                                                border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                                borderRadius: BorderRadius.circular(12.0),
-                                                                                              ),
-                                                                                              child: Column(
-                                                                                                children: [
-                                                                                                  if (optionAImage.isNotEmpty)
-                                                                                                    CachedNetworkImage(
-                                                                                                      imageUrl: '${FFAppConstants.imageBaseURL}${optionAImage}',
-                                                                                                      width: 80,
-                                                                                                      height: 80,
-                                                                                                      fit: BoxFit.contain,
-                                                                                                    ),
-                                                                                                  Text(optionAText),
-                                                                                                ],
+                                                                                            }
+                                                                                            safeSetState(() {});
+                                                                                            FFAppState().update(() {});
+                                                                                          },
+                                                                                          child: Container(
+                                                                                            width: 369.0,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: FlutterFlowTheme.of(context).grey,
+                                                                                              borderRadius: BorderRadius.circular(12.0),
+                                                                                              border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                            ),
+                                                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                            child: Align(
+                                                                                              alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                              child: Padding(
+                                                                                                padding: EdgeInsets.all(16.0),
+                                                                                                child: Text(
+                                                                                                  _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
+                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                        fontFamily: 'Roboto',
+                                                                                                        fontSize: 16.0,
+                                                                                                        letterSpacing: 0.0,
+                                                                                                        fontWeight: FontWeight.normal,
+                                                                                                        useGoogleFonts: false,
+                                                                                                        lineHeight: 1.5,
+                                                                                                      ),
+                                                                                                ),
                                                                                               ),
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                        SizedBox(
-                                                                                          width: (MediaQuery.of(context).size.width - 64) / 2,
-                                                                                          child: GestureDetector(
-                                                                                            onTap: () {
-                                                                                              _model.userAnswer = 'b';
-                                                                                              _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                      ),
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                        child: InkWell(
+                                                                                          splashColor: Colors.transparent,
+                                                                                          focusColor: Colors.transparent,
+                                                                                          hoverColor: Colors.transparent,
+                                                                                          highlightColor: Colors.transparent,
+                                                                                          onTap: () async {
+                                                                                            if (selectedIndex == 1) {
+                                                                                              // Deselect if already selected
+                                                                                              _model.userAnswer = null;
+                                                                                              _model.actualAnswer = null;
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                              FFAppState().selectedColorIndex = -1;
+                                                                                            } else {
+                                                                                              _model.userAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.option.b''',
+                                                                                              ).toString();
+                                                                                              _model.actualAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.answer''',
+                                                                                              ).toString();
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                               FFAppState().selectedColorIndex = 1;
-                                                                                              userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
-                                                                                              safeSetState(() {});
-                                                                                              FFAppState().update(() {});
-                                                                                            },
-                                                                                            child: Container(
-                                                                                              decoration: BoxDecoration(
-                                                                                                border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                                borderRadius: BorderRadius.circular(12.0),
-                                                                                              ),
-                                                                                              child: Column(
-                                                                                                children: [
-                                                                                                  if (optionBImage.isNotEmpty)
-                                                                                                    CachedNetworkImage(
-                                                                                                      imageUrl: '${FFAppConstants.imageBaseURL}${optionBImage}',
-                                                                                                      width: 80,
-                                                                                                      height: 80,
-                                                                                                      fit: BoxFit.contain,
-                                                                                                    ),
-                                                                                                  Text(optionBText),
-                                                                                                ],
+                                                                                            }
+                                                                                            safeSetState(() {});
+                                                                                            FFAppState().update(() {});
+                                                                                          },
+                                                                                          child: Container(
+                                                                                            width: 369.0,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: FlutterFlowTheme.of(context).grey,
+                                                                                              borderRadius: BorderRadius.circular(12.0),
+                                                                                              border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                            ),
+                                                                                            child: Align(
+                                                                                              alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                              child: Padding(
+                                                                                                padding: EdgeInsets.all(16.0),
+                                                                                                child: Text(
+                                                                                                  _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
+                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                        fontFamily: 'Roboto',
+                                                                                                        fontSize: 16.0,
+                                                                                                        letterSpacing: 0.0,
+                                                                                                        fontWeight: FontWeight.normal,
+                                                                                                        useGoogleFonts: false,
+                                                                                                        lineHeight: 1.5,
+                                                                                                      ),
+                                                                                                ),
                                                                                               ),
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                        SizedBox(
-                                                                                          width: (MediaQuery.of(context).size.width - 64) / 2,
-                                                                                          child: GestureDetector(
-                                                                                            onTap: () {
-                                                                                              _model.userAnswer = 'c';
-                                                                                              _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                      ),
+                                                                                      Padding(
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                                                        child: InkWell(
+                                                                                          splashColor: Colors.transparent,
+                                                                                          focusColor: Colors.transparent,
+                                                                                          hoverColor: Colors.transparent,
+                                                                                          highlightColor: Colors.transparent,
+                                                                                          onTap: () async {
+                                                                                            if (selectedIndex == 2) {
+                                                                                              // Deselect if already selected
+                                                                                              _model.userAnswer = null;
+                                                                                              _model.actualAnswer = null;
+                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                              FFAppState().selectedColorIndex = -1;
+                                                                                            } else {
+                                                                                              _model.userAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.option.c''',
+                                                                                              ).toString();
+                                                                                              _model.actualAnswer = getJsonField(
+                                                                                                categorywisequizItem,
+                                                                                                r'''$.answer''',
+                                                                                              ).toString();
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 2;
                                                                                               FFAppState().selectedColorIndex = 2;
-                                                                                              userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
-                                                                                              safeSetState(() {});
-                                                                                              FFAppState().update(() {});
-                                                                                            },
-                                                                                            child: Container(
-                                                                                              decoration: BoxDecoration(
-                                                                                                border: selectedIndex == 2 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                                borderRadius: BorderRadius.circular(12.0),
-                                                                                              ),
-                                                                                              child: Column(
-                                                                                                children: [
-                                                                                                  if (optionCImage.isNotEmpty)
-                                                                                                    CachedNetworkImage(
-                                                                                                      imageUrl: '${FFAppConstants.imageBaseURL}${optionCImage}',
-                                                                                                      width: 80,
-                                                                                                      height: 80,
-                                                                                                      fit: BoxFit.contain,
-                                                                                                    ),
-                                                                                                  Text(optionCText),
-                                                                                                ],
+                                                                                            }
+                                                                                            safeSetState(() {});
+                                                                                            FFAppState().update(() {});
+                                                                                          },
+                                                                                          child: Container(
+                                                                                            width: 369.0,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: FlutterFlowTheme.of(context).grey,
+                                                                                              borderRadius: BorderRadius.circular(12.0),
+                                                                                              border: selectedIndex == 2 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                            ),
+                                                                                            child: Align(
+                                                                                              alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                              child: Padding(
+                                                                                                padding: EdgeInsets.all(16.0),
+                                                                                                child: Text(
+                                                                                                  _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
+                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                        fontFamily: 'Roboto',
+                                                                                                        fontSize: 16.0,
+                                                                                                        letterSpacing: 0.0,
+                                                                                                        fontWeight: FontWeight.normal,
+                                                                                                        useGoogleFonts: false,
+                                                                                                        lineHeight: 1.5,
+                                                                                                      ),
+                                                                                                ),
                                                                                               ),
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                        SizedBox(
-                                                                                          width: (MediaQuery.of(context).size.width - 64) / 2,
-                                                                                          child: GestureDetector(
-                                                                                            onTap: () {
-                                                                                              _model.userAnswer = 'd';
-                                                                                              _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
-                                                                                              selectedOptionPerQuestion[categorywisequizIndex] = 3;
-                                                                                              FFAppState().selectedColorIndex = 3;
-                                                                                              userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
-                                                                                              safeSetState(() {});
-                                                                                              FFAppState().update(() {});
-                                                                                            },
-                                                                                            child: Container(
-                                                                                              decoration: BoxDecoration(
-                                                                                                border: selectedIndex == 3 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                                borderRadius: BorderRadius.circular(12.0),
-                                                                                              ),
-                                                                                              child: Column(
-                                                                                                children: [
-                                                                                                  if (optionDImage.isNotEmpty)
-                                                                                                    CachedNetworkImage(
-                                                                                                      imageUrl: '${FFAppConstants.imageBaseURL}${optionDImage}',
-                                                                                                      width: 80,
-                                                                                                      height: 80,
-                                                                                                      fit: BoxFit.contain,
+                                                                                      ),
+                                                                                      InkWell(
+                                                                                        splashColor: Colors.transparent,
+                                                                                        focusColor: Colors.transparent,
+                                                                                        hoverColor: Colors.transparent,
+                                                                                        highlightColor: Colors.transparent,
+                                                                                        onTap: () async {
+                                                                                          if (selectedIndex == 3) {
+                                                                                            // Deselect if already selected
+                                                                                            _model.userAnswer = null;
+                                                                                            _model.actualAnswer = null;
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = -1;
+                                                                                            FFAppState().selectedColorIndex = -1;
+                                                                                          } else {
+                                                                                            _model.userAnswer = getJsonField(
+                                                                                              categorywisequizItem,
+                                                                                              r'''$.option.d''',
+                                                                                            ).toString();
+                                                                                            _model.actualAnswer = getJsonField(
+                                                                                              categorywisequizItem,
+                                                                                              r'''$.answer''',
+                                                                                            ).toString();
+                                                                                            selectedOptionPerQuestion[categorywisequizIndex] = 3;
+                                                                                            FFAppState().selectedColorIndex = 3;
+                                                                                          }
+                                                                                          safeSetState(() {});
+                                                                                          FFAppState().update(() {});
+                                                                                        },
+                                                                                        child: Container(
+                                                                                          width: 369.0,
+                                                                                          decoration: BoxDecoration(
+                                                                                            color: FlutterFlowTheme.of(context).grey,
+                                                                                            borderRadius: BorderRadius.circular(12.0),
+                                                                                            border: selectedIndex == 3 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
+                                                                                          ),
+                                                                                          child: Align(
+                                                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                            child: Padding(
+                                                                                              padding: EdgeInsets.all(16.0),
+                                                                                              child: Text(
+                                                                                                _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
+                                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                      fontFamily: 'Roboto',
+                                                                                                      fontSize: 16.0,
+                                                                                                      letterSpacing: 0.0,
+                                                                                                      fontWeight: FontWeight.normal,
+                                                                                                      useGoogleFonts: false,
+                                                                                                      lineHeight: 1.5,
                                                                                                     ),
-                                                                                                  Text(optionDText),
-                                                                                                ],
                                                                                               ),
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                      ],
-                                                                                    ),
+                                                                                      ),
+                                                                                    ],
                                                                                   ),
-                                                                                  ],
+                                                                                ),
                                                                               ),
-                                                                            ),
-                                                                            ),
-                                                                          );
-                                                                        } else if ('${getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.question_type''',
-                                                                            ).toString()}' ==
-                                                                            'audio') {
-                                                                          // Extract option variables for audio questions
-                                                                          final optionA = getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.option.a''');
-                                                                          final optionB = getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.option.b''');
-                                                                          final optionC = getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.option.c''');
-                                                                          final optionD = getJsonField(
-                                                                              categorywisequizItem,
-                                                                              r'''$.option.d''');
-
-                                                                          String
-                                                                              extractOptionText(dynamic option) {
-                                                                            if (option is Map &&
-                                                                                option['text'] is String) {
-                                                                              return option['text'];
-                                                                            } else if (option is Map && option['text'] is Map && option['text']['text'] is String) {
-                                                                              return option['text']['text'];
-                                                                            }
-                                                                            return '';
-                                                                          }
-
-                                                                          final optionAText =
-                                                                              extractOptionText(optionA);
-                                                                          final optionBText =
-                                                                              extractOptionText(optionB);
-                                                                          final optionCText =
-                                                                              extractOptionText(optionC);
-                                                                          final optionDText =
-                                                                              extractOptionText(optionD);
-                                                                          final questionHtml =
-                                                                              _resolveQuestionHtml(categorywisequizItem);
-                                                                          final selectedIndex =
-                                                                              selectedOptionPerQuestion[categorywisequizIndex];
-
-                                                                          return Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                16.0,
-                                                                                50.0,
-                                                                                16.0,
-                                                                                20.0),
-                                                                            child:
-                                                                                Container(
-                                                                              width: double.infinity,
+                                                                            );
+                                                                          } else {
+                                                                            return Container(
+                                                                              width: 100.0,
                                                                               decoration: BoxDecoration(
                                                                                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                borderRadius: BorderRadius.circular(16.0),
                                                                               ),
-                                                                              alignment: AlignmentDirectional(0.0, -1.0),
-                                                                              child: SingleChildScrollView(
-                                                                                physics: const ClampingScrollPhysics(),
-                                                                                child: Column(
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                  Align(
-                                                                                    alignment: AlignmentDirectional(-1.0, 0.0),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
-                                                                                      child: _buildQuestionHtmlWidget(
-                                                                                        context: context,
-                                                                                        questionHtml: questionHtml,
-                                                                                        questionIndex: categorywisequizIndex,
-                                                                                        variantKey: 'audio',
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
-                                                                                    child: FlutterFlowAudioPlayer(
-                                                                                      audio: Audio.network(
-                                                                                        getJsonField(
-                                                                                                  categorywisequizItem,
-                                                                                                  r'''$.audio''',
-                                                                                                ) !=
-                                                                                                null
-                                                                                            ? '${FFAppConstants.imageBaseURL}${getJsonField(
-                                                                                                categorywisequizItem,
-                                                                                                r'''$.audio''',
-                                                                                              ).toString()}'
-                                                                                            : 'https://filesamples.com/samples/audio/mp3/sample3.mp3',
-                                                                                        metas: Metas(
-                                                                                          title: 'Audio',
-                                                                                        ),
-                                                                                      ),
-                                                                                      titleTextStyle: FlutterFlowTheme.of(context).titleLarge.override(
-                                                                                            fontFamily: 'Roboto',
-                                                                                            letterSpacing: 0.0,
-                                                                                            useGoogleFonts: false,
-                                                                                          ),
-                                                                                      playbackDurationTextStyle: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                            fontFamily: 'Roboto',
-                                                                                            letterSpacing: 0.0,
-                                                                                            useGoogleFonts: false,
-                                                                                          ),
-                                                                                      fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                      playbackButtonColor: FlutterFlowTheme.of(context).primary,
-                                                                                      activeTrackColor: FlutterFlowTheme.of(context).primary,
-                                                                                      inactiveTrackColor: FlutterFlowTheme.of(context).alternate,
-                                                                                      elevation: 0.0,
-                                                                                      playInBackground: PlayInBackground.disabledRestoreOnForeground,
-                                                                                    ),
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
-                                                                                        if (selectedIndex == 0) {
-                                                                                          // Deselect if already selected
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                        } else {
-                                                                                          _model.userAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.option.a''',
-                                                                                          ).toString();
-                                                                                          _model.actualAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.answer''',
-                                                                                          ).toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 0;
-                                                                                          FFAppState().selectedColorIndex = 0;
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 0 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
-                                                                                        if (selectedIndex == 1) {
-                                                                                          // Deselect if already selected
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                        } else {
-                                                                                          _model.userAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.option.b''',
-                                                                                          ).toString();
-                                                                                          _model.actualAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.answer''',
-                                                                                          ).toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 1;
-                                                                                          FFAppState().selectedColorIndex = 1;
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 1 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                                                    child: InkWell(
-                                                                                      splashColor: Colors.transparent,
-                                                                                      focusColor: Colors.transparent,
-                                                                                      hoverColor: Colors.transparent,
-                                                                                      highlightColor: Colors.transparent,
-                                                                                      onTap: () async {
-                                                                                        if (selectedIndex == 2) {
-                                                                                          // Deselect if already selected
-                                                                                          _model.userAnswer = null;
-                                                                                          _model.actualAnswer = null;
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                          FFAppState().selectedColorIndex = -1;
-                                                                                        } else {
-                                                                                          _model.userAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.option.c''',
-                                                                                          ).toString();
-                                                                                          _model.actualAnswer = getJsonField(
-                                                                                            categorywisequizItem,
-                                                                                            r'''$.answer''',
-                                                                                          ).toString();
-                                                                                          selectedOptionPerQuestion[categorywisequizIndex] = 2;
-                                                                                          FFAppState().selectedColorIndex = 2;
-                                                                                        }
-                                                                                        safeSetState(() {});
-                                                                                        FFAppState().update(() {});
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        width: 369.0,
-                                                                                        decoration: BoxDecoration(
-                                                                                          color: FlutterFlowTheme.of(context).grey,
-                                                                                          borderRadius: BorderRadius.circular(12.0),
-                                                                                          border: selectedIndex == 2 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                        ),
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(16.0),
-                                                                                            child: Text(
-                                                                                              _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'Roboto',
-                                                                                                    fontSize: 18.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.normal,
-                                                                                                    useGoogleFonts: false,
-                                                                                                    lineHeight: 1.5,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  InkWell(
-                                                                                    splashColor: Colors.transparent,
-                                                                                    focusColor: Colors.transparent,
-                                                                                    hoverColor: Colors.transparent,
-                                                                                    highlightColor: Colors.transparent,
-                                                                                    onTap: () async {
-                                                                                      if (selectedIndex == 3) {
-                                                                                        // Deselect if already selected
-                                                                                        _model.userAnswer = null;
-                                                                                        _model.actualAnswer = null;
-                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = -1;
-                                                                                        FFAppState().selectedColorIndex = -1;
-                                                                                      } else {
-                                                                                        _model.userAnswer = getJsonField(
-                                                                                          categorywisequizItem,
-                                                                                          r'''$.option.d''',
-                                                                                        ).toString();
-                                                                                        _model.actualAnswer = getJsonField(
-                                                                                          categorywisequizItem,
-                                                                                          r'''$.answer''',
-                                                                                        ).toString();
-                                                                                        selectedOptionPerQuestion[categorywisequizIndex] = 3;
-                                                                                        FFAppState().selectedColorIndex = 3;
-                                                                                      }
-                                                                                      safeSetState(() {});
-                                                                                      FFAppState().update(() {});
-                                                                                    },
-                                                                                    child: Container(
-                                                                                      width: 369.0,
-                                                                                      decoration: BoxDecoration(
-                                                                                        color: FlutterFlowTheme.of(context).grey,
-                                                                                        borderRadius: BorderRadius.circular(12.0),
-                                                                                        border: selectedIndex == 3 ? Border.all(color: FlutterFlowTheme.of(context).primary, width: 2.0) : null,
-                                                                                      ),
-                                                                                      child: Align(
-                                                                                        alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                        child: Padding(
-                                                                                          padding: EdgeInsets.all(16.0),
-                                                                                          child: Text(
-                                                                                            _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
-                                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                  fontFamily: 'Roboto',
-                                                                                                  fontSize: 18.0,
-                                                                                                  letterSpacing: 0.0,
-                                                                                                  fontWeight: FontWeight.normal,
-                                                                                                  useGoogleFonts: false,
-                                                                                                  lineHeight: 1.5,
-                                                                                                ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  ],
-                                                                              ),
-                                                                            ),
-                                                                            ),
-                                                                          );
-                                                                        } else {
-                                                                          return Container(
-                                                                            width:
-                                                                                100.0,
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                      },
-                                                                    );
-                                                                  },
+                                                                            );
+                                                                          }
+                                                                        },
+                                                                      );
+                                                                    },
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            );
-                                                          },
+                                                              );
+                                                            },
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(20.0,
-                                                                  12.0, 20.0,
-                                                                  28.0),
-                                                      child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
+                                                Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    20.0,
+                                                                    12.0,
+                                                                    20.0,
+                                                                    28.0),
+                                                        child: Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            children: [
                                                               // Back Button
                                                               Expanded(
                                                                 flex: 3,
@@ -2425,15 +2422,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                     _buildFooterButton(
                                                                   onPressed:
                                                                       () async {
+                                                                    if (quizAutoSubmitted)
+                                                                      return;
                                                                     if (_model
                                                                             .pageViewCurrentIndex >
                                                                         0) {
                                                                       await _model
                                                                           .pageViewController
                                                                           ?.previousPage(
-                                                                        duration: Duration(
-                                                                            milliseconds:
-                                                                                300),
+                                                                        duration:
+                                                                            Duration(milliseconds: 300),
                                                                         curve: Curves
                                                                             .ease,
                                                                       );
@@ -2449,17 +2447,18 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                     }
                                                                   },
                                                                   text: 'Back',
-                                                                  isPrimary: false,
+                                                                  isPrimary:
+                                                                      false,
                                                                   accentColor:
                                                                       const Color(
                                                                           0xFFA855F7),
-                                                                  leadingIcon:
-                                                                      Icons
-                                                                          .arrow_back_rounded,
+                                                                  leadingIcon: Icons
+                                                                      .arrow_back_rounded,
                                                                 ),
                                                               ),
 
-                                                              SizedBox(width: 8.0),
+                                                              SizedBox(
+                                                                  width: 8.0),
                                                               // Skip Button
                                                               Expanded(
                                                                 flex: 3,
@@ -2467,6 +2466,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                     _buildFooterButton(
                                                                   onPressed:
                                                                       () async {
+                                                                    if (quizAutoSubmitted)
+                                                                      return;
                                                                     // Skip logic: go to next question without saving answer
                                                                     if ((_model.pageViewController !=
                                                                             null) &&
@@ -2477,396 +2478,132 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                       await _model
                                                                           .pageViewController
                                                                           ?.nextPage(
-                                                                       duration: Duration(
-                                                                           milliseconds:
-                                                                               300),
-                                                                       curve: Curves
-                                                                           .ease,
-                                                                     );
-                                                                     FFAppState()
-                                                                             .quesIndex =
-                                                                         _model.pageViewCurrentIndex +
-                                                                             1;
-                                                                     safeSetState(
-                                                                         () {});
-                                                                     FFAppState()
-                                                                         .selectedColorIndex = -1;
-                                                                     safeSetState(
-                                                                         () {});
-                                                                     _model.userAnswer =
-                                                                         null;
-                                                                     _model.actualAnswer =
-                                                                         null;
-                                                                     safeSetState(
-                                                                         () {});
-                                                                   }
-                                                                 },
+                                                                        duration:
+                                                                            Duration(milliseconds: 300),
+                                                                        curve: Curves
+                                                                            .ease,
+                                                                      );
+                                                                      FFAppState()
+                                                                              .quesIndex =
+                                                                          _model.pageViewCurrentIndex +
+                                                                              1;
+                                                                      safeSetState(
+                                                                          () {});
+                                                                      FFAppState()
+                                                                          .selectedColorIndex = -1;
+                                                                      safeSetState(
+                                                                          () {});
+                                                                      _model.userAnswer =
+                                                                          null;
+                                                                      _model.actualAnswer =
+                                                                          null;
+                                                                      safeSetState(
+                                                                          () {});
+                                                                    }
+                                                                  },
                                                                   text: 'Skip',
-                                                                 isPrimary: false,
-                                                                 accentColor:
-                                                                     const Color(
-                                                                         0xFF22C55E),
-                                                               ),
+                                                                  isPrimary:
+                                                                      false,
+                                                                  accentColor:
+                                                                      const Color(
+                                                                          0xFF22C55E),
+                                                                ),
                                                               ),
 
-                                                              SizedBox(width: 8.0),
+                                                              SizedBox(
+                                                                  width: 8.0),
                                                               // Save & Next Button
                                                               Expanded(
-                                                               flex: 4,
-                                                               child:
-                                                                   _buildFooterButton(
-                                                                onPressed:
-                                                                    () async {
-                                                                  // First, process the answer for the current question
-                                                                  // Get the user's selected option key
-                                                                  final userSelectedKey =
-                                                                      userAnswersPerQuestion[
-                                                                          _model
-                                                                              .pageViewCurrentIndex];
+                                                                flex: 4,
+                                                                child:
+                                                                    _buildFooterButton(
+                                                                  onPressed:
+                                                                      () async {
+                                                                    if (quizAutoSubmitted)
+                                                                      return;
+                                                                    // First, process the answer for the current question
+                                                                    // Get the user's selected option key
+                                                                    final userSelectedKey =
+                                                                        userAnswersPerQuestion[
+                                                                            _model.pageViewCurrentIndex];
 
-                                                                  if (userSelectedKey !=
-                                                                          null &&
-                                                                      userSelectedKey !=
-                                                                          'skipped') {
-                                                                    // Helper function to normalize answer for comparison
-                                                                    String normalizeAnswer(
-                                                                        dynamic
-                                                                            answer) {
-                                                                      if (answer ==
-                                                                          null)
-                                                                        return '';
-                                                                      String answerStr = answer
-                                                                          .toString()
-                                                                          .trim()
-                                                                          .toLowerCase();
-                                                                      return answerStr;
-                                                                    }
-
-                                                                    // Get the current question and correct answer
-                                                                    final currentQuestion = QuizGroup
-                                                                        .getquestionsbyquizidApiCall
-                                                                        .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                            ''))
-                                                                        ?.elementAtOrNull(
-                                                                            _model.pageViewCurrentIndex);
-                                                                    final correctAnswer =
-                                                                        getJsonField(
-                                                                            currentQuestion,
-                                                                            r'''$.answer''');
-                                                                    final correctAnswerStr =
-                                                                        normalizeAnswer(
-                                                                            correctAnswer);
-
-                                                                    // Check if the option key matches directly
-                                                                    final userKeyNormalized =
-                                                                        normalizeAnswer(
-                                                                            userSelectedKey);
-                                                                    bool
-                                                                        isCorrect =
-                                                                        userKeyNormalized ==
-                                                                            correctAnswerStr;
-
-                                                                    // If key doesn't match, check option text
-                                                                    if (!isCorrect) {
-                                                                      final options = getJsonField(
-                                                                          currentQuestion,
-                                                                          r'''$.option''');
-                                                                      if (options
-                                                                              is Map &&
-                                                                          options[userSelectedKey] !=
-                                                                              null) {
-                                                                        final selectedOption =
-                                                                            options[userSelectedKey];
-                                                                        String
-                                                                            optionText =
-                                                                            '';
-                                                                        if (selectedOption
-                                                                            is Map) {
-                                                                          if (selectedOption['text'] is Map &&
-                                                                              selectedOption['text']['text'] !=
-                                                                                  null) {
-                                                                            optionText =
-                                                                                selectedOption['text']['text'].toString();
-                                                                          } else if (selectedOption['text'] !=
-                                                                              null) {
-                                                                            optionText =
-                                                                                selectedOption['text'].toString();
-                                                                          }
-                                                                        } else {
-                                                                          optionText =
-                                                                              selectedOption.toString();
-                                                                        }
-                                                                        final optionTextNormalized =
-                                                                            normalizeAnswer(optionText);
-                                                                        isCorrect =
-                                                                            optionTextNormalized ==
-                                                                                correctAnswerStr;
+                                                                    if (userSelectedKey !=
+                                                                            null &&
+                                                                        userSelectedKey !=
+                                                                            'skipped') {
+                                                                      // Helper function to normalize answer for comparison
+                                                                      String normalizeAnswer(
+                                                                          dynamic
+                                                                              answer) {
+                                                                        if (answer ==
+                                                                            null)
+                                                                          return '';
+                                                                        String answerStr = answer
+                                                                            .toString()
+                                                                            .trim()
+                                                                            .toLowerCase();
+                                                                        return answerStr;
                                                                       }
 
-                                                                      // Also check if correct answer is stored as option text
-                                                                      if (!isCorrect &&
-                                                                          options
-                                                                              is Map) {
-                                                                        for (var key
-                                                                            in [
-                                                                          'a',
-                                                                          'b',
-                                                                          'c',
-                                                                          'd'
-                                                                        ]) {
-                                                                          if (options[key] !=
-                                                                              null) {
-                                                                            final opt =
-                                                                                options[key];
-                                                                            String
-                                                                                optText =
-                                                                                '';
-                                                                            if (opt
-                                                                                is Map) {
-                                                                              if (opt['text'] is Map && opt['text']['text'] != null) {
-                                                                                optText = opt['text']['text'].toString();
-                                                                              } else if (opt['text'] != null) {
-                                                                                optText = opt['text'].toString();
-                                                                              }
-                                                                            } else {
-                                                                              optText = opt.toString();
-                                                                            }
-                                                                            final optTextNormalized =
-                                                                                normalizeAnswer(optText);
-                                                                            if (optTextNormalized == correctAnswerStr &&
-                                                                                key == userSelectedKey) {
-                                                                              isCorrect = true;
-                                                                              break;
-                                                                            }
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    }
-
-
-                                                                    if (isCorrect) {
-                                                                      FFAppState()
-                                                                          .correctQues += 1;
-                                                                    } else {
-                                                                      FFAppState()
-                                                                          .wrongQues += 1;
-                                                                    }
-                                                                  } else {
-                                                                    FFAppState()
-                                                                        .notAnswerQues += 1;
-                                                                    FFAppState()
-                                                                        .addToNotAnswerQuestion({
-                                                                      'question_title':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.question_title''',
-                                                                      ),
-                                                                      'question_type':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.question_type''',
-                                                                      ),
-                                                                      'answer':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.answer''',
-                                                                      ),
-                                                                      'option':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.option''',
-                                                                      ),
-                                                                      'user_answer':
-                                                                          FFAppState()
-                                                                              .userAns,
-                                                                    });
-                                                                  }
-                                                                  FFAppState()
-                                                                      .update(
-                                                                          () {});
-
-                                                                  final totalQuestions = (QuizGroup
+                                                                      // Get the current question and correct answer
+                                                                      final currentQuestion = QuizGroup
                                                                           .getquestionsbyquizidApiCall
                                                                           .questionDetailsList((_model.quizRes?.jsonBody ??
                                                                               ''))
-                                                                          ?.length ??
-                                                                      0);
-                                                                  final isLast =
-                                                                      (_model.pageViewCurrentIndex +
-                                                                              1) ==
-                                                                          totalQuestions;
+                                                                          ?.elementAtOrNull(
+                                                                              _model.pageViewCurrentIndex);
+                                                                      final correctAnswer = getJsonField(
+                                                                          currentQuestion,
+                                                                          r'''$.answer''');
+                                                                      final correctAnswerStr =
+                                                                          normalizeAnswer(
+                                                                              correctAnswer);
 
-                                                                  if (isLast) {
-                                                                    // Build quesList with user answers for result screen
-                                                                    final questions =
-                                                                        QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                '')) ??
-                                                                            [];
-                                                                    List<Map<String, dynamic>>
-                                                                        quesList =
-                                                                        [];
+                                                                      // Check if the option key matches directly
+                                                                      final userKeyNormalized =
+                                                                          normalizeAnswer(
+                                                                              userSelectedKey);
+                                                                      bool
+                                                                          isCorrect =
+                                                                          userKeyNormalized ==
+                                                                              correctAnswerStr;
 
-                                                                    // Recalculate correct/wrong counts to ensure accuracy
-                                                                    int correctCount =
-                                                                        0;
-                                                                    int wrongCount =
-                                                                        0;
-                                                                    int skippedCount =
-                                                                        0;
-
-                                                                    // Helper function to normalize answer for comparison
-                                                                    String normalizeAnswer(
-                                                                        dynamic
-                                                                            answer) {
-                                                                      if (answer ==
-                                                                          null)
-                                                                        return '';
-                                                                      return answer
-                                                                          .toString()
-                                                                          .trim()
-                                                                          .toLowerCase();
-                                                                    }
-
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < questions.length;
-                                                                        i++) {
-                                                                      final q = Map<
-                                                                          String,
-                                                                          dynamic>.from(questions[i]);
-                                                                      // Recursively flatten option fields to ensure text and image are strings
-                                                                      Map<String,
-                                                                              dynamic>
-                                                                          flattenOption(
-                                                                              Map? opt) {
-                                                                        if (opt ==
-                                                                            null)
-                                                                          return {
-                                                                            'text':
-                                                                                '',
-                                                                            'image':
-                                                                                ''
-                                                                          };
-                                                                        String
-                                                                            textValue =
-                                                                            '';
-                                                                        if (opt['text']
-                                                                            is String) {
-                                                                          textValue =
-                                                                              opt['text'];
-                                                                        } else if (opt['text']
+                                                                      // If key doesn't match, check option text
+                                                                      if (!isCorrect) {
+                                                                        final options = getJsonField(
+                                                                            currentQuestion,
+                                                                            r'''$.option''');
+                                                                        if (options
                                                                                 is Map &&
-                                                                            opt['text']['text']
-                                                                                is String) {
-                                                                          textValue =
-                                                                              opt['text']['text'];
-                                                                        }
-                                                                        String
-                                                                            imageValue =
-                                                                            '';
-                                                                        if (opt['image']
-                                                                            is String) {
-                                                                          imageValue =
-                                                                              opt['image'];
-                                                                        } else if (opt['text']
-                                                                                is Map &&
-                                                                            opt['text']['image']
-                                                                                is String) {
-                                                                          imageValue =
-                                                                              opt['text']['image'];
-                                                                        }
-                                                                        return {
-                                                                          'text':
-                                                                              textValue,
-                                                                          'image':
-                                                                              imageValue,
-                                                                        };
-                                                                      }
-
-                                                                      final options =
-                                                                          q['option'] ??
-                                                                              {};
-                                                                      final flatOptions =
-                                                                          {
-                                                                        'a': flattenOption(
-                                                                            options['a']),
-                                                                        'b': flattenOption(
-                                                                            options['b']),
-                                                                        'c': flattenOption(
-                                                                            options['c']),
-                                                                        'd': flattenOption(
-                                                                            options['d']),
-                                                                      };
-                                                                      // Replace the original option field with the flattened one
-                                                                      q['option'] =
-                                                                          flatOptions;
-
-                                                                      final userAnswer =
-                                                                          userAnswersPerQuestion[i] ??
-                                                                              'skipped';
-                                                                      final correctAnswer =
-                                                                          getJsonField(
-                                                                              q,
-                                                                              r'''$.answer''');
-
-                                                                      // Count correct/wrong/skipped
-                                                                      if (userAnswer ==
-                                                                          'skipped') {
-                                                                        skippedCount++;
-                                                                      } else {
-                                                                        final userKeyNormalized =
-                                                                            normalizeAnswer(userAnswer);
-                                                                        final correctAnswerNormalized =
-                                                                            normalizeAnswer(correctAnswer);
-                                                                        bool
-                                                                            isCorrect =
-                                                                            userKeyNormalized ==
-                                                                                correctAnswerNormalized;
-
-                                                                        // If key doesn't match, check option text
-                                                                        if (!isCorrect &&
-                                                                            userAnswer !=
-                                                                                null &&
-                                                                            flatOptions[userAnswer] !=
+                                                                            options[userSelectedKey] !=
                                                                                 null) {
                                                                           final selectedOption =
-                                                                              flatOptions[userAnswer];
-                                                                          if (selectedOption !=
-                                                                              null) {
-                                                                            String
-                                                                                optionText =
-                                                                                '';
-                                                                            if (selectedOption['text'] !=
-                                                                                null) {
+                                                                              options[userSelectedKey];
+                                                                          String
+                                                                              optionText =
+                                                                              '';
+                                                                          if (selectedOption
+                                                                              is Map) {
+                                                                            if (selectedOption['text'] is Map &&
+                                                                                selectedOption['text']['text'] != null) {
+                                                                              optionText = selectedOption['text']['text'].toString();
+                                                                            } else if (selectedOption['text'] != null) {
                                                                               optionText = selectedOption['text'].toString();
                                                                             }
-                                                                            final optionTextNormalized =
-                                                                                normalizeAnswer(optionText);
-                                                                            isCorrect =
-                                                                                optionTextNormalized == correctAnswerNormalized;
+                                                                          } else {
+                                                                            optionText =
+                                                                                selectedOption.toString();
                                                                           }
+                                                                          final optionTextNormalized =
+                                                                              normalizeAnswer(optionText);
+                                                                          isCorrect =
+                                                                              optionTextNormalized == correctAnswerStr;
                                                                         }
 
-                                                                        // Also check if correct answer matches any option text
+                                                                        // Also check if correct answer is stored as option text
                                                                         if (!isCorrect &&
-                                                                            userAnswer !=
-                                                                                null) {
+                                                                            options
+                                                                                is Map) {
                                                                           for (var key
                                                                               in [
                                                                             'a',
@@ -2874,434 +2611,660 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             'c',
                                                                             'd'
                                                                           ]) {
-                                                                            if (key == userAnswer &&
-                                                                                flatOptions[key] != null) {
-                                                                              final opt = flatOptions[key];
-                                                                              if (opt != null) {
-                                                                                String optText = '';
-                                                                                if (opt['text'] != null) {
+                                                                            if (options[key] !=
+                                                                                null) {
+                                                                              final opt = options[key];
+                                                                              String optText = '';
+                                                                              if (opt is Map) {
+                                                                                if (opt['text'] is Map && opt['text']['text'] != null) {
+                                                                                  optText = opt['text']['text'].toString();
+                                                                                } else if (opt['text'] != null) {
                                                                                   optText = opt['text'].toString();
                                                                                 }
-                                                                                final optTextNormalized = normalizeAnswer(optText);
-                                                                                if (optTextNormalized == correctAnswerNormalized) {
-                                                                                  isCorrect = true;
-                                                                                  break;
-                                                                                }
+                                                                              } else {
+                                                                                optText = opt.toString();
+                                                                              }
+                                                                              final optTextNormalized = normalizeAnswer(optText);
+                                                                              if (optTextNormalized == correctAnswerStr && key == userSelectedKey) {
+                                                                                isCorrect = true;
+                                                                                break;
                                                                               }
                                                                             }
                                                                           }
                                                                         }
-
-                                                                        if (isCorrect) {
-                                                                          correctCount++;
-                                                                        } else {
-                                                                          wrongCount++;
-                                                                        }
                                                                       }
 
-                                                                       quesList
-                                                                           .add({
-                                                                         'question':
-                                                                             q,
-                                                                         'user_answer':
-                                                                             userAnswer,
-                                                                         'correct_answer':
-                                                                             correctAnswer,
-                                                                         'question_title': getJsonField(
-                                                                             q,
-                                                                             r'''$.question_title'''),
-                                                                         'question_type': getJsonField(
-                                                                             q,
-                                                                             r'''$.question_type'''),
-                                                                         'image': getJsonField(
-                                                                             q,
-                                                                             r'''$.image'''),
-                                                                         'audio': getJsonField(
-                                                                             q,
-                                                                             r'''$.audio'''),
-                                                                         'description': getJsonField(
-                                                                             q,
-                                                                             r'''$.description'''),
-                                                                         'subcategoryName': getJsonField(
-                                                                             q,
-                                                                             r'''$.subcategoryName'''),
-                                                                       });
+                                                                      if (isCorrect) {
+                                                                        FFAppState()
+                                                                            .correctQues += 1;
+                                                                      } else {
+                                                                        FFAppState()
+                                                                            .wrongQues += 1;
+                                                                      }
+                                                                    } else {
+                                                                      FFAppState()
+                                                                          .notAnswerQues += 1;
+                                                                      FFAppState()
+                                                                          .addToNotAnswerQuestion({
+                                                                        'question_title':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.question_title''',
+                                                                        ),
+                                                                        'question_type':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.question_type''',
+                                                                        ),
+                                                                        'answer':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.answer''',
+                                                                        ),
+                                                                        'option':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.option''',
+                                                                        ),
+                                                                        'user_answer':
+                                                                            FFAppState().userAns,
+                                                                      });
                                                                     }
+                                                                    FFAppState()
+                                                                        .update(
+                                                                            () {});
 
-                                                                    // Update the counts with recalculated values
-                                                                    FFAppState()
-                                                                            .correctQues =
-                                                                        correctCount;
-                                                                    FFAppState()
-                                                                            .wrongQues =
-                                                                        wrongCount;
-                                                                    FFAppState()
-                                                                            .notAnswerQues =
-                                                                        skippedCount;
+                                                                    final totalQuestions = (QuizGroup
+                                                                            .getquestionsbyquizidApiCall
+                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
+                                                                                ''))
+                                                                            ?.length ??
+                                                                        0);
+                                                                    final isLast =
+                                                                        (_model.pageViewCurrentIndex +
+                                                                                1) ==
+                                                                            totalQuestions;
 
+                                                                    if (isLast) {
+                                                                      // Build quesList with user answers for result screen
+                                                                      final questions =
+                                                                          QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? '')) ??
+                                                                              [];
+                                                                      List<Map<String, dynamic>>
+                                                                          quesList =
+                                                                          [];
 
-                                                                    FFAppState()
-                                                                            .quesList =
-                                                                        quesList;
-                                                                    // Debug print to verify outgoing JSON
-
-                                                                    context
-                                                                        .goNamed(
-                                                                      QuizResultWidget
-                                                                          .routeName,
-                                                                      queryParameters:
-                                                                          {
-                                                                        'correctAnswer': serializeParam(
-                                                                            FFAppState().correctQues,
-                                                                            ParamType.int),
-                                                                        'wrongAnswer': serializeParam(
-                                                                            FFAppState().wrongQues,
-                                                                            ParamType.int),
-                                                                        'totalQuestion': serializeParam(
-                                                                            totalQuestions,
-                                                                            ParamType.int),
-                                                                        'notAnswer': serializeParam(
-                                                                            FFAppState().notAnswerQues,
-                                                                            ParamType.int),
-                                                                        'quizID': serializeParam(
-                                                                            widget.quizID,
-                                                                            ParamType.String),
-                                                                        'quizTime': serializeParam(
-                                                                            _elapsedTimeLabel,
-                                                                            ParamType.String),
-                                                                        'catID': serializeParam(
-                                                                            widget.catId,
-                                                                            ParamType.String),
-                                                                        'title': serializeParam(
-                                                                            widget.title,
-                                                                            ParamType.String),
-                                                                        'image': serializeParam(
-                                                                            widget.image,
-                                                                            ParamType.String),
-                                                                        'correctAnsReward': serializeParam(
-                                                                            correctAnsReward,
-                                                                            ParamType.double),
-                                                                        'penaltyPerQuestion': serializeParam(
-                                                                            penaltyPerQuestion,
-                                                                            ParamType.double),
-                                                                      }.withoutNulls,
-                                                                    );
-                                                                  } else {
-                                                                    // It's not the last question, move to the next one
-                                                                    await _model
-                                                                        .pageViewController
-                                                                        ?.nextPage(
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              300),
-                                                                      curve: Curves
-                                                                          .ease,
-                                                                    );
-                                                                    _model.userAnswer =
-                                                                        null;
-                                                                    _model.actualAnswer =
-                                                                        null;
-                                                                    FFAppState()
-                                                                            .quesIndex =
-                                                                        _model.pageViewCurrentIndex +
-                                                                            1;
-                                                                    FFAppState()
-                                                                        .selectedColorIndex = -1;
-                                                                    safeSetState(
-                                                                        () {});
-                                                                  }
-
-                                                                  // Inside the Save & Next button logic, after processing the answer:
-                                                                  if (_model.userAnswer !=
-                                                                          null &&
-                                                                      _model.userAnswer !=
-                                                                          '') {
-                                                                    final userAnswer =
-                                                                        userAnswersPerQuestion[_model.pageViewCurrentIndex] ??
-                                                                            'skipped';
-                                                                    FFAppState()
-                                                                        .addToQuesList({
-                                                                      'question_title':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.question_title''',
-                                                                      ),
-                                                                      'image':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.image''',
-                                                                      ),
-                                                                      'audio':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.audio''',
-                                                                      ),
-                                                                      'question_type':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.question_type''',
-                                                                      ),
-                                                                      'subcategoryName':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.subcategoryName''',
-                                                                      ),
-                                                                      'option':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.option''',
-                                                                      ),
-                                                                      'answer':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.answer''',
-                                                                      ),
-                                                                      'user_answer':
-                                                                          userAnswer,
-                                                                      'description':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.description''',
-                                                                      ),
-                                                                    });
-                                                                  } else {
-                                                                    // For skipped questions
-                                                                    final userAnswer =
-                                                                        'skipped';
-                                                                    FFAppState()
-                                                                        .addToQuesList({
-                                                                      'question_title':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.question_title''',
-                                                                      ),
-                                                                      'image':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.image''',
-                                                                      ),
-                                                                      'audio':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.audio''',
-                                                                      ),
-                                                                      'question_type':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.question_type''',
-                                                                      ),
-                                                                      'subcategoryName':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.subcategoryName''',
-                                                                      ),
-                                                                      'option':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.option''',
-                                                                      ),
-                                                                      'answer':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.answer''',
-                                                                      ),
-                                                                      'user_answer':
-                                                                          userAnswer,
-                                                                      'description':
-                                                                          getJsonField(
-                                                                        QuizGroup
-                                                                            .getquestionsbyquizidApiCall
-                                                                            .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                                ''))
-                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
-                                                                        r'''$.description''',
-                                                                      ),
-                                                                    });
-                                                                  }
-
-                                                                  // Update FFAppState().quesList for ALL questions
-                                                                  FFAppState()
-                                                                      .quesList = [];
-                                                                  for (int i =
+                                                                      // Recalculate correct/wrong counts to ensure accuracy
+                                                                      int correctCount =
                                                                           0;
-                                                                      i < totalQuestions;
-                                                                      i++) {
-                                                                    final q = QuizGroup
-                                                                        .getquestionsbyquizidApiCall
-                                                                        .questionDetailsList((_model.quizRes?.jsonBody ??
-                                                                            ''))
-                                                                        ?.elementAtOrNull(
-                                                                            i);
-                                                                    final userAnswer =
-                                                                        userAnswersPerQuestion[i] ??
-                                                                            'skipped';
-                                                                    FFAppState()
-                                                                        .quesList
-                                                                        .add({
-                                                                      'question_title':
-                                                                          getJsonField(
+                                                                      int wrongCount =
+                                                                          0;
+                                                                      int skippedCount =
+                                                                          0;
+
+                                                                      // Helper function to normalize answer for comparison
+                                                                      String normalizeAnswer(
+                                                                          dynamic
+                                                                              answer) {
+                                                                        if (answer ==
+                                                                            null)
+                                                                          return '';
+                                                                        return answer
+                                                                            .toString()
+                                                                            .trim()
+                                                                            .toLowerCase();
+                                                                      }
+
+                                                                      for (int i =
+                                                                              0;
+                                                                          i < questions.length;
+                                                                          i++) {
+                                                                        final q = Map<
+                                                                            String,
+                                                                            dynamic>.from(questions[i]);
+                                                                        // Recursively flatten option fields to ensure text and image are strings
+                                                                        Map<String,
+                                                                                dynamic>
+                                                                            flattenOption(Map? opt) {
+                                                                          if (opt ==
+                                                                              null)
+                                                                            return {
+                                                                              'text': '',
+                                                                              'image': ''
+                                                                            };
+                                                                          String
+                                                                              textValue =
+                                                                              '';
+                                                                          if (opt['text']
+                                                                              is String) {
+                                                                            textValue =
+                                                                                opt['text'];
+                                                                          } else if (opt['text'] is Map &&
+                                                                              opt['text']['text'] is String) {
+                                                                            textValue =
+                                                                                opt['text']['text'];
+                                                                          }
+                                                                          String
+                                                                              imageValue =
+                                                                              '';
+                                                                          if (opt['image']
+                                                                              is String) {
+                                                                            imageValue =
+                                                                                opt['image'];
+                                                                          } else if (opt['text'] is Map &&
+                                                                              opt['text']['image'] is String) {
+                                                                            imageValue =
+                                                                                opt['text']['image'];
+                                                                          }
+                                                                          return {
+                                                                            'text':
+                                                                                textValue,
+                                                                            'image':
+                                                                                imageValue,
+                                                                          };
+                                                                        }
+
+                                                                        final options =
+                                                                            q['option'] ??
+                                                                                {};
+                                                                        final flatOptions =
+                                                                            {
+                                                                          'a': flattenOption(
+                                                                              options['a']),
+                                                                          'b': flattenOption(
+                                                                              options['b']),
+                                                                          'c': flattenOption(
+                                                                              options['c']),
+                                                                          'd': flattenOption(
+                                                                              options['d']),
+                                                                        };
+                                                                        // Replace the original option field with the flattened one
+                                                                        q['option'] =
+                                                                            flatOptions;
+
+                                                                        final userAnswer =
+                                                                            userAnswersPerQuestion[i] ??
+                                                                                'skipped';
+                                                                        final correctAnswer = getJsonField(
+                                                                            q,
+                                                                            r'''$.answer''');
+
+                                                                        // Count correct/wrong/skipped
+                                                                        if (userAnswer ==
+                                                                            'skipped') {
+                                                                          skippedCount++;
+                                                                        } else {
+                                                                          final userKeyNormalized =
+                                                                              normalizeAnswer(userAnswer);
+                                                                          final correctAnswerNormalized =
+                                                                              normalizeAnswer(correctAnswer);
+                                                                          bool
+                                                                              isCorrect =
+                                                                              userKeyNormalized == correctAnswerNormalized;
+
+                                                                          // If key doesn't match, check option text
+                                                                          if (!isCorrect &&
+                                                                              userAnswer != null &&
+                                                                              flatOptions[userAnswer] != null) {
+                                                                            final selectedOption =
+                                                                                flatOptions[userAnswer];
+                                                                            if (selectedOption !=
+                                                                                null) {
+                                                                              String optionText = '';
+                                                                              if (selectedOption['text'] != null) {
+                                                                                optionText = selectedOption['text'].toString();
+                                                                              }
+                                                                              final optionTextNormalized = normalizeAnswer(optionText);
+                                                                              isCorrect = optionTextNormalized == correctAnswerNormalized;
+                                                                            }
+                                                                          }
+
+                                                                          // Also check if correct answer matches any option text
+                                                                          if (!isCorrect &&
+                                                                              userAnswer != null) {
+                                                                            for (var key
+                                                                                in [
+                                                                              'a',
+                                                                              'b',
+                                                                              'c',
+                                                                              'd'
+                                                                            ]) {
+                                                                              if (key == userAnswer && flatOptions[key] != null) {
+                                                                                final opt = flatOptions[key];
+                                                                                if (opt != null) {
+                                                                                  String optText = '';
+                                                                                  if (opt['text'] != null) {
+                                                                                    optText = opt['text'].toString();
+                                                                                  }
+                                                                                  final optTextNormalized = normalizeAnswer(optText);
+                                                                                  if (optTextNormalized == correctAnswerNormalized) {
+                                                                                    isCorrect = true;
+                                                                                    break;
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+
+                                                                          if (isCorrect) {
+                                                                            correctCount++;
+                                                                          } else {
+                                                                            wrongCount++;
+                                                                          }
+                                                                        }
+
+                                                                        quesList
+                                                                            .add({
+                                                                          'question':
+                                                                              q,
+                                                                          'user_answer':
+                                                                              userAnswer,
+                                                                          'correct_answer':
+                                                                              correctAnswer,
+                                                                          'question_title': getJsonField(
                                                                               q,
                                                                               r'''$.question_title'''),
-                                                                      'image':
-                                                                          getJsonField(
-                                                                              q,
-                                                                              r'''$.image'''),
-                                                                      'audio':
-                                                                          getJsonField(
-                                                                              q,
-                                                                              r'''$.audio'''),
-                                                                      'question_type':
-                                                                          getJsonField(
+                                                                          'question_type': getJsonField(
                                                                               q,
                                                                               r'''$.question_type'''),
-                                                                      'subcategoryName':
-                                                                          getJsonField(
+                                                                          'image': getJsonField(
                                                                               q,
-                                                                              r'''$.subcategoryName'''),
-                                                                      'option':
-                                                                          getJsonField(
+                                                                              r'''$.image'''),
+                                                                          'audio': getJsonField(
                                                                               q,
-                                                                              r'''$.option'''),
-                                                                      'answer':
-                                                                          getJsonField(
-                                                                              q,
-                                                                              r'''$.answer'''),
-                                                                      'user_answer':
-                                                                          userAnswer,
-                                                                      'description':
-                                                                          getJsonField(
+                                                                              r'''$.audio'''),
+                                                                          'description': getJsonField(
                                                                               q,
                                                                               r'''$.description'''),
-                                                                    });
-                                                                  }
+                                                                          'subcategoryName': getJsonField(
+                                                                              q,
+                                                                              r'''$.subcategoryName'''),
+                                                                          'subject': getJsonField(
+                                                                              q,
+                                                                              r'''$.subject'''),
+                                                                        });
+                                                                      }
 
-                                                                  // Update FFAppState().quesReviewList
-                                                                  FFAppState()
-                                                                          .quesReviewList =
+                                                                      // Update the counts with recalculated values
+                                                                      FFAppState()
+                                                                              .correctQues =
+                                                                          correctCount;
+                                                                      FFAppState()
+                                                                              .wrongQues =
+                                                                          wrongCount;
+                                                                      FFAppState()
+                                                                              .notAnswerQues =
+                                                                          skippedCount;
+
+                                                                      FFAppState()
+                                                                              .quesList =
+                                                                          quesList;
+                                                                      // Debug print to verify outgoing JSON
+
+                                                                      context
+                                                                          .goNamed(
+                                                                        QuizResultWidget
+                                                                            .routeName,
+                                                                        queryParameters:
+                                                                            {
+                                                                          'correctAnswer': serializeParam(
+                                                                              FFAppState().correctQues,
+                                                                              ParamType.int),
+                                                                          'wrongAnswer': serializeParam(
+                                                                              FFAppState().wrongQues,
+                                                                              ParamType.int),
+                                                                          'totalQuestion': serializeParam(
+                                                                              totalQuestions,
+                                                                              ParamType.int),
+                                                                          'notAnswer': serializeParam(
+                                                                              FFAppState().notAnswerQues,
+                                                                              ParamType.int),
+                                                                          'quizID': serializeParam(
+                                                                              widget.quizID,
+                                                                              ParamType.String),
+                                                                          'quizTime': serializeParam(
+                                                                              _elapsedTimeLabel,
+                                                                              ParamType.String),
+                                                                          'catID': serializeParam(
+                                                                              widget.catId,
+                                                                              ParamType.String),
+                                                                          'title': serializeParam(
+                                                                              widget.title,
+                                                                              ParamType.String),
+                                                                          'image': serializeParam(
+                                                                              widget.image,
+                                                                              ParamType.String),
+                                                                          'correctAnsReward': serializeParam(
+                                                                              correctAnsReward,
+                                                                              ParamType.double),
+                                                                          'penaltyPerQuestion': serializeParam(
+                                                                              penaltyPerQuestion,
+                                                                              ParamType.double),
+                                                                        }.withoutNulls,
+                                                                      );
+                                                                    } else {
+                                                                      // It's not the last question, move to the next one
+                                                                      await _model
+                                                                          .pageViewController
+                                                                          ?.nextPage(
+                                                                        duration:
+                                                                            Duration(milliseconds: 300),
+                                                                        curve: Curves
+                                                                            .ease,
+                                                                      );
+                                                                      _model.userAnswer =
+                                                                          null;
+                                                                      _model.actualAnswer =
+                                                                          null;
+                                                                      FFAppState()
+                                                                              .quesIndex =
+                                                                          _model.pageViewCurrentIndex +
+                                                                              1;
+                                                                      FFAppState()
+                                                                          .selectedColorIndex = -1;
+                                                                      safeSetState(
+                                                                          () {});
+                                                                    }
+
+                                                                    // Inside the Save & Next button logic, after processing the answer:
+                                                                    if (_model.userAnswer !=
+                                                                            null &&
+                                                                        _model.userAnswer !=
+                                                                            '') {
+                                                                      final userAnswer =
+                                                                          userAnswersPerQuestion[_model.pageViewCurrentIndex] ??
+                                                                              'skipped';
+                                                                      FFAppState()
+                                                                          .addToQuesList({
+                                                                        'question_title':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.question_title''',
+                                                                        ),
+                                                                        'image':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.image''',
+                                                                        ),
+                                                                        'audio':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.audio''',
+                                                                        ),
+                                                                        'question_type':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.question_type''',
+                                                                        ),
+                                                                        'subcategoryName':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.subcategoryName''',
+                                                                        ),
+                                                                        'subject':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.subject''',
+                                                                        ),
+                                                                        'option':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.option''',
+                                                                        ),
+                                                                        'answer':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.answer''',
+                                                                        ),
+                                                                        'user_answer':
+                                                                            userAnswer,
+                                                                        'description':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.description''',
+                                                                        ),
+                                                                      });
+                                                                    } else {
+                                                                      // For skipped questions
+                                                                      final userAnswer =
+                                                                          'skipped';
+                                                                      FFAppState()
+                                                                          .addToQuesList({
+                                                                        'question_title':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.question_title''',
+                                                                        ),
+                                                                        'image':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.image''',
+                                                                        ),
+                                                                        'audio':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.audio''',
+                                                                        ),
+                                                                        'question_type':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.question_type''',
+                                                                        ),
+                                                                        'subcategoryName':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.subcategoryName''',
+                                                                        ),
+                                                                        'subject':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.subject''',
+                                                                        ),
+                                                                        'option':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.option''',
+                                                                        ),
+                                                                        'answer':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.answer''',
+                                                                        ),
+                                                                        'user_answer':
+                                                                            userAnswer,
+                                                                        'description':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.description''',
+                                                                        ),
+                                                                      });
+                                                                    }
+
+                                                                    // Update FFAppState().quesList for ALL questions
+                                                                    FFAppState()
+                                                                        .quesList = [];
+                                                                    for (int i =
+                                                                            0;
+                                                                        i < totalQuestions;
+                                                                        i++) {
+                                                                      final q = QuizGroup
+                                                                          .getquestionsbyquizidApiCall
+                                                                          .questionDetailsList((_model.quizRes?.jsonBody ??
+                                                                              ''))
+                                                                          ?.elementAtOrNull(
+                                                                              i);
+                                                                      final userAnswer =
+                                                                          userAnswersPerQuestion[i] ??
+                                                                              'skipped';
                                                                       FFAppState()
                                                                           .quesList
-                                                                          .toList();
-                                                                },
+                                                                          .add({
+                                                                        'question_title': getJsonField(
+                                                                            q,
+                                                                            r'''$.question_title'''),
+                                                                        'image': getJsonField(
+                                                                            q,
+                                                                            r'''$.image'''),
+                                                                        'audio': getJsonField(
+                                                                            q,
+                                                                            r'''$.audio'''),
+                                                                        'question_type': getJsonField(
+                                                                            q,
+                                                                            r'''$.question_type'''),
+                                                                        'subcategoryName': getJsonField(
+                                                                            q,
+                                                                            r'''$.subcategoryName'''),
+                                                                        'subject': getJsonField(
+                                                                            q,
+                                                                            r'''$.subject'''),
+                                                                        'option': getJsonField(
+                                                                            q,
+                                                                            r'''$.option'''),
+                                                                        'answer': getJsonField(
+                                                                            q,
+                                                                            r'''$.answer'''),
+                                                                        'user_answer':
+                                                                            userAnswer,
+                                                                        'description': getJsonField(
+                                                                            q,
+                                                                            r'''$.description'''),
+                                                                      });
+                                                                    }
+
+                                                                    // Update FFAppState().quesReviewList
+                                                                    FFAppState()
+                                                                            .quesReviewList =
+                                                                        FFAppState()
+                                                                            .quesList
+                                                                            .toList();
+                                                                  },
                                                                   text: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
                                                                               0) ==
                                                                           (_model.pageViewCurrentIndex +
                                                                               1))
                                                                       ? 'Submit'
                                                                       : 'Save & Next',
-                                                                 isPrimary: true,
-                                                                accentColor:
-                                                                    const Color(
-                                                                        0xFF2563EB),
-                                                                 trailingIcon: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ??
-                                                                             0) ==
-                                                                         (_model.pageViewCurrentIndex +
-                                                                             1))
-                                                                     ? Icons
-                                                                         .check_rounded
-                                                                     : Icons
-                                                                         .keyboard_double_arrow_right_rounded,
+                                                                  isPrimary:
+                                                                      true,
+                                                                  accentColor:
+                                                                      const Color(
+                                                                          0xFF2563EB),
+                                                                  trailingIcon: ((QuizGroup.getquestionsbyquizidApiCall.questionDetailsList((_model.quizRes?.jsonBody ?? ''))?.length ?? 0) ==
+                                                                          (_model.pageViewCurrentIndex +
+                                                                              1))
+                                                                      ? Icons
+                                                                          .check_rounded
+                                                                      : Icons
+                                                                          .keyboard_double_arrow_right_rounded,
+                                                                ),
                                                               ),
-                                                            ),
-                                                          ]),
-                                                    ),
-                                                  ]),
-                                            ],
-                                          ),
-                                        ],
+                                                            ]),
+                                                      ),
+                                                    ]),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              } else {
-                                // Return empty widget if quiz data is not successful
-                                return SizedBox.shrink();
-                              }
-                            },
-                          );
-                        } else {
-                          return Align(
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 150.0,
-                                  height: 70.0,
-                                  child: custom_widgets.ProgressIndicator(
+                                    ],
+                                  );
+                                } else {
+                                  // Return empty widget if quiz data is not successful
+                                  return SizedBox.shrink();
+                                }
+                              },
+                            );
+                          } else {
+                            return Align(
+                              alignment: AlignmentDirectional(0.0, 0.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
                                     width: 150.0,
                                     height: 70.0,
+                                    child: custom_widgets.ProgressIndicator(
+                                      width: 150.0,
+                                      height: 70.0,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  }
-                },
-              ),
+                                ],
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    }
+                  },
+                ),
+        ),
       ),
     );
   }

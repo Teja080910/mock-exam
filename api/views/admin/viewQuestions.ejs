@@ -27,7 +27,7 @@
                                                         <form action="/import-questions-csv" method="POST" enctype="multipart/form-data">
                                                             <div class="mb-3">
                                                                 <label for="category" class="form-label">Category</label>
-                                                                <select name="categoryId" class="form-select" required>
+                                                                <select name="categoryId" id="importCategorySelect" class="form-select" required>
                                                                     <option value="">Select Category</option>
                                                                     <% if(category.length > 0) { %>
                                                                         <% category.forEach(function(categoryData){ %>
@@ -37,12 +37,18 @@
                                                                 </select>
                                                             </div>
                                                             <div class="mb-3">
+                                                                <label for="subcategory" class="form-label">Sub Category (questions will be added under this subcategory)</label>
+                                                                <select name="subcategoryId" id="importSubjectCategorySelect" class="form-select">
+                                                                    <option value="">Select Sub Category</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
                                                                 <label for="quiz" class="form-label">Quiz</label>
-                                                                <select name="quizId" class="form-select" required>
+                                                                <select name="quizId" id="importQuizSelect" class="form-select" required>
                                                                     <option value="">Select Quiz</option>
                                                                     <% if(quiz.length > 0) { %>
                                                                         <% quiz.forEach(function(quizData){ %>
-                                                                            <option value="<%= quizData._id %>"><%= quizData.name %></option>
+                                                                            <option value="<%= quizData._id %>" data-categoryid="<%= quizData.categoryId ? quizData.categoryId.toString() : '' %>"><%= quizData.name %></option>
                                                                         <% }); %>
                                                                     <% } %>
                                                                 </select>
@@ -98,6 +104,7 @@
                                                         <th class="title-width">Question Title</th>
                                                         <th class="option-width">Options</th>
                                                         <th>Question Type</th>
+                                                        <th>Subject</th>
                                                         <th class="quiz-width">Quiz Name</th>
                                                         <th>Is Enable</th>
                                                         <th>Action</th>
@@ -128,6 +135,9 @@
                                                             </td>
                                                             <td>
                                                                 <%= questionsData.question_type %>
+                                                            </td>
+                                                            <td>
+                                                                <%= questionsData.subcategoryId ? questionsData.subcategoryId.name : '-' %>
                                                             </td>
                                                             <td style="width:200px">
                                                                 <span class="badge bg-label-primary"><%= questionsData.quizId ? questionsData.quizId.name : 'No Quiz' %></span>
@@ -172,31 +182,87 @@
                     </div>
                 </div>
             <script type="text/javascript">
-                    document.getElementById('importCsvBtn').addEventListener('click', function() {
-                    document.getElementById('csvFileInput').click();
-                });
+                    var importCsvBtn = document.getElementById('importCsvBtn');
+                    if (importCsvBtn) {
+                        importCsvBtn.addEventListener('click', function() {
+                            var csvFileInput = document.getElementById('csvFileInput');
+                            if (csvFileInput) csvFileInput.click();
+                        });
+                    }
 
-                    document.getElementById('csvFileInput').addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(event) {
-                            const csvData = event.target.result;
-                            const rows = csvData.split('\n');
-                            const table = document.getElementById('dataTable');
+                    var csvFileInput = document.getElementById('csvFileInput');
+                    if (csvFileInput) {
+                        csvFileInput.addEventListener('change', function(e) {
+                            const file = e.target.files[0];
+                            const reader = new FileReader();
                             
-                            rows.forEach(row => {
-                                const cells = row.split(',');
-                                const newRow = table.insertRow();
-                                cells.forEach(cell => {
-                                    const newCell = newRow.insertCell();
-                                    newCell.textContent = cell.trim();
+                            reader.onload = function(event) {
+                                const csvData = event.target.result;
+                                const rows = csvData.split('\n');
+                                const table = document.getElementById('dataTable');
+                                if (!table) return;
+                                
+                                rows.forEach(row => {
+                                    const cells = row.split(',');
+                                    const newRow = table.insertRow();
+                                    cells.forEach(cell => {
+                                        const newCell = newRow.insertCell();
+                                        newCell.textContent = cell.trim();
+                                    });
                                 });
+                            };
+                            
+                            reader.readAsText(file);
+                        });
+                    }
+
+                    // Filter Quiz dropdown by selected Category in the import modal
+                    const importCategorySelect = document.getElementById('importCategorySelect');
+                    const importQuizSelect = document.getElementById('importQuizSelect');
+                    const importSubjectCategorySelect = document.getElementById('importSubjectCategorySelect');
+
+                    function filterQuizzesByCategory(categoryId) {
+                        if (!importQuizSelect) return;
+                        for (let i = 0; i < importQuizSelect.options.length; i++) {
+                            const option = importQuizSelect.options[i];
+                            if (!option.value) continue;
+                            const optionCategoryId = option.getAttribute('data-categoryid');
+                            if (!categoryId || (optionCategoryId && optionCategoryId === categoryId)) {
+                                option.style.display = '';
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        }
+                        importQuizSelect.selectedIndex = 0;
+                    }
+
+                    // Populate Sub Category dropdown with subcategories of the selected Category
+                    function loadSubCategories(categoryId) {
+                        if (!importSubjectCategorySelect) return;
+                        importSubjectCategorySelect.innerHTML = '<option value="">Same as Category</option>';
+                        if (!categoryId) return;
+                        fetch(`/api/subcategories?categoryId=${categoryId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                data.forEach(subcat => {
+                                    const option = document.createElement('option');
+                                    option.value = subcat._id;
+                                    option.textContent = subcat.name;
+                                    importSubjectCategorySelect.appendChild(option);
+                                });
+                            })
+                            .catch(err => {
+                                console.error('Error fetching subcategories:', err);
                             });
-                        };
-                        
-                        reader.readAsText(file);
-                    });
+                    }
+
+                    if (importCategorySelect) {
+                        importCategorySelect.addEventListener('change', function() {
+                            const categoryId = this.value;
+                            filterQuizzesByCategory(categoryId);
+                            loadSubCategories(categoryId);
+                        });
+                    }
             </script>
             <script src="/assets/js/statusEnable.js"></script>
         <%- include('../layout/footer.ejs') %>

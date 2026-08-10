@@ -1186,7 +1186,9 @@ const GetIntro = async (req, res) => {
 // Get Quizzes
 const GetQuizzes = async (req, res) => {
   try {
-    let quizzes = await Quiz.find({ is_active: 1 }).populate("categoryId");
+    let quizzes = await Quiz.find({ is_active: 1 })
+      .populate("categoryId")
+      .sort({ createdAt: -1 });
 
     // i want to extract bearer token from the header
     const token = req.headers.authorization
@@ -1432,6 +1434,7 @@ const GetQuestionsByQuizId = async (req, res) => {
         _id: question._id,
         categoryId: question.categoryId._id,
         subcategoryName: question.subcategoryId?.name || '',
+        subject: question.subject || '',
         quizId: {
           _id: question.quizId._id,
           timer_status: question.quizId.timer_status,
@@ -1581,9 +1584,9 @@ const GetFeaturedCategory = async (req, res) => {
       const categoryData = await Promise.all(
         categories.map(async (category) => {
           // Retrieve quizzes for the current category
-          const quizzes = await Quiz.find({ categoryId: category._id }).limit(
-            2,
-          );
+          const quizzes = await Quiz.find({ categoryId: category._id })
+            .sort({ createdAt: -1 })
+            .limit(2);
 
           // Optionally, you can format quizzes if needed
           const quizzesData = await Promise.all(
@@ -2431,7 +2434,9 @@ const GetQuizBySubcategory = async (req, res) => {
     const { subcategoryId } = req.body;
     if (!subcategoryId) return res.status(400).json({ quizzes: [] });
     // Try subcategoryId first, then fall back to parent categoryId
-    const quizzes = await Quiz.find({ subcategoryId, is_active: 1 });
+    const quizzes = await Quiz.find({ subcategoryId, is_active: 1 }).sort({
+      createdAt: -1,
+    });
     res.json({ quizzes });
   } catch (err) {
     res.status(500).json({ quizzes: [] });

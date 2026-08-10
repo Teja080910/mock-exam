@@ -312,7 +312,6 @@ class _CompletedQuizzesScreenWidgetState
                                                                   completedQuizItem,
                                                                   r'''$.quizDetails.name''',
                                                                 ).toString(),
-                                                                maxLines: 2,
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .bodyMedium
