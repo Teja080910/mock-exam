@@ -70,6 +70,10 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
   late String _displayTime;
   late int lastUpdateMs;
 
+  StreamSubscription? _rawTimeSub;
+  StreamSubscription? _fetchEndedSub;
+  late final VoidCallback _controllerListener;
+
   Function() get onEnded => widget.onEnded ?? () {};
 
   void _initTimer({required bool shouldUpdate}) {
@@ -102,7 +106,7 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
     _initTimer(shouldUpdate: false);
     // Add a listener for when the timer value changes to update the
     // displayed timer value.
-    widget.controller.timer.rawTime.listen((_) {
+    _rawTimeSub = widget.controller.timer.rawTime.listen((_) {
       final shouldUpdate = _shouldUpdate();
       _displayTime = widget.getDisplayTime(timerValue);
       widget.onChanged(timerValue, _displayTime, shouldUpdate);
@@ -111,10 +115,19 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
       }
     });
     // Add listener for actions executed on timer.
-    widget.controller.addListener(() => _initTimer(shouldUpdate: true));
+    _controllerListener = () => _initTimer(shouldUpdate: true);
+    widget.controller.addListener(_controllerListener);
 
     // Add listener for when the timer ends.
-    widget.controller.timer.fetchEnded.listen((_) => onEnded());
+    _fetchEndedSub = widget.controller.timer.fetchEnded.listen((_) => onEnded());
+  }
+
+  @override
+  void dispose() {
+    _rawTimeSub?.cancel();
+    _fetchEndedSub?.cancel();
+    widget.controller.removeListener(_controllerListener);
+    super.dispose();
   }
 
   bool _shouldUpdate() {

@@ -1481,7 +1481,12 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                               useGoogleFonts: false,
                                                                                                             ),
                                                                                                         onEnded: () async {
-                                                                                                          if (quizAutoSubmitted) {
+                                                                                                          // This onEnded can be triggered by
+                                                                                                          // a stale timer widget after its
+                                                                                                          // page was disposed (swiped away).
+                                                                                                          // Only proceed if this page is
+                                                                                                          // still mounted.
+                                                                                                          if (quizAutoSubmitted || !mounted) {
                                                                                                             return;
                                                                                                           }
 
@@ -1840,7 +1845,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   ),
                                                                                               onEnded: () async {
                                                                                                 // Prevent multiple auto-submits
-                                                                                                if (quizAutoSubmitted) {
+                                                                                                if (quizAutoSubmitted || !mounted) {
                                                                                                   return;
                                                                                                 }
 

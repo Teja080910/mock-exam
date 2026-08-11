@@ -50,6 +50,7 @@ class _QuizquestionsScreenCopyWidgetState
     extends State<QuizquestionsScreenCopyWidget> {
   late QuizquestionsScreenCopyModel _model;
   bool _didParseParams = false;
+  bool quizAutoSubmitted = false; // Prevent multiple auto-submits
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -576,6 +577,10 @@ class _QuizquestionsScreenCopyWidgetState
                                       useGoogleFonts: false,
                                     ),
                                     onEnded: () async {
+                                      if (quizAutoSubmitted || !mounted) {
+                                        return;
+                                      }
+                                      quizAutoSubmitted = true;
                                       await showDialog(
                                         barrierDismissible: false,
                                         context: context,
@@ -740,6 +745,10 @@ class _QuizquestionsScreenCopyWidgetState
                                           if (shouldUpdate) safeSetState(() {});
                                         },
                                         onEnded: () async {
+                                          if (quizAutoSubmitted || !mounted) {
+                                            return;
+                                          }
+                                          quizAutoSubmitted = true;
                                           await showDialog(
                                             context: context,
                                             builder: (dialogContext) {
