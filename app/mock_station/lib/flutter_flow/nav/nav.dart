@@ -40,6 +40,25 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) => SplashScreenWidget(),
+      redirect: (context, state) {
+        // While a quiz is active, block navigation to everything outside
+        // the quiz flow (quiz questions, review, result screens). This
+        // keeps the app locked to the quiz until it is submitted/ended.
+        final quizRoutes = {
+          '/quizQuestionsScreen',
+          '/quizquestionsScreenCopy',
+          '/selfChallengeQuizPage',
+          '/quizReviewScreen',
+          '/quizReviewScreenCopyCopy',
+          '/quizResult',
+          '/selfQuizResult',
+        };
+        if (FFAppState().isQuizActive &&
+            !quizRoutes.contains(state.uri.path)) {
+          return state.uri.toString();
+        }
+        return null;
+      },
       routes: [
         FFRoute(
           name: '_initialize',

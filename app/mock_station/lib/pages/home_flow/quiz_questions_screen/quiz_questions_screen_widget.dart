@@ -818,6 +818,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
         apiKey:
             'AIzaSyCsrdktiTiJHrsd9n3EZ323XksrqVBIUzw'); // <-- Replace with your API key
 
+    // Lock the app to the quiz flow while the quiz is open
+    FFAppState().isQuizActive = true;
+
     // Initialize timer state (but don't reset if already started)
     if (!timerStarted) {
       timerInitialized = false;
@@ -832,9 +835,12 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    // Handle background/foreground transitions for timer
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+    // Only pause when the app is truly backgrounded (paused), NOT when the
+    // notification shade is pulled down (inactive). The timer is
+    // wall-clock based, so it stays accurate while the shade is open.
+    // Pausing on inactive caused the countdown to be adjusted twice
+    // (double subtraction), which made the time flutter/jump.
+    if (state == AppLifecycleState.paused) {
       if (timerStarted && timerInitialized) {
         _backgroundTime = DateTime.now();
         _pauseTimer();
@@ -855,8 +861,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
               newMs = 0;
             }
 
+            // Reset the timer first to clear the stale internal elapsed
+            // time (_stopTime). Without this, the background time gets
+            // subtracted twice and the timer jumps back on every resume.
+            _model.timerController.timer.onResetTimer();
             // Update the timer with the new remaining time
-            _model.timerController.timer.setPresetTime(mSec: newMs, add: false);
+            _model.timerController.timer
+                .setPresetTime(mSec: newMs, add: false);
           } catch (e) {
             // Handle error gracefully
           }
@@ -897,6 +908,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this); // Remove lifecycle observer
+    // Quiz screen is closed — unlock the app
+    FFAppState().isQuizActive = false;
     _model.dispose();
 
     super.dispose();

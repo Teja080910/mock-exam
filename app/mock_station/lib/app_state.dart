@@ -6,6 +6,7 @@ import '/backend/api_requests/api_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'config/app_config.dart' as config;
+import 'custom_code/utils/kiosk_helper.dart';
 
 class FFAppState extends ChangeNotifier {
   static FFAppState _instance = FFAppState._internal();
@@ -753,6 +754,20 @@ class FFAppState extends ChangeNotifier {
   set isQuizFirstTime(bool value) {
     _isQuizFirstTime = value;
     prefs.setBool('ff_isQuizFirstTime', value);
+  }
+
+  bool _isQuizActive = false;
+  bool get isQuizActive => _isQuizActive;
+  set isQuizActive(bool value) {
+    _isQuizActive = value;
+    // When a quiz starts, lock the device into kiosk mode (blocks the
+    // notification shade, recents and home button). When it ends, unlock.
+    if (value) {
+      KioskHelper.start();
+    } else {
+      KioskHelper.stop();
+    }
+    notifyListeners();
   }
 
   int _LinearBarTimer = 6;

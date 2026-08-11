@@ -1877,6 +1877,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   @override
   void initState() {
     super.initState();
+    // Quiz is over — unlock the app so the user can navigate away
+    FFAppState().isQuizActive = false;
     _model = createModel(context, () => QuizResultModel());
     _tabController = TabController(vsync: this, length: 3)
       ..addListener(() => safeSetState(() {}));

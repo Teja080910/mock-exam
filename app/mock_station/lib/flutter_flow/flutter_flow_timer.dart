@@ -83,16 +83,30 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
   @override
   void initState() {
     super.initState();
-    // Set the initial time.
-    widget.controller.timer.setPresetTime(mSec: widget.initialTime, add: false);
+    // Set the initial time only if the timer is not already in progress.
+    // This prevents resetting an in-progress countdown when this widget is
+    // re-mounted (e.g. swiping between quiz questions/tabs), which made the
+    // displayed time jump back to its full value on every swipe.
+    final currentRaw = widget.controller.timer.rawTime.value;
+    final isRunning = widget.controller.timer.isRunning;
+    final isCountDown = !isCountUp;
+    final needsInit = !isRunning &&
+        (isCountDown
+            ? (currentRaw == 0 || currentRaw == widget.initialTime)
+            : currentRaw == 0);
+    if (needsInit) {
+      widget.controller.timer
+          .setPresetTime(mSec: widget.initialTime, add: false);
+    }
     // Initialize timer properties without updating outer state.
     _initTimer(shouldUpdate: false);
     // Add a listener for when the timer value changes to update the
     // displayed timer value.
     widget.controller.timer.rawTime.listen((_) {
+      final shouldUpdate = _shouldUpdate();
       _displayTime = widget.getDisplayTime(timerValue);
-      widget.onChanged(timerValue, _displayTime, _shouldUpdate());
-      if (mounted) {
+      widget.onChanged(timerValue, _displayTime, shouldUpdate);
+      if (mounted && shouldUpdate) {
         setState(() {});
       }
     });

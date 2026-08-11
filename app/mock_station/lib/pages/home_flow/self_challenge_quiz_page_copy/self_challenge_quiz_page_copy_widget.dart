@@ -47,6 +47,8 @@ class _SelfChallengeQuizPageCopyWidgetState
   @override
   void initState() {
     super.initState();
+    // Lock the app to the quiz flow while the quiz is open
+    FFAppState().isQuizActive = true;
     _model = createModel(context, () => SelfChallengeQuizPageCopyModel());
 
     // On page load action.
@@ -72,6 +74,8 @@ class _SelfChallengeQuizPageCopyWidgetState
 
   @override
   void dispose() {
+    // Quiz screen is closed — unlock the app
+    FFAppState().isQuizActive = false;
     _model.dispose();
 
     super.dispose();
