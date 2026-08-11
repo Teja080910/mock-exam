@@ -1292,6 +1292,38 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             .elementAtOrNull(idx),
                                                                         r'''$.question_type''',
                                                                       ).toString();
+                                                                      // Sync the subject tab highlight with the current
+                                                                      // question. Without this, navigating with Save & Next
+                                                                      // (or Skip) past the last question of a subject left
+                                                                      // the old tab selected.
+                                                                      final subjectKeys =
+                                                                          _subjectKeys(
+                                                                              categorywisequiz);
+                                                                      if (subjectKeys
+                                                                          .isNotEmpty) {
+                                                                        final currentSubject =
+                                                                            (getJsonField(
+                                                                                      categorywisequiz
+                                                                                          .elementAtOrNull(idx),
+                                                                                      r'''$.subject''') ??
+                                                                                    getJsonField(
+                                                                                        categorywisequiz
+                                                                                            .elementAtOrNull(idx),
+                                                                                        r'''$.subcategoryName''') ??
+                                                                                    '')
+                                                                                .toString()
+                                                                                .trim();
+                                                                        final newIndex =
+                                                                            subjectKeys.indexOf(
+                                                                                currentSubject);
+                                                                        if (newIndex !=
+                                                                            -1 &&
+                                                                            newIndex !=
+                                                                                _selectedSubjectIndex) {
+                                                                          _selectedSubjectIndex =
+                                                                              newIndex;
+                                                                        }
+                                                                      }
                                                                       safeSetState(
                                                                           () {});
                                                                     },

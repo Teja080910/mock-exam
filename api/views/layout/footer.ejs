@@ -244,13 +244,20 @@
         // Custom filtering function which will search data in the table
         jQuery.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
+                // Only apply this filter on the questions page (where the
+                // quiz/type dropdowns exist). Without this guard, every
+                // DataTable on every page (e.g. view-subcategory) would be
+                // filtered out and show "No matching records found".
+                if (!jQuery('#QuizName').length || !jQuery('#QuestionType').length) {
+                    return true;
+                }
                 var selectedQuiz = jQuery('#QuizName').find("option:selected").text().trim().toLowerCase();
                 var selectedQuestions = jQuery('#QuestionType').find("option:selected").val().toLowerCase();
                 
-                var quiz = data[4].trim().toLowerCase(); // Use the correct column index for quiz
+                var quiz = data[5].trim().toLowerCase(); // Use the correct column index for quiz
                 var questions = data[3].trim().toLowerCase(); // Use the correct column index for question type
 
-                var quizMatch = (selectedQuiz === 'all' || quiz === selectedQuiz);
+                var quizMatch = (selectedQuiz === 'all' || selectedQuiz === '' || selectedQuiz === 'select quiz' || quiz === selectedQuiz);
                 var questionsMatch = (selectedQuestions === 'all' || questions === selectedQuestions);
 
                 return quizMatch && questionsMatch;
