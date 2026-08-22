@@ -193,6 +193,7 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabs = {
       'home_screen': HomeScreenWidget(),
       'current_affairs': CurrentAffairsWidget(),
+      'news_screen': NewsScreenWidget(),
       'profile_screen': ProfileScreenWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
@@ -234,6 +235,18 @@ class _NavBarPageState extends State<NavBarPage> {
               size: 24.0,
             ),
             label: 'Current Affairs',
+            tooltip: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.newspaper_outlined,
+              size: 24.0,
+            ),
+            activeIcon: Icon(
+              Icons.newspaper_rounded,
+              size: 24.0,
+            ),
+            label: 'News',
             tooltip: '',
           ),
           BottomNavigationBarItem(

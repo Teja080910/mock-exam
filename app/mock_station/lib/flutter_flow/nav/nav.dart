@@ -174,6 +174,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               : CurrentAffairsWidget(),
         ),
         FFRoute(
+          name: NewsScreenWidget.routeName,
+          path: NewsScreenWidget.routePath,
+          builder: (context, params) => params.isEmpty
+              ? NavBarPage(initialPage: 'news_screen')
+              : NewsScreenWidget(),
+        ),
+        FFRoute(
           name: CategoryDetailPageWidget.routeName,
           path: CategoryDetailPageWidget.routePath,
           builder: (context, params) => CategoryDetailPageWidget(

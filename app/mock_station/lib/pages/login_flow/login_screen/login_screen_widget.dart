@@ -454,14 +454,11 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF121212) : Colors.white; 
-    final cardColor = isDark ? const Color(0xFF1E1E2E) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final statusBarTop = MediaQuery.of(context).padding.top;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
+        statusBarColor: const Color(0xFFF3F6FF),
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
@@ -469,7 +466,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
         onWillPop: () async => false,
         child: Scaffold(
           key: scaffoldKey,
-          backgroundColor: bgColor,
+          backgroundColor: const Color(0xFFF3F6FF),
           body: Builder(
             builder: (context) {
               if (FFAppState().connected != true) {
@@ -486,96 +483,67 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
               }
               return Stack(
                 children: [
+                  const Positioned.fill(child: ColoredBox(color: Color(0xFFF3F6FF))),
                   Positioned(
-                    top: -100,
-                    right: -100,
+                    top: -30,
+                    right: -30,
                     child: Container(
-                      width: 300,
-                      height: 300,
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF6366F1).withOpacity(0.2),
+                        border: Border.all(color: const Color(0xFFFF5A58), width: 1.6),
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: -50,
-                    left: -50,
+                    top: 28,
+                    left: 18,
+                    child: _buildDotGrid(const Color(0xFF1857F2)),
+                  ),
+                  Positioned(
+                    top: statusBarTop + 32,
+                    right: 125,
                     child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFF5A58),
                         shape: BoxShape.circle,
-                        color: const Color(0xFFF43F5E).withOpacity(0.15),
                       ),
                     ),
                   ),
                   SafeArea(
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                FadeInDown(
-                                  duration: const Duration(milliseconds: 600),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(24),
-                                    decoration: BoxDecoration(
-                                      color: cardColor,
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF6366F1).withOpacity(0.2),
-                                          blurRadius: 30,
-                                          offset: const Offset(0, 10),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Icon(
-                                      Icons.school_rounded,
-                                      size: 64,
-                                      color: Color(0xFF6366F1),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const footerHeight = 105.0;
+                        return Stack(
+                          children: [
+                            Positioned.fill(
+                              child: SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight - footerHeight,
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(bottom: footerHeight + 4),
+                                    child: Center(
+                                      child: _buildMainContent(context, constraints.maxWidth, constraints.maxHeight),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 48),
-                                FadeInUp(
-                                  duration: const Duration(milliseconds: 700),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        "Welcome to",
-                                        style: GoogleFonts.pacifico(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.normal,
-                                          color: isDark ? Colors.white70 : Colors.black87,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        "Mock Station",
-                                        style: GoogleFonts.righteous(
-                                          fontSize: 42,
-                                          fontWeight: FontWeight.w900,
-                                          color: const Color(0xFF24389C),
-                                          height: 1.1,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 32),
-                                _buildSocialLogin(isDark, cardColor, textColor),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
+                            const Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: _WaveFooter(),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -587,108 +555,635 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
     );
   }
 
-  Widget _buildSocialLogin(bool isDark, Color cardColor, Color textColor) {
+  Widget _buildMainContent(BuildContext context, double width, double height) {
+    final topMargin = (height * 0.10).clamp(40.0, 120.0);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: width < 360 ? 18 : 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(height: topMargin),
+          _buildBrandHeader(),
+          const SizedBox(height: 8),
+          _buildHeroIllustration(),
+          const SizedBox(height: 4),
+          _buildWelcomeText(),
+          const SizedBox(height: 28),
+          _buildGoogleButton(),
+          const SizedBox(height: 28),
+          _buildFeatureCard(),
+          const SizedBox(height: 28),
+          _buildSecureLine(),
+          const SizedBox(height: 0),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBrandHeader() {
     return Column(
       children: [
-        const SizedBox(height: 12),
-        FadeInUp(
-          duration: const Duration(milliseconds: 400),
-          child: _isLoading
-              ? const CircularProgressIndicator(color: Color(0xFF6366F1))
-              : _buildButton(
-                  onTap: () => signInWithGoogle(context),
-                  color: cardColor,
-                  boxShadow: [
-                    const BoxShadow(color: Color.fromRGBO(60, 64, 67, 0.3), offset: Offset(0, 1), blurRadius: 2, spreadRadius: 0),
-                    const BoxShadow(color: Color.fromRGBO(60, 64, 67, 0.15), offset: Offset(0, 1), blurRadius: 3, spreadRadius: 1),
-                  ],
-                  content: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.network('https://img.icons8.com/color/48/000000/google-logo.png', width: 24, height: 24, errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 32)),
-                      const SizedBox(width: 12),
-                      Text("Sign in with Google", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
-                    ],
-                  ),
-                ),
-        ),
-        const SizedBox(height: 24),
-        _buildLegalText(isDark),
-        const SizedBox(height: 18),
-        FadeInUp(
-          duration: const Duration(milliseconds: 1100),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.verified_user_rounded, color: Color(0xFF1CB58F), size: 16),
-              const SizedBox(width: 6),
-              Flexible(
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textColor, fontFamily: 'Roboto'),
-                    children: [
-                      const TextSpan(text: '100% Secure • '),
-                      const TextSpan(text: 'Made ', style: TextStyle(color: Color(0xFFFF9933))),
-                      TextSpan(text: 'in ', style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF000080))),
-                      const TextSpan(text: 'India 🇮🇳', style: TextStyle(color: Color(0xFF138808))),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+        Image.asset('assets/images/mock_test_horizontal_logo.png', width: 242, fit: BoxFit.contain),
+        const SizedBox(height: 8),
+        Text(
+          'Practice. Improve. Succeed.',
+          style: GoogleFonts.roboto(
+            fontSize: 11,
+            color: const Color(0xFF5A6475),
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(width: 20, height: 3, decoration: BoxDecoration(color: const Color(0xFFE52520), borderRadius: BorderRadius.circular(99))),
+            const SizedBox(width: 6),
+            Container(width: 5, height: 5, decoration: const BoxDecoration(color: Color(0xFF5A6475), shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+            Container(width: 20, height: 3, decoration: BoxDecoration(color: const Color(0xFF1848D8), borderRadius: BorderRadius.circular(99))),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildLegalText(bool isDark) {
+  Widget _buildHeroIllustration() {
+    return SizedBox(
+      height: 214,
+      child: Center(
+        child: Image.asset(
+          'assets/images/mock_station_hero.png',
+          width: 228,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeText() {
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: GoogleFonts.roboto(
+          fontSize: 16.5,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF1B1F2A),
+        ),
+        children: const [
+          TextSpan(text: 'Welcome to '),
+          TextSpan(text: 'Mock', style: TextStyle(color: Color(0xFFE52520))),
+          TextSpan(text: ' Station', style: TextStyle(color: Color(0xFF1848D8))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGoogleButton() {
     return FadeInUp(
-      duration: const Duration(milliseconds: 600),
-      child: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54, height: 1.5),
-          children: [
-            const TextSpan(text: "By Continuing, You agree to MockStation "),
-            TextSpan(
-              text: "Terms & Conditions ",
-              style: TextStyle(color: const Color(0xFF6366F1), decoration: TextDecoration.underline, fontWeight: FontWeight.bold),
-              mouseCursor: SystemMouseCursors.click,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () async {
-                  await launchURL("https://mockstation.blogspot.com/2026/05/terms-conditions-of-mockstation.html");
-                },
+      duration: const Duration(milliseconds: 450),
+      child: _isLoading
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: CircularProgressIndicator(color: Color(0xFF1848D8)),
+            )
+          : Center(
+              child: GestureDetector(
+                onTap: () => signInWithGoogle(context),
+                child: Container(
+                  padding: const EdgeInsets.all(1.2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF4285F4),
+                        Color(0xFFEA4335),
+                        Color(0xFFFBBC05),
+                        Color(0xFF34A853),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF8EA2EA),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/google_logo.png',
+                        width: 30,
+                        height: 30,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Continue with Google',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF24306B),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: Color(0xFF1848D8),
+                      ),
+                    ],
+                  ),
+                  ),
+                ),
+              ),
             ),
-            const TextSpan(text: "and "),
-            TextSpan(
-              text: "Privacy Policy",
-              style: TextStyle(color: const Color(0xFF6366F1), decoration: TextDecoration.underline, fontWeight: FontWeight.bold),
-              mouseCursor: SystemMouseCursors.click,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () async {
-                  await launchURL("https://mockstation.blogspot.com/2026/05/privacy-policy-for-mockstation.html");
-                },
+    );
+  }
+
+  Widget _buildFeatureCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE7ECF8)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6677FF).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: const Row(
+        children: [
+          Expanded(child: _FeatureItem(icon: Icons.assignment_outlined, color: Color(0xFF3E6BFF), title: 'PYQs Based', subtitle: 'Mock Tests', underline: Color(0xFF3E6BFF), compact: true)),
+          _FeatureDivider(),
+          Expanded(child: _FeatureItem(icon: Icons.article_outlined, color: Color(0xFFFF5A58), title: 'High-quality', subtitle: 'study notes', underline: Color(0xFFFF5A58), compact: true)),
+          _FeatureDivider(),
+          Expanded(child: _FeatureItem(icon: Icons.newspaper_outlined, color: Color(0xFF31B95D), title: 'Daily', subtitle: 'Current Affairs', underline: Color(0xFF31B95D), compact: true)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecureLine() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: const [
+            Icon(
+              Icons.shield_outlined,
+              size: 26,
+              color: Color(0xFF1033A0),
+            ),
+            Positioned(
+              top: 5.5,
+              child: Icon(
+                Icons.lock_outline_rounded,
+                size: 10,
+                color: Color(0xFF1033A0),
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(width: 8),
+        Text(
+          'Secure login with your Google account',
+          style: GoogleFonts.roboto(
+            fontSize: 12,
+            color: const Color(0xFF4B5568),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildButton({required VoidCallback onTap, required Color color, required Widget content, List<BoxShadow>? boxShadow}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(18), boxShadow: boxShadow ?? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+        height: 56,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE0E7FF)),
+          boxShadow: boxShadow ?? [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
         child: Center(child: content),
       ),
     );
   }
 
+  Widget _buildDotGrid(Color color) {
+    const dotCount = 5;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        6,
+        (_) => Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              dotCount,
+              (_) => Container(
+                width: 5,
+                height: 5,
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
+  List<Widget> _buildSparkles() {
+    return const [
+      Positioned(top: 22, left: 54, child: _SparkleMark(size: 10, color: Color(0xFF7CA1FF))),
+      Positioned(top: 64, left: 30, child: _SparkleMark(size: 8, color: Color(0xFF7CA1FF))),
+      Positioned(top: 68, right: 48, child: _SparkleMark(size: 12, color: Color(0xFF7CA1FF))),
+      Positioned(bottom: 40, left: 44, child: _SparkleMark(size: 8, color: Color(0xFF7CA1FF))),
+      Positioned(bottom: 44, right: 82, child: _SparkleMark(size: 10, color: Color(0xFF7CA1FF))),
+    ];
+  }
+
+  Widget _buildBookStack() {
+    return SizedBox(
+      width: 76,
+      height: 66,
+      child: Stack(
+        alignment: Alignment.bottomLeft,
+        children: [
+          Positioned(
+            bottom: 0,
+            left: 0,
+            child: Container(
+              width: 60,
+              height: 12,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2340C6),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 6,
+            child: Container(
+              width: 48,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF16319B), width: 1.2),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 18,
+            left: 2,
+            child: Container(
+              width: 58,
+              height: 14,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53935),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClipboard() {
+    return Container(
+      width: 90,
+      height: 132,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF172A8A), width: 2.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF172A8A).withOpacity(0.08),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -10,
+            left: 18,
+            right: 18,
+            child: Container(
+              height: 16,
+              decoration: BoxDecoration(
+                color: const Color(0xFF16319B),
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ),
+          Positioned(
+            top: -16,
+            right: 0,
+            child: Container(
+              width: 40,
+              height: 28,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE52520), width: 3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 28,
+            left: 16,
+            right: 14,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                _CheckRow(),
+                SizedBox(height: 12),
+                _CheckRow(),
+                SizedBox(height: 12),
+                _CheckRow(),
+                SizedBox(height: 12),
+                _CheckRow(),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 20,
+            right: 10,
+            child: Transform.rotate(
+              angle: 0.04,
+              child: const Icon(Icons.check, size: 42, color: Color(0xFF12246C)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPencilCup() {
+    return SizedBox(
+      width: 44,
+      height: 76,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: 34,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1848D8),
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+          Positioned(bottom: 28, left: 7, child: _Pencil(height: 40, color: const Color(0xFFF39C12))),
+          Positioned(bottom: 26, left: 17, child: _Pencil(height: 44, color: const Color(0xFF16319B))),
+          Positioned(bottom: 27, right: 7, child: _Pencil(height: 41, color: const Color(0xFFE53935))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlant() {
+    return SizedBox(
+      width: 34,
+      height: 58,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Positioned(
+            bottom: 8,
+            child: Container(
+              width: 22,
+              height: 20,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEDEDED),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            left: 2,
+            child: Container(
+              width: 10,
+              height: 26,
+              decoration: const BoxDecoration(
+                color: Color(0xFF6EA0FF),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
+                ),
+              ),
+              transform: Matrix4.skewY(-0.24),
+            ),
+          ),
+          Positioned(
+            bottom: 26,
+            right: 2,
+            child: Container(
+              width: 10,
+              height: 24,
+              decoration: const BoxDecoration(
+                color: Color(0xFF5C8FFF),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
+                ),
+              ),
+              transform: Matrix4.skewY(0.18),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  const _FeatureItem({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.underline,
+    this.compact = false,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final Color underline;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.roboto(
+              fontSize: compact ? 8.8 : 9.5,
+              color: const Color(0xFF26324B),
+              fontWeight: FontWeight.w600,
+              height: 1.1,
+            ),
+          ),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.roboto(
+              fontSize: compact ? 8.8 : 9.5,
+              color: const Color(0xFF26324B),
+              fontWeight: FontWeight.w600,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Container(width: 16, height: 2, decoration: BoxDecoration(color: underline, borderRadius: BorderRadius.circular(99))),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureDivider extends StatelessWidget {
+  const _FeatureDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 1, height: 42, color: const Color(0xFFE7ECF8));
+  }
+}
+
+class _CheckRow extends StatelessWidget {
+  const _CheckRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 11,
+          height: 11,
+          decoration: const BoxDecoration(
+            color: Color(0xFF1848D8),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check, color: Colors.white, size: 8),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Container(
+            height: 3,
+            decoration: BoxDecoration(
+              color: const Color(0xFFDFE6F8),
+              borderRadius: BorderRadius.circular(99),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Pencil extends StatelessWidget {
+  const _Pencil({required this.height, required this.color});
+
+  final double height;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 6,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(99),
+      ),
+    );
+  }
+}
+
+class _SparkleMark extends StatelessWidget {
+  const _SparkleMark({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(Icons.add, size: size, color: color);
+  }
+}
+
+class _WaveFooter extends StatelessWidget {
+  const _WaveFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      'assets/images/footer_wave.png',
+      fit: BoxFit.fitWidth,
+      alignment: Alignment.bottomCenter,
+    );
+  }
 }

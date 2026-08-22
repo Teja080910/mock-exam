@@ -79,3 +79,5 @@ export '/pages/profile_flow/plan_screen/my_subscription_screen_widget.dart'
     show MySubscriptionScreenWidget;
 export '/pages/profile_flow/plan_screen/plans_screen_widget.dart'
     show PlansScreenWidget;
+export '/pages/home_flow/news_screen/news_screen_widget.dart'
+    show NewsScreenWidget;
