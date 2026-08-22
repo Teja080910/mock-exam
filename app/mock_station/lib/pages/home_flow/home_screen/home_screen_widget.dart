@@ -365,18 +365,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                             ));
                                           } else {
                                             // Show subscription required dialog
-                                            showModalBottomSheet(
-                                              isScrollControlled: true,
-                                              backgroundColor: Colors.transparent,
-                                              enableDrag: false,
-                                              context: context,
-                                              builder: (context) {
-                                                return Padding(
-                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                  child: SubscriptionRequiredDialogWidget(),
-                                                );
-                                              },
-                                            );
+                                            showSubscriptionDialog(context);
                                           }
                                         },
                                         child: Container(

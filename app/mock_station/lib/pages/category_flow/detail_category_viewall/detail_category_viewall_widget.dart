@@ -244,20 +244,9 @@ class _DetailCategoryViewallWidgetState
                                                            ),
                                                          }.withoutNulls,
                                                        );
-                                                     } else {
-                                                       await showModalBottomSheet(
-                                                         isScrollControlled: true,
-                                                         backgroundColor: Colors.transparent,
-                                                         enableDrag: false,
-                                                         context: context,
-                                                         builder: (context) {
-                                                           return Padding(
-                                                             padding: MediaQuery.viewInsetsOf(context),
-                                                             child: SubscriptionRequiredDialogWidget(),
-                                                           );
-                                                         },
-                                                       );
-                                                     }
+} else {
+                                                        await showSubscriptionDialog(context);
+                                                      }
                                                    },
                                                   child: Container(
                                                     width: () {

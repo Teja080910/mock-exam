@@ -365,6 +365,20 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   ),
                 if (FFAppState().isLogin == true)
                   _buildMenuTile(
+                    icon: Icons.menu_book_outlined,
+                    label: 'eBook',
+                    color: const Color(0xFF6366F1),
+                    onTap: () {},
+                  ),
+                if (FFAppState().isLogin == true)
+                  _buildMenuTile(
+                    icon: Icons.sticky_note_2_outlined,
+                    label: 'Notes',
+                    color: const Color(0xFF06B6D4),
+                    onTap: () {},
+                  ),
+                if (FFAppState().isLogin == true)
+                  _buildMenuTile(
                     icon: Icons.notifications_none_rounded,
                     label: 'Notifications',
                     color: const Color(0xFFF59E0B),
@@ -388,6 +402,14 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   color: const Color(0xFF14B8A6),
                   onTap: () {
                     context.pushNamed(HelplineCenterScreenWidget.routeName);
+                  },
+                ),
+                _buildMenuTile(
+                  icon: Icons.card_giftcard_outlined,
+                  label: 'Refer and Earn',
+                  color: const Color(0xFFE11D48),
+                  onTap: () {
+                    context.pushNamed(ReferAndEarnScreenWidget.routeName);
                   },
                 ),
                   _buildMenuTile(

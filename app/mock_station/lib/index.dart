@@ -81,3 +81,5 @@ export '/pages/profile_flow/plan_screen/plans_screen_widget.dart'
     show PlansScreenWidget;
 export '/pages/home_flow/news_screen/news_screen_widget.dart'
     show NewsScreenWidget;
+export '/pages/profile_flow/refer_and_earn_screen/refer_and_earn_screen_widget.dart'
+    show ReferAndEarnScreenWidget;

@@ -60,30 +60,29 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/Group_1171274967.svg',
-                      width: 120.0,
-                      height: 120.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 26.0, 0.0, 0.0),
-                    child: Text(
-                      'Sorry your quiz timeout \ngo to quiz result',
-                      textAlign: TextAlign.center,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'Roboto',
-                            fontSize: 24.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
-                            useGoogleFonts: false,
-                            lineHeight: 1.5,
-                          ),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/images/Group_1171274967.svg',
+                        width: 90.0,
+                        height: 90.0,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 16.0),
+                      Text(
+                        "Time's Up!",
+                        textAlign: TextAlign.center,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily: 'Roboto',
+                              fontSize: 24.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.bold,
+                              useGoogleFonts: false,
+                              lineHeight: 1.5,
+                            ),
+                      ),
+                    ],
                   ),
                   Padding(
                     padding:
@@ -99,13 +98,15 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
                               onPressed: () async {
                                 await widget.istimeout?.call();
                               },
-                              text: 'Go to quiz result ',
+                              text: 'View Test Result',
+                              iconData: Icons.emoji_events_rounded,
                               options: FFButtonOptions(
                                 height: 56.0,
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     24.0, 0.0, 24.0, 0.0),
                                 iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
+                                    0.0, 0.0, 8.0, 0.0),
+                                iconSize: 20.0,
                                 color: FlutterFlowTheme.of(context).primary,
                                 textStyle: FlutterFlowTheme.of(context)
                                     .titleSmall

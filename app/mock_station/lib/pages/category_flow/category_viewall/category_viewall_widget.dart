@@ -244,18 +244,7 @@ class _CategoryViewallWidgetState extends State<CategoryViewallWidget>
                                                           }.withoutNulls,
                                                         );
                                                       } else {
-                                                        await showModalBottomSheet(
-                                                          isScrollControlled: true,
-                                                          backgroundColor: Colors.transparent,
-                                                          enableDrag: false,
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return Padding(
-                                                              padding: MediaQuery.viewInsetsOf(context),
-                                                              child: SubscriptionRequiredDialogWidget(),
-                                                            );
-                                                          },
-                                                        );
+                                                        await showSubscriptionDialog(context);
                                                       }
                                                     },
                                                   child: Container(

@@ -133,6 +133,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => HelplineCenterScreenWidget(),
         ),
         FFRoute(
+          name: ReferAndEarnScreenWidget.routeName,
+          path: ReferAndEarnScreenWidget.routePath,
+          builder: (context, params) => ReferAndEarnScreenWidget(),
+        ),
+        FFRoute(
           name: AboutusScreenWidget.routeName,
           path: AboutusScreenWidget.routePath,
           builder: (context, params) => AboutusScreenWidget(),
