@@ -197,10 +197,10 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                 [];
                           if (banners.isEmpty) return const SizedBox(height: 8);
                           return SizedBox(
-                            height: 200.0,
+                            height: 140.0,
                             child: CarouselSlider(
                               options: CarouselOptions(
-                                height: 200.0,
+                                height: 140.0,
                                 viewportFraction: 0.9,
                                 autoPlay: banners.length > 1,
                                 enlargeCenterPage: true,
@@ -263,7 +263,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                             [];
                         if (banners.isEmpty) return const SizedBox.shrink();
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          padding: const EdgeInsets.symmetric(vertical: 6.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: List.generate(banners.length, (index) {
@@ -322,15 +322,54 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 16.0, top: 24.0, right: 16.0, bottom: 8.0),
-                                  child: Text(
-                                    group.displayName,
-                                    style: TextStyle(
-                                      fontSize: 18, 
-                                      fontWeight: FontWeight.bold, 
-                                      color: Colors.black,
-                                      fontFamily: 'Roboto',
-                                    ),
+                                  padding: const EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0, bottom: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        group.displayName,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontFamily: 'Roboto',
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.push(context, MaterialPageRoute(
+                                            builder: (context) => CategoryViewallWidget(
+                                              allowedCategoryIds: group.categories.map((c) => c.id).toSet(),
+                                            ),
+                                          ));
+                                        },
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context).secondaryBackground,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: FlutterFlowTheme.of(context).alternate),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                'View All',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: FlutterFlowTheme.of(context).primary,
+                                                  fontFamily: 'Roboto',
+                                                ),
+                                              ),
+                                              const SizedBox(width: 2),
+                                              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF2563EB)),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 Padding(
@@ -340,9 +379,9 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                     physics: const NeverScrollableScrollPhysics(),
                                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 4,
-                                      crossAxisSpacing: 8,
-                                      mainAxisSpacing: 8,
-                                      childAspectRatio: 0.85,
+                                      crossAxisSpacing: 0,
+                                      mainAxisSpacing: 0,
+                                      childAspectRatio: 1.1,
                                     ),
                                     itemCount: group.categories.length,
                                     itemBuilder: (context, index) {
@@ -368,35 +407,27 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                             showSubscriptionDialog(context);
                                           }
                                         },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context).secondaryBackground,
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: FlutterFlowTheme.of(context).alternate),
-                                            boxShadow: const [BoxShadow(blurRadius: 4, color: Color(0x15000000), offset: Offset(0, 2))],
-                                          ),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              category.image.isNotEmpty
-                                                ? CachedNetworkImage(
-                                                    imageUrl: category.image.startsWith('http') ? category.image : '${FFAppConstants.imageBaseURL}${category.image}',
-                                                    width: 44, height: 44,
-                                                    placeholder: (context, url) => const SizedBox(width: 44, height: 44, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                                                    errorWidget: (context, url, error) => const Icon(Icons.category, size: 44),
-                                                  )
-                                                : const Icon(Icons.category, size: 44),
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 8, left: 4, right: 4),
-                                                child: Text(
-                                                  category.displayName.isNotEmpty ? category.displayName : category.name,
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
-                                                ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            category.image.isNotEmpty
+                                              ? CachedNetworkImage(
+                                                  imageUrl: category.image.startsWith('http') ? category.image : '${FFAppConstants.imageBaseURL}${category.image}',
+                                                  width: 44, height: 44,
+                                                  placeholder: (context, url) => const SizedBox(width: 44, height: 44, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                                                  errorWidget: (context, url, error) => const Icon(Icons.category, size: 44),
+                                                )
+                                              : const Icon(Icons.category, size: 44),
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 2, left: 1, right: 1),
+                                              child: Text(
+                                                category.displayName.isNotEmpty ? category.displayName : category.name,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                       );
                                     },
@@ -459,7 +490,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                       }
                     ),
                   ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 12)),
                   
 
                 ],

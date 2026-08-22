@@ -103,7 +103,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
                 text == null ? null : widget.options.textStyle?.withoutColor(),
             textAlign: widget.options.textAlign,
             maxLines: maxLines,
-            overflow: TextOverflow.ellipsis,
+            overflow: TextOverflow.visible,
           );
 
     final onPressed = widget.onPressed != null

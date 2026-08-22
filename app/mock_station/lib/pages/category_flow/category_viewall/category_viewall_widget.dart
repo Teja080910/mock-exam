@@ -15,7 +15,9 @@ import 'category_viewall_model.dart';
 export 'category_viewall_model.dart';
 
 class CategoryViewallWidget extends StatefulWidget {
-  const CategoryViewallWidget({super.key});
+  const CategoryViewallWidget({super.key, this.allowedCategoryIds});
+
+  final Set<String>? allowedCategoryIds;
 
   static String routeName = 'category_viewall';
   static String routePath = '/categoryViewall';
@@ -189,6 +191,11 @@ class _CategoryViewallWidgetState extends State<CategoryViewallWidget>
                                                         ?.toList() ??
                                                     [];
                                             categoryList.removeWhere((category) => getJsonField(category, r'''$._id''').toString() == '6855c7f44a6a5ab0e8254dc6');
+                                            if (widget.allowedCategoryIds != null) {
+                                              categoryList.removeWhere((category) =>
+                                                  !widget.allowedCategoryIds!
+                                                      .contains(getJsonField(category, r'''$._id''').toString()));
+                                            }
                                             return Wrap(
                                               spacing: 16.0,
                                               runSpacing: 16.0,
@@ -294,7 +301,7 @@ class _CategoryViewallWidgetState extends State<CategoryViewallWidget>
                                                             8);
                                                       }
                                                     }(),
-                                                    height: 142.0,
+                                                    height: 162.0,
                                                     decoration: BoxDecoration(
                                                       color: FlutterFlowTheme
                                                               .of(context)

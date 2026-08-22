@@ -277,50 +277,69 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     return const SizedBox.shrink();
   }
 
-  Map<String, dynamic> _planTheme(String categoryName, String planName) {
+  static const Map<int, Map<String, dynamic>> _indexThemes = {
+    0: {
+      'accent': Color(0xFF2563EB),
+      'soft': Color(0xFFDBEAFE),
+      'icon': Icons.menu_book_rounded,
+      'border': Color(0xFF93C5FD),
+      'features': ['High Quality Content', 'Easy to Download'],
+    },
+    1: {
+      'accent': Color(0xFF16A34A),
+      'soft': Color(0xFFDCFCE7),
+      'icon': Icons.sticky_note_2_rounded,
+      'border': Color(0xFF86EFAC),
+      'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
+    },
+    2: {
+      'accent': Color(0xFFEA580C),
+      'soft': Color(0xFFFFEDD5),
+      'icon': Icons.assignment_rounded,
+      'border': Color(0xFFFDBA74),
+      'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
+    },
+    3: {
+      'accent': Color(0xFF7C3AED),
+      'soft': Color(0xFFF3E8FF),
+      'icon': Icons.card_giftcard_rounded,
+      'border': Color(0xFFD8B4FE),
+      'features': ['Ebooks + Notes + Mock Tests', 'Complete Exam Preparation in One Plan'],
+    },
+    4: {
+      'accent': Color(0xFFDB2777),
+      'soft': Color(0xFFFCE7F3),
+      'icon': Icons.local_offer_rounded,
+      'border': Color(0xFFF9A8D4),
+      'features': ['High Quality Content', 'Easy to Download'],
+    },
+  };
+
+  Map<String, dynamic> _planTheme(String categoryName, String planName, int index) {
     final lower = '$categoryName $planName'.toLowerCase();
-    if (lower.contains('full access')) {
+    final base = _indexThemes[index % _indexThemes.length]!;
+    // Only override the feature text (and default icon per plan type) when a
+    // specific plan keyword is detected; colors are always index-based so every
+    // card is guaranteed a distinct color.
+    if (lower.contains('ebook')) {
       return {
-        'accent': const Color(0xFF7C3AED),
-        'soft': const Color(0xFFE8D8FF),
-        'iconBg': const Color(0xFFD8C8FF),
-        'icon': Icons.workspace_premium_rounded,
-        'subtitleColor': const Color(0xFF7C3AED),
-        'border': const Color(0xFFB7A8E8),
-        'popular': true,
+        ...base,
+        'features': ['High Quality Content', 'Easy to Download'],
       };
     }
-    if (lower.contains('ssc')) {
+    if (lower.contains('notes')) {
       return {
-        'accent': const Color(0xFF16A34A),
-        'soft': const Color(0xFFD7F7E2),
-        'iconBg': const Color(0xFFC9F0D3),
-        'icon': Icons.school_rounded,
-        'subtitleColor': const Color(0xFF16A34A),
-        'border': const Color(0xFF8AD0A4),
-        'popular': false,
+        ...base,
+        'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
       };
     }
-    if (lower.contains('psu')) {
+    if (lower.contains('mock test')) {
       return {
-        'accent': const Color(0xFFD97706),
-        'soft': const Color(0xFFFCE1B0),
-        'iconBg': const Color(0xFFF7D89A),
-        'icon': Icons.menu_book_rounded,
-        'subtitleColor': const Color(0xFFD97706),
-        'border': const Color(0xFFE2BC6D),
-        'popular': false,
+        ...base,
+        'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
       };
     }
-    return {
-      'accent': const Color(0xFFDB2777),
-      'soft': const Color(0xFFF6D1F2),
-      'iconBg': const Color(0xFFF4C8F0),
-      'icon': Icons.directions_railway_rounded,
-      'subtitleColor': const Color(0xFF7C3AED),
-      'border': const Color(0xFFE6A8DE),
-      'popular': false,
-    };
+    return base;
   }
 
   Widget _buildBenefitChip({
@@ -330,7 +349,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     Color? background,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       decoration: BoxDecoration(
         color: background ?? accent.withOpacity(0.08),
         borderRadius: BorderRadius.circular(999.0),
@@ -338,19 +357,218 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13.0, color: accent),
-          const SizedBox(width: 6.0),
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: accent,
-                fontSize: 11.0,
-                fontWeight: FontWeight.w600,
-              ),
+          Icon(icon, size: 12.0, color: accent),
+          const SizedBox(width: 5.0),
+          Text(
+            text,
+            style: TextStyle(
+              color: accent,
+              fontSize: 11.0,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPlanCard({
+    required int index,
+    required String price,
+    required String planName,
+    required String planValidity,
+    required String categoryName,
+    required String planId,
+    required bool isAlreadyActive,
+    required VoidCallback onBuyNow,
+  }) {
+    final theme = _planTheme(categoryName, planName, index);
+    final accent = theme['accent'] as Color;
+    final soft = theme['soft'] as Color;
+    final icon = theme['icon'] as IconData;
+    final border = theme['border'] as Color;
+    final features = <String>[
+      'Full access to $categoryName',
+      '$planValidity validity',
+      'Plan ID: $planId',
+    ];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: border.withOpacity(0.7), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D0F172A),
+            blurRadius: 10.0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Section: Icon, Title/Subtitle/Validity, Price & Status Badge
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 54.0,
+                  height: 54.0,
+                  decoration: BoxDecoration(
+                    color: soft,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, color: accent, size: 26.0),
+                ),
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        categoryName,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 2.0),
+                      Text(
+                        planName,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: accent,
+                        ),
+                      ),
+                      const SizedBox(height: 8.0),
+                      _buildBenefitChip(
+                        accent: accent,
+                        icon: Icons.calendar_today_rounded,
+                        text: 'Validity: $planValidity',
+                        background: soft.withOpacity(0.6),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₹$price',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w900,
+                        color: accent,
+                      ),
+                    ),
+                    const SizedBox(height: 6.0),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: isAlreadyActive ? accent.withOpacity(0.15) : const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(6.0),
+                      ),
+                      child: Text(
+                        isAlreadyActive ? 'Active' : 'Inactive',
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w700,
+                          color: isAlreadyActive ? accent : const Color(0xFF4B5568),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12.0),
+            // Dotted Separator
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(
+                    (constraints.constrainWidth() / 10).floor(),
+                    (index) => SizedBox(
+                      width: 4.0,
+                      height: 1.0,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: border),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12.0),
+            // Bottom Section: Features and Buy Now button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: features.map((feature) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle_rounded, size: 16.0, color: accent),
+                          const SizedBox(width: 8.0),
+                          Expanded(
+                            child: Text(
+                              feature,
+                              style: const TextStyle(
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF374151),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )).toList(),
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                SizedBox(
+                  width: 96.0,
+                  height: 40.0,
+                  child: ElevatedButton(
+                    onPressed: isAlreadyActive ? null : onBuyNow,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accent,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFFD1D5DB),
+                      disabledForegroundColor: Colors.white70,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: Text(
+                      isAlreadyActive ? 'Active' : 'Buy Now',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -379,7 +597,6 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
           const SizedBox(height: 6.0),
           Text(
             title,
-            maxLines: 2,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 11.0,
@@ -391,7 +608,6 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
           const SizedBox(height: 2.0),
           Text(
             subtitle,
-            maxLines: 2,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 9.0,
@@ -402,190 +618,6 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPlanCard({
-    required String price,
-    required String planName,
-    required String planValidity,
-    required String categoryName,
-    required bool isAlreadyActive,
-    required VoidCallback onBuyNow,
-  }) {
-    final theme = _planTheme(categoryName, planName);
-    final accent = theme['accent'] as Color;
-    final soft = theme['soft'] as Color;
-    final icon = theme['icon'] as IconData;
-    final border = theme['border'] as Color;
-    final popular = theme['popular'] as bool;
-
-    final cardContent = Container(
-      margin: const EdgeInsets.only(bottom: 14.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(color: border.withOpacity(0.5), width: 1.5),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D0F172A),
-            blurRadius: 10.0,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 56.0,
-              height: 56.0,
-              decoration: BoxDecoration(
-                color: soft,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Icon(icon, color: accent, size: 28.0),
-            ),
-            const SizedBox(width: 14.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Row 1: Title and Price
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              categoryName,
-                              style: const TextStyle(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF111827),
-                              ),
-                            ),
-                            const SizedBox(height: 2.0),
-                            Text(
-                              planName,
-                              style: TextStyle(
-                                fontSize: 13.0,
-                                fontWeight: FontWeight.w500,
-                                color: accent,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        '₹$price',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w800,
-                          color: accent,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10.0),
-                  // Row 2: Validity Chip and Buy Now/Active Button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildBenefitChip(
-                        accent: accent,
-                        icon: Icons.calendar_today_rounded,
-                        text: 'Validity: $planValidity',
-                      ),
-                      const SizedBox(width: 8.0),
-                      SizedBox(
-                        width: 80.0,
-                        height: 38.0,
-                        child: ElevatedButton(
-                          onPressed: isAlreadyActive ? null : onBuyNow,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFFD1D5DB),
-                            disabledForegroundColor: Colors.white70,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: Text(
-                            isAlreadyActive ? 'Active' : 'Buy Now',
-                            style: const TextStyle(
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8.0),
-                  // Row 3: Unlimited PYQs Mock Test Chip
-                  _buildBenefitChip(
-                    accent: accent,
-                    icon: Icons.all_inclusive,
-                    text: 'Unlimited PYQs Mock Test',
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (!popular) {
-      return cardContent;
-    }
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        cardContent,
-        Positioned(
-          top: -12.0,
-          right: 18.0,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10.0,
-              vertical: 4.0,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFD43B),
-              borderRadius: BorderRadius.circular(999.0),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x22F59E0B),
-                  blurRadius: 8.0,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Text(
-              'MOST POPULAR',
-              style: TextStyle(
-                fontSize: 9.0,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -669,10 +701,12 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                               }
 
                               return _buildPlanCard(
+                                index: index,
                                 price: price,
                                 planName: planName,
                                 planValidity: planValidity,
                                 categoryName: categoryName,
+                                planId: getJsonField(plan, r'''$.planId''').toString(),
                                 isAlreadyActive: isAlreadyActive,
                                 onBuyNow: () async {
                                   await _startPurchase(
