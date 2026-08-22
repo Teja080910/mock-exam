@@ -411,7 +411,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
   Widget _buildSectionalSummary() {
     final sections = _sectionSummaryItems();
-    if (sections.length < 2) return const SizedBox.shrink();
+    if (sections.isEmpty) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
@@ -425,16 +425,78 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 10.0),
-            child: Text('Sectional Summary', style: TextStyle(color: Color(0xFF111827), fontSize: 16.0, fontWeight: FontWeight.w900)),
+            child: Text(
+              'Sectional Summary',
+              style: TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 16.0,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Row(
               children: const [
-                Expanded(flex: 2, child: Text('Subject', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.0, fontWeight: FontWeight.w700))),
-                Expanded(child: Text('Correct', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF16A34A), fontSize: 11.0, fontWeight: FontWeight.w700))),
-                Expanded(child: Text('Wrong', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFEF4444), fontSize: 11.0, fontWeight: FontWeight.w700))),
-                Expanded(child: Text('Marks', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF7C3AED), fontSize: 11.0, fontWeight: FontWeight.w700))),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Subject',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Correct',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF16A34A),
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Wrong',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFFEF4444),
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Marks',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF7C3AED),
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Time',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFFD97706),
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -447,14 +509,70 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 final wrong = section['wrong'] ?? 0;
                 final total = section['total'] ?? 0;
                 final marks = section['marks'] ?? 0.0;
+                final time = section['time'] ?? '00:00';
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.only(bottom: 12.0),
                   child: Row(
                     children: [
-                      Expanded(flex: 2, child: Text(section['label'] ?? '', style: const TextStyle(color: Color(0xFF111827), fontSize: 13.0, fontWeight: FontWeight.w700))),
-                      Expanded(child: Text('$correct/$total', textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF16A34A), fontSize: 13.0, fontWeight: FontWeight.w600))),
-                      Expanded(child: Text('$wrong', textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13.0, fontWeight: FontWeight.w600))),
-                      Expanded(child: Text(marks.toStringAsFixed(1), textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF7C3AED), fontSize: 13.0, fontWeight: FontWeight.w600))),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          section['label'] ?? '',
+                          style: const TextStyle(
+                            color: Color(0xFF111827),
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          '$correct/$total',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF16A34A),
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          '$wrong',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFFEF4444),
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          marks.toStringAsFixed(1),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF7C3AED),
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          time,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFFD97706),
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -464,6 +582,28 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         ],
       ),
     );
+  }
+
+  int _parseTotalQuizSeconds() {
+    final quizTimeRaw = widget.quizTime ?? '';
+    if (quizTimeRaw.contains(':')) {
+      final parts = quizTimeRaw.split(':');
+      if (parts.length == 2) {
+        final m = int.tryParse(parts[0]) ?? 0;
+        final s = int.tryParse(parts[1]) ?? 0;
+        return m * 60 + s;
+      }
+    } else if (quizTimeRaw.isNotEmpty) {
+      final minutes = int.tryParse(quizTimeRaw) ?? 0;
+      if (minutes > 0) return minutes * 60;
+    }
+    return 600;
+  }
+
+  String _formatSeconds(int totalSeconds) {
+    final m = totalSeconds ~/ 60;
+    final s = totalSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   List<Map<String, dynamic>> _sectionSummaryItems() {
@@ -482,9 +622,21 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       grouped.putIfAbsent(key, () => <dynamic>[]).add(item);
     }
 
+    final totalQuizSeconds = _parseTotalQuizSeconds();
+    final totalQuestionsCount = source.length;
+
     final sections = <Map<String, dynamic>>[];
     for (final label in sectionLabels) {
-      sections.add(_buildSectionSummaryItem(label, grouped[label] ?? <dynamic>[]));
+      final items = grouped[label] ?? <dynamic>[];
+      final secItem = _buildSectionSummaryItem(label, items);
+
+      final secCount = items.length;
+      final secSeconds = totalQuestionsCount > 0
+          ? ((secCount / totalQuestionsCount) * totalQuizSeconds).round()
+          : (totalQuizSeconds ~/ sectionLabels.length);
+      secItem['time'] = _formatSeconds(secSeconds);
+
+      sections.add(secItem);
     }
 
     return sections;
