@@ -72,28 +72,65 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <h5 class="card-title">Filter</h5>
-                                        <div class="d-flex align-items-center row py-3 gap-3 gap-md-0">
-                                            <div class="col-md-4 quiz_name">
-                                                <select id="QuizName" class="form-select text-capitalize">
-                                                    <option value="">Select Quiz</option>
-                                                    <% if(quiz.length > 0) { %>
-                                                        <option value="all">All</option>
-                                                        <% quiz.forEach(function(quizData){ %>
-                                                            <option value="<%= quizData._id %>"><%= quizData.name %></option>
+                                        <form method="get" action="/view-questions" id="questionsFilterForm" class="d-flex align-items-center row py-3 gap-3 gap-md-0">
+                                            <div class="col-md-3 category_name">
+                                                <select name="categoryId" id="filterCategory" class="form-select text-capitalize" onchange="filterSubcategories(true); filterQuizzes(); document.getElementById('questionsFilterForm').submit()">
+                                                    <option value="">All Categories</option>
+                                                    <% if(category.length > 0) { %>
+                                                        <% category.forEach(function(cat){ %>
+                                                            <option value="<%= cat._id %>" <%= filters.categoryId === String(cat._id) ? 'selected' : '' %>><%= cat.name %></option>
                                                         <% }); %>
                                                     <% } %>
                                                 </select>
                                             </div>
-                                            <div class="col-md-4 question_type">
-                                                <select id="QuestionType" class="form-select text-capitalize">
-                                                    <option value="all">All</option>
-                                                    <option value="text_only">Text Only</option>
-                                                    <option value="true_false">True or False</option>
-                                                    <option value="images">Images</option>
-                                                    <option value="audio">Audio</option>
+                                            <div class="col-md-3 subcategory_name">
+                                                <select name="subcategoryId" id="filterSubcategory" class="form-select text-capitalize" onchange="filterQuizzes(); document.getElementById('questionsFilterForm').submit()">
+                                                    <option value="">All Subcategories</option>
+                                                    <% if(subcategory.length > 0) { %>
+                                                        <% subcategory.forEach(function(sub){ %>
+                                                            <option value="<%= sub._id %>" data-categoryid="<%= sub.categoryId ? sub.categoryId : '' %>" <%= filters.subcategoryId === String(sub._id) ? 'selected' : '' %>><%= sub.name %></option>
+                                                        <% }); %>
+                                                    <% } %>
                                                 </select>
                                             </div>
-                                        </div>
+                                            <div class="col-md-3 quiz_name">
+                                                <select name="quizId" id="filterQuiz" class="form-select text-capitalize" onchange="document.getElementById('questionsFilterForm').submit()">
+                                                    <option value="">All Quizzes</option>
+                                                    <% if(quiz.length > 0) { %>
+                                                        <% quiz.forEach(function(quizData){ %>
+                                                            <option value="<%= quizData._id %>" data-categoryid="<%= quizData.categoryId ? quizData.categoryId : '' %>" data-subcategoryid="<%= quizData.subcategoryId ? quizData.subcategoryId : '' %>" <%= filters.quizId === String(quizData._id) ? 'selected' : '' %>><%= quizData.name %></option>
+                                                        <% }); %>
+                                                    <% } %>
+                                                </select>
+                                            </div>
+                                            <% if (typeof subjects !== 'undefined' && subjects.length > 0) { %>
+                                            <div class="col-md-3 subject_name">
+                                                <select name="subject" class="form-select text-capitalize" onchange="document.getElementById('questionsFilterForm').submit()">
+                                                    <option value="">All Subjects</option>
+                                                    <% subjects.forEach(function(sub){ %>
+                                                        <option value="<%= sub %>" <%= filters.subject === sub ? 'selected' : '' %>><%= sub %></option>
+                                                    <% }); %>
+                                                </select>
+                                            </div>
+                                            <% } %>
+                                            <div class="col-md-3 question_type">
+                                                <select name="question_type" class="form-select text-capitalize" onchange="document.getElementById('questionsFilterForm').submit()">
+                                                    <option value="">All Types</option>
+                                                    <option value="text_only" <%= filters.question_type === 'text_only' ? 'selected' : '' %>>Text Only</option>
+                                                    <option value="true_false" <%= filters.question_type === 'true_false' ? 'selected' : '' %>>True or False</option>
+                                                    <option value="images" <%= filters.question_type === 'images' ? 'selected' : '' %>>Images</option>
+                                                    <option value="audio" <%= filters.question_type === 'audio' ? 'selected' : '' %>>Audio</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-8 mt-2">
+                                                <input type="text" name="search" class="form-control" placeholder="Search question..." value="<%= filters.search %>" />
+                                            </div>
+                                            <div class="col-md-4 d-flex gap-2 mt-2">
+                                                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                                                <a href="/view-questions" class="btn btn-outline-secondary btn-sm">Reset</a>
+                                            </div>
+                                            <input type="hidden" name="page" value="1" />
+                                        </form>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -104,6 +141,8 @@
                                                         <th class="title-width">Question Title</th>
                                                         <th class="option-width">Options</th>
                                                         <th>Question Type</th>
+                                                        <th>Category</th>
+                                                        <th>Subcategory</th>
                                                         <th>Subject</th>
                                                         <th class="quiz-width">Quiz Name</th>
                                                         <th>Is Enable</th>
@@ -112,32 +151,38 @@
                                                 </thead>
                                                 <tbody>
                                                     <% let cnt=1 %>
+                                                    <% function stripHtml(s){ if(s==null) return ''; return String(s).replace(/<[^>]*>/g, '').replace(/&nbsp;/g,' ').trim(); } %>
+                                                    <% function langText(v, key){ if(v==null) return ''; var raw = (typeof v==='string') ? (key==='hi' ? '' : v) : (v[key]||''); return stripHtml(raw); } %>
+                                                    <% function optTextEn(o){ if(o==null) return ''; if(typeof o==='string') return stripHtml(o); return stripHtml(o.text && typeof o.text==='object' ? (o.text.en||'') : (typeof o.text==='string' ? o.text : '')); } %>
+                                                    <% function optTextHi(o){ if(o==null) return ''; if(typeof o==='string') return ''; return stripHtml(o.text && typeof o.text==='object' ? (o.text.hi||'') : ''); } %>
                                                     <% questions.forEach(function(questionsData){ %>
                                                         <tr>
-                                                            <td><%= cnt++ %></td>
-                                                            <td>
-                                                                <%= questionsData.question_title %>
+                                                            <td><%= (page - 1) * limit + cnt++ %></td>
+                                                            <td style="min-width:240px">
+                                                                <div><strong>EN:</strong> <%= langText(questionsData.question_title, 'en') %></div>
+                                                                <div class="mt-1 text-info"><strong>HI:</strong> <%= langText(questionsData.question_title, 'hi') %></div>
                                                             </td>
-                                                            <td>
-                                                                <% if(questionsData.question_type == "text_only"){ %>
-
-                                                                    [<%= questionsData.option.a %>, <%= questionsData.option.b %>, <%= questionsData.option.c %>, <%= questionsData.option.d %>]
-
+                                                            <td style="min-width:320px">
+                                                                <% var ansEn = typeof questionsData.answer === 'string' ? questionsData.answer : ((questionsData.answer && questionsData.answer.en) || ''); %>
+                                                                <% if(questionsData.question_type == "text_only" || questionsData.question_type == "images" || questionsData.question_type == "audio"){ %>
+                                                                    <div><strong>EN:</strong> A. <%= optTextEn(questionsData.option.a) %> | B. <%= optTextEn(questionsData.option.b) %> | C. <%= optTextEn(questionsData.option.c) %> | D. <%= optTextEn(questionsData.option.d) %></div>
+                                                                    <div class="mt-1 text-info"><strong>HI:</strong> A. <%= optTextHi(questionsData.option.a) %> | B. <%= optTextHi(questionsData.option.b) %> | C. <%= optTextHi(questionsData.option.c) %> | D. <%= optTextHi(questionsData.option.d) %></div>
                                                                 <% } else if(questionsData.question_type == "true_false"){ %>
-
-                                                                    <%= questionsData.answer %>
-
-                                                            <%  } else {%>
-
-                                                                    [<%= questionsData.option.a %>, <%= questionsData.option.b %>, <%= questionsData.option.c %>, <%= questionsData.option.d %>]
-
-                                                                <%  } %>
+                                                                    <div><strong>EN:</strong> <%= ansEn %></div>
+                                                                    <div class="mt-1 text-info"><strong>HI:</strong> <%= (questionsData.answer && questionsData.answer.hi) || '' %></div>
+                                                                <% } %>
                                                             </td>
                                                             <td>
                                                                 <%= questionsData.question_type %>
                                                             </td>
                                                             <td>
+                                                                <%= questionsData.categoryId ? questionsData.categoryId.name : '-' %>
+                                                            </td>
+                                                            <td>
                                                                 <%= questionsData.subcategoryId ? questionsData.subcategoryId.name : '-' %>
+                                                            </td>
+                                                            <td>
+                                                                <%= questionsData.subject ? questionsData.subject : '-' %>
                                                             </td>
                                                             <td style="width:200px">
                                                                 <span class="badge bg-label-primary"><%= questionsData.quizId ? questionsData.quizId.name : 'No Quiz' %></span>
@@ -156,7 +201,7 @@
                                                                 </td>
                                                                 <td>
                                                                     <a class="text-success me-2" href="/edit-questions?id=<%= questionsData._id %>"><i class="me-2 bx bx-edit-alt"></i></a>
-                                                                    <a class="text-danger me-2" href="/delete-questions?id=<%= questionsData._id %>" onclick="return confirm('Are you sure want to delete this questions?' )"><i class="bx bx-trash me-2"></i></a>
+                                                                    <a class="text-danger me-2 btn-delete-question" href="/delete-questions?id=<%= questionsData._id %>&ajax=1" data-id="<%= questionsData._id %>"><i class="bx bx-trash me-2"></i></a>
                                                                 </td>
                                                             <% } else { %>
                                                                 <td>
@@ -175,6 +220,31 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 pt-3 pb-3">
+                                            <span class="text-muted">
+                                                Showing <%= questions.length %> of <%= totalQuestions %> questions (page <%= page %> / <%= totalPages %>)
+                                            </span>
+                                            <nav aria-label="Questions pagination">
+                                                <ul class="pagination mb-0">
+                                                    <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+                                                        <a class="page-link" href="<%= page <= 1 ? '#' : '/view-questions?page=' + (page-1) + '&quizId=' + filters.quizId + '&question_type=' + filters.question_type + '&subject=' + filters.subject + '&search=' + encodeURIComponent(filters.search) %>">Prev</a>
+                                                    </li>
+                                                    <%
+                                                        let startPage = Math.max(1, page - 2);
+                                                        let endPage = Math.min(totalPages, startPage + 4);
+                                                        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+                                                        for (let p = startPage; p <= endPage; p++) {
+                                                    %>
+                                                    <li class="page-item <%= p === page ? 'active' : '' %>">
+                                                        <a class="page-link" href="/view-questions?page=<%= p %>&quizId=<%= filters.quizId %>&question_type=<%= filters.question_type %>&subject=<%= filters.subject %>&search=<%= encodeURIComponent(filters.search) %>"><%= p %></a>
+                                                    </li>
+                                                    <% } %>
+                                                    <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+                                                        <a class="page-link" href="<%= page >= totalPages ? '#' : '/view-questions?page=' + (page+1) + '&quizId=' + filters.quizId + '&question_type=' + filters.question_type + '&subject=' + filters.subject + '&search=' + encodeURIComponent(filters.search) %>">Next</a>
+                                                    </li>
+                                                </ul>
+                                            </nav>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -182,6 +252,52 @@
                     </div>
                 </div>
             <script type="text/javascript">
+                    function filterQuizzes() {
+                        var catSel = document.getElementById('filterCategory');
+                        var subSel = document.getElementById('filterSubcategory');
+                        var quizSel = document.getElementById('filterQuiz');
+                        if (!quizSel) return;
+                        var categoryId = catSel ? catSel.value : '';
+                        var subcategoryId = subSel ? subSel.value : '';
+                        var keepSelection = true;
+                        for (var i = 0; i < quizSel.options.length; i++) {
+                            var opt = quizSel.options[i];
+                            if (!opt.value) { opt.style.display = ''; continue; }
+                            var oc = opt.getAttribute('data-categoryid') || '';
+                            var os = opt.getAttribute('data-subcategoryid') || '';
+                            var catMatch = (categoryId === '' || oc === categoryId);
+                            var subMatch = (subcategoryId === '' || os === subcategoryId);
+                            var show = catMatch && subMatch;
+                            opt.style.display = show ? '' : 'none';
+                            if (opt.selected && !show) keepSelection = false;
+                        }
+                        if (!keepSelection) quizSel.selectedIndex = 0;
+                    }
+
+                    function filterSubcategories(resetSub) {
+                        var catSel = document.getElementById('filterCategory');
+                        var subSel = document.getElementById('filterSubcategory');
+                        if (!catSel || !subSel) return;
+                        var categoryId = catSel.value;
+                        for (var i = 0; i < subSel.options.length; i++) {
+                            var opt = subSel.options[i];
+                            if (!opt.value) { opt.style.display = ''; continue; }
+                            opt.style.display = (categoryId === '' || opt.getAttribute('data-categoryid') === categoryId) ? '' : 'none';
+                        }
+                        // Only reset the subcategory when switching category is intentional.
+                        // Keep a server-selected subcategory on initial page load.
+                        if (resetSub) {
+                            var selected = subSel.options[subSel.selectedIndex];
+                            var keep = selected && selected.value && selected.getAttribute('data-categoryid') === categoryId;
+                            if (!keep) subSel.selectedIndex = 0;
+                        }
+                    }
+                    // On page load just show/hide (don't clobber a server-selected value)
+                    document.addEventListener('DOMContentLoaded', function () {
+                        filterSubcategories(false);
+                        filterQuizzes();
+                    });
+
                     var importCsvBtn = document.getElementById('importCsvBtn');
                     if (importCsvBtn) {
                         importCsvBtn.addEventListener('click', function() {
@@ -265,4 +381,41 @@
                     }
             </script>
             <script src="/assets/js/statusEnable.js"></script>
+            <script>
+                // AJAX delete: no page reload, row fades out on success
+                document.addEventListener('click', function (e) {
+                    const link = e.target.closest('.btn-delete-question');
+                    if (!link) return;
+                    e.preventDefault();
+                    if (!confirm('Are you sure want to delete this question?')) return;
+
+                    const icon = link.querySelector('i');
+                    const original = link.innerHTML;
+                    icon.className = 'bx bx-loader-alt bx-spin me-2';
+                    link.style.opacity = '0.6';
+                    link.style.pointerEvents = 'none';
+
+                    fetch(link.getAttribute('href'))
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.success) {
+                                const row = link.closest('tr');
+                                if (row) {
+                                    row.style.transition = 'opacity 0.3s';
+                                    row.style.opacity = '0';
+                                    setTimeout(() => row.remove(), 300);
+                                }
+                            } else {
+                                link.innerHTML = original;
+                                link.style.pointerEvents = '';
+                                alert('Failed to delete the question.');
+                            }
+                        })
+                        .catch(() => {
+                            link.innerHTML = original;
+                            link.style.pointerEvents = '';
+                            alert('Error while deleting the question.');
+                        });
+                });
+            </script>
         <%- include('../layout/footer.ejs') %>

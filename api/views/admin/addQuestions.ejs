@@ -16,11 +16,24 @@
                                             <div class="col-md-12">
                                                 <div class="row">
                                                     <div class="col-sm-1">
-                                                        <label class="col-form-label" for="questionTitleInput">Question Title</label>
+                                                        <label class="col-form-label" for="questionTitleInput">Question Title (English)</label>
                                                     </div>
                                                     <div class="col-sm-11">
                                                         <div id="questionTitle"></div>
                                                         <input type="hidden" name="question_title" id="questionTitleInput" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <div class="col-sm-1">
+                                                        <label class="col-form-label" for="questionTitleInputHi">Question Title (Hindi)</label>
+                                                    </div>
+                                                    <div class="col-sm-11">
+                                                        <div id="questionTitleHi"></div>
+                                                        <input type="hidden" name="question_title_hi" id="questionTitleInputHi" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -126,7 +139,7 @@
                                                     <div class="col-md-6">
                                                       <div class="row">
                                                         <div class="col-sm-2">
-                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option A (English)</label>
                                                         </div>
                                                         <div class="col-sm-10">
                                                           <div class="input-group input-group-merge">
@@ -138,7 +151,7 @@
                                                     <div class="col-md-6">
                                                       <div class="row">
                                                         <div class="col-sm-2">
-                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option B (English)</label>
                                                         </div>
                                                         <div class="col-sm-10">
                                                           <div class="input-group input-group-merge">
@@ -152,7 +165,7 @@
                                                     <div class="col-md-6">
                                                       <div class="row">
                                                         <div class="col-sm-2">
-                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option C (English)</label>
                                                         </div>
                                                         <div class="col-sm-10">
                                                           <div class="input-group input-group-merge">
@@ -162,19 +175,71 @@
                                                       </div>
                                                     </div>
                                                     <div class="col-md-6">
-                                                      <div class="row">
-                                                        <div class="col-sm-2">
-                                                          <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                       <div class="row">
+                                                         <div class="col-sm-2">
+<label class="col-form-label" for="basic-icon-default-fullname">Option D (English)</label>
                                                         </div>
                                                         <div class="col-sm-10">
                                                           <div class="input-group input-group-merge">
                                                             <input type="text" class="form-control" name="d" placeholder="Option D"/>
-                                                          </div>
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
+                                                           </div>
+                                                         </div>
+                                                       </div>
+                                                     </div>
+                                                   </div>
+                                                   <div class="row mb-3">
+                                                     <div class="col-md-6">
+                                                       <div class="row">
+                                                         <div class="col-sm-2">
+                                                           <label class="col-form-label">Option A (Hindi)</label>
+                                                         </div>
+                                                         <div class="col-sm-10">
+                                                           <div class="input-group input-group-merge">
+                                                             <input type="text" class="form-control" name="a_hi" placeholder="विकल्प A"/>
+                                                           </div>
+                                                         </div>
+                                                       </div>
+                                                     </div>
+                                                     <div class="col-md-6">
+                                                       <div class="row">
+                                                         <div class="col-sm-2">
+                                                           <label class="col-form-label">Option B (Hindi)</label>
+                                                         </div>
+                                                         <div class="col-sm-10">
+                                                           <div class="input-group input-group-merge">
+                                                             <input type="text" class="form-control" name="b_hi" placeholder="विकल्प B"/>
+                                                           </div>
+                                                         </div>
+                                                       </div>
+                                                     </div>
+                                                   </div>
+                                                   <div class="row mb-3">
+                                                     <div class="col-md-6">
+                                                       <div class="row">
+                                                         <div class="col-sm-2">
+                                                           <label class="col-form-label">Option C (Hindi)</label>
+                                                         </div>
+                                                         <div class="col-sm-10">
+                                                           <div class="input-group input-group-merge">
+                                                             <input type="text" class="form-control" name="c_hi" placeholder="विकल्प C"/>
+                                                           </div>
+                                                         </div>
+                                                       </div>
+                                                     </div>
+                                                     <div class="col-md-6">
+                                                       <div class="row">
+                                                         <div class="col-sm-2">
+                                                           <label class="col-form-label">Option D (Hindi)</label>
+                                                         </div>
+                                                         <div class="col-sm-10">
+                                                           <div class="input-group input-group-merge">
+                                                             <input type="text" class="form-control" name="d_hi" placeholder="विकल्प D"/>
+                                                           </div>
+                                                         </div>
+                                                       </div>
+                                                     </div>
+                                                   </div>
+                                                 </div>
                                                 <!-- For Image -->
                                                 <div class="option-image-fields" style="display:none;">
                                                   <div class="row mb-3">
@@ -249,7 +314,7 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option A (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
@@ -261,7 +326,7 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
@@ -275,7 +340,7 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
@@ -287,7 +352,7 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
@@ -300,7 +365,7 @@
                                                 </div>
                                                 <div class="row mb-3">
                                                     <label class="col-sm-1 col-form-label"
-                                                        for="basic-icon-default-fullname">Answer</label>
+                                                        for="basic-icon-default-fullname">Answer (English)</label>
                                                     <div class="col-sm-11">
                                                         <div class="input-group input-group-merge">
                                                             <input type="text" class="form-control" name="answer" required placeholder="Enter Answer"/>
@@ -308,11 +373,26 @@
                                                     </div>
                                                 </div>
                                                 <div class="row mb-3">
-                                                    <label class="col-sm-1 col-form-label"for="basic-icon-default-fullname">Description</label>
+                                                    <label class="col-sm-1 col-form-label">Answer (Hindi)</label>
+                                                    <div class="col-sm-11">
+                                                        <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="answer_hi" placeholder="उत्तर (हिंदी)"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label"for="basic-icon-default-fullname">Description (English)</label>
                                                     <div class="col-sm-11">
                                                         <!-- <textarea class="form-control" id="description" rows="2" name="explaination"></textarea> -->
                                                         <div id="description"></div>
                                                         <input name="description" type="hidden">
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label">Description (Hindi)</label>
+                                                    <div class="col-sm-11">
+                                                        <div id="descriptionHi"></div>
+                                                        <input name="description_hi" type="hidden">
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -444,6 +524,24 @@
                 theme: 'snow', // or 'bubble'
             });
 
+            // Quill editor for question title (Hindi)
+            const questionTitleHiQuill = new Quill('#questionTitleHi', {
+                modules: {
+                    toolbar: questionTitleToolbarOptions
+                },
+                placeholder: 'हिंदी में प्रश्न शीर्षक दर्ज करें...',
+                theme: 'snow',
+            });
+
+            // Quill editor for description (Hindi)
+            const descriptionHiQuill = new Quill('#descriptionHi', {
+                modules: {
+                    toolbar: questionTitleToolbarOptions
+                },
+                placeholder: 'हिंदी में विवरण दर्ज करें...',
+                theme: 'snow',
+            });
+
             // Paste plaintext into the editor
             questionTitleQuill.clipboard.addMatcher(Node.ELEMENT_NODE, function (node, delta) {
                 var plaintext = node.innerText
@@ -451,19 +549,27 @@
                 return new Delta().insert(plaintext)
             });
 
-            // Update the myFunction to include question title
+            // Update the myFunction to include all editors (explicit selectors)
             window.myFunction = function() {
-                // Get description editor content
-                var editor = document.getElementsByClassName('ql-editor')[0].innerHTML
                 var about = document.querySelector('input[name=description]');
-                about.value = editor
+                var descriptionEditor = document.querySelector('#description .ql-editor');
+                if (descriptionEditor) {
+                    about.value = descriptionEditor.innerHTML;
+                }
 
-                // Get question title editor content
                 var questionTitleEditor = document.querySelector('#questionTitle .ql-editor');
                 if (questionTitleEditor) {
-                    var questionTitleContent = questionTitleEditor.innerHTML;
-                    var questionTitleInput = document.querySelector('input[name=question_title]');
-                    questionTitleInput.value = questionTitleContent;
+                    document.querySelector('input[name=question_title]').value = questionTitleEditor.innerHTML;
+                }
+
+                var questionTitleHiEditor = document.querySelector('#questionTitleHi .ql-editor');
+                if (questionTitleHiEditor) {
+                    document.querySelector('input[name=question_title_hi]').value = questionTitleHiEditor.innerHTML;
+                }
+
+                var descriptionHiEditor = document.querySelector('#descriptionHi .ql-editor');
+                if (descriptionHiEditor) {
+                    document.querySelector('input[name=description_hi]').value = descriptionHiEditor.innerHTML;
                 }
             };
         });

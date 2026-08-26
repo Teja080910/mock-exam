@@ -28,6 +28,11 @@ const loadQuestions = async (req, res) => {
     }
 }
 
+// Build a bilingual {en, hi} object from separate form fields
+function bilingual(enVal, hiVal) {
+    return { en: ensureString(enVal), hi: ensureString(hiVal) };
+}
+
 // Add questions
 const addQuestions = async (req, res) => {
     try {
@@ -41,43 +46,43 @@ const addQuestions = async (req, res) => {
                         if (req.body.question_type == "text_only") {
                             optionType = "text_only";
                             optionData = {
-                                a: req.body.a,
-                                b: req.body.b,
-                                c: req.body.c,
-                                d: req.body.d,
+                                a: { text: bilingual(req.body.a, req.body.a_hi), image: '' },
+                                b: { text: bilingual(req.body.b, req.body.b_hi), image: '' },
+                                c: { text: bilingual(req.body.c, req.body.c_hi), image: '' },
+                                d: { text: bilingual(req.body.d, req.body.d_hi), image: '' },
                             };
                         } else if (req.body.question_type == "true_false") {
                             optionType = "true_false";
                             optionData = {
-                                answer: req.body.answer,
+                                answer: bilingual(req.body.answer, req.body.answer_hi),
                             };
                         } else if (req.body.question_type == "images") {
                             optionType = "images";
                             optionData = {
                                 a: {
-                                    text: ensureString(req.body.a),
-                                    image: req.files.a_image && req.files.a_image[0] ? req.files.a_image[0].filename : undefined
+                                    text: bilingual(req.body.a, req.body.a_hi),
+                                    image: req.files.a_image && req.files.a_image[0] ? req.files.a_image[0].filename : ''
                                 },
                                 b: {
-                                    text: ensureString(req.body.b),
-                                    image: req.files.b_image && req.files.b_image[0] ? req.files.b_image[0].filename : undefined
+                                    text: bilingual(req.body.b, req.body.b_hi),
+                                    image: req.files.b_image && req.files.b_image[0] ? req.files.b_image[0].filename : ''
                                 },
                                 c: {
-                                    text: ensureString(req.body.c),
-                                    image: req.files.c_image && req.files.c_image[0] ? req.files.c_image[0].filename : undefined
+                                    text: bilingual(req.body.c, req.body.c_hi),
+                                    image: req.files.c_image && req.files.c_image[0] ? req.files.c_image[0].filename : ''
                                 },
                                 d: {
-                                    text: ensureString(req.body.d),
-                                    image: req.files.d_image && req.files.d_image[0] ? req.files.d_image[0].filename : undefined
+                                    text: bilingual(req.body.d, req.body.d_hi),
+                                    image: req.files.d_image && req.files.d_image[0] ? req.files.d_image[0].filename : ''
                                 }
                             };
                         } else if (req.body.question_type == "audio") {
                             optionType = "audio";
                             optionData = {
-                                a: req.body.audio_a,
-                                b: req.body.audio_b,
-                                c: req.body.audio_c,
-                                d: req.body.audio_d,
+                                a: { text: bilingual(req.body.audio_a, ''), image: '' },
+                                b: { text: bilingual(req.body.audio_b, ''), image: '' },
+                                c: { text: bilingual(req.body.audio_c, ''), image: '' },
+                                d: { text: bilingual(req.body.audio_d, ''), image: '' },
                             };
                         }
 
@@ -85,13 +90,16 @@ const addQuestions = async (req, res) => {
                             categoryId: req.body.categoryId,
                             subcategoryId: req.body.subcategoryId,
                             quizId: req.body.quizId,
-                            question_title: req.body.question_title,
+                            question_title: bilingual(req.body.question_title, req.body.question_title_hi),
                             image: optionType === "images" && req.files.image && req.files.image[0] ? req.files.image[0].filename : undefined,
                             audio: optionType === "audio" ? req.files.audio[0].filename : undefined,
                             question_type: optionType,
                             option: optionData,
-                            answer: req.body.answer,
-                            description: req.body.description,
+                            answer: bilingual(req.body.answer, req.body.answer_hi),
+                            description: {
+                                en: req.body.description || '',
+                                hi: req.body.description_hi || ''
+                            },
                             is_active: req.body.is_active == "on" ? 1 : 0
                         });
                         
@@ -164,15 +172,19 @@ const importQuestionsCSV = async (req, res) => {
 
             let option = {};
             if (row.question_type === "text_only" || row.question_type === "images" || row.question_type === "audio") {
+                const optVal = (en, hi, img) => ({ text: bilingual(en, hi), image: img || '' });
+                // accept both header styles: "option.a" (sample template) and "option_a"
+                const enOpt = (letter) => row[`option.${letter}`] || row[`option_${letter}`] || row[`image_${letter}`] || row[`audio_${letter}`];
+                const hiOpt = (letter) => row[`option_${letter}_hi`] || '';
                 option = {
-                    a: row.option_a || row.image_a || row.audio_a,
-                    b: row.option_b || row.image_b || row.audio_b,
-                    c: row.option_c || row.image_c || row.audio_c,
-                    d: row.option_d || row.image_d || row.audio_d,
+                    a: optVal(enOpt('a'), hiOpt('a')),
+                    b: optVal(enOpt('b'), hiOpt('b')),
+                    c: optVal(enOpt('c'), hiOpt('c')),
+                    d: optVal(enOpt('d'), hiOpt('d')),
                 };
             } else if (row.question_type === "true_false") {
                 option = {
-                    answer: row.answer,
+                    answer: bilingual(row.answer, row.answer_hi),
                 };
             }
 
@@ -197,11 +209,14 @@ const importQuestionsCSV = async (req, res) => {
                 subcategoryId: req.body.subcategoryId || null,
                 subject: row.subcategory ? row.subcategory.toString().trim() : '',
                 quizId: req.body.quizId,
-                question_title: row.question_title,
+                question_title: bilingual(row.question_title, row.question_title_hi),
                 question_type: row.question_type,
                 option: option,
-                answer: row.answer,
-                description: row.description,
+                answer: bilingual(row.answer, row.answer_hi),
+                description: {
+                    en: row.description || '',
+                    hi: row.description_hi || ''
+                },
                 is_active: 1,
                 image: imagePath || null,
                 audio: audioPath || null
@@ -237,12 +252,19 @@ const sampleCSVFormat = async (req, res) => {
         const headers = [
             "question_type",
             "question_title",
+            "question_title_hi",
             "option.a",
             "option.b",
             "option.c",
             "option.d",
+            "option_a_hi",
+            "option_b_hi",
+            "option_c_hi",
+            "option_d_hi",
             "answer",
+            "answer_hi",
             "description",
+            "description_hi",
             "image"
         ].join(',');
 
@@ -252,12 +274,18 @@ const sampleCSVFormat = async (req, res) => {
             [
                 "text_only",
                 "What is the capital of France?",
+                "फ्रांस की राजधानी क्या है?",
                 "Paris",
                 "London",
                 "Berlin",
                 "Madrid",
+                "पेरिस",
+                "लंदन",
+                "बर्लिन",
+                "मैड्रिड",
                 "Paris",
                 "Basic geography question",
+                "भूगोल से जुड़ा बुनियादी प्रश्न",
                 ""
             ].join(','),
 
@@ -265,40 +293,20 @@ const sampleCSVFormat = async (req, res) => {
             [
                 "true_false",
                 "The Earth is flat?",
+                "क्या पृथ्वी चपटी है?",
                 "TRUE",
                 "FALSE",
                 "",
                 "",
+                "सही",
+                "गलत",
+                "",
+                "",
                 "FALSE",
                 "Basic science question",
+                "विज्ञान से जुड़ा बुनियादी प्रश्न",
                 ""
             ].join(','),
-
-            // Image Question
-            [
-                "images",
-                "Count the number of squares in the given figure",
-                "32",
-                "30",
-                "29",
-                "28",
-                "32",
-                "Count total squares in the image",
-                "square_image.jpg"
-            ].join(','),
-
-            // Audio Question
-            [
-                "audio",
-                "First Question of Audio",
-                "test 1",
-                "test 2",
-                "test 3",
-                "test 4",
-                "test 2",
-                "Listen to the audio and select correct option",
-                "audio1.mp3"
-            ].join(',')
         ];
 
         // Combine headers and rows
@@ -444,22 +452,72 @@ function ensureString(val) {
 // };
 
 
-// View questions
+// View questions (server-side paginated)
 const viewQuestions = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({_id: req.session.user_id});
             const QuizData = await Quiz.find();
             const CategoryData = await Category.find();
-            const QuestionsData = await Questions.find()
-                .populate({
-                    path: 'quizId',
-                    select: 'name _id'
-                })
+            const SubcategoryData = await Subcategory.find();
+
+            const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+            const limit = 20;
+
+            const filter = {};
+            if (req.query.quizId) filter.quizId = req.query.quizId;
+            if (req.query.categoryId) filter.categoryId = req.query.categoryId;
+            if (req.query.subcategoryId) filter.subcategoryId = req.query.subcategoryId;
+            if (req.query.question_type) filter.question_type = req.query.question_type;
+            if (req.query.subject) filter.subject = req.query.subject;
+            if (req.query.search && String(req.query.search).trim()) {
+                const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                filter.$or = [
+                    { 'question_title.en': { $regex: term, $options: 'i' } },
+                    { 'question_title.hi': { $regex: term, $options: 'i' } },
+                ];
+            }
+
+            const totalQuestions = await Questions.countDocuments(filter);
+            const totalPages = Math.max(1, Math.ceil(totalQuestions / limit));
+
+            // Subject-wise quizzes: only when a quiz is selected AND it actually
+            // uses distinct subjects. Otherwise no subject filter is shown.
+            let subjects = [];
+            if (req.query.quizId) {
+                const distinct = await Questions.distinct('subject', { quizId: req.query.quizId });
+                subjects = distinct.filter(s => s && String(s).trim()).map(String);
+            }
+
+            const QuestionsData = await Questions.find(filter)
+                .populate({ path: 'quizId', select: 'name _id' })
                 .populate('categoryId')
                 .populate('subcategoryId')
-                .sort({updatedAt: -1});
-            res.render('viewQuestions',{questions:QuestionsData,loginData: loginData,quiz:QuizData,category:CategoryData});
+                .sort({updatedAt: -1})
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean();
+
+            res.render('viewQuestions',{
+                questions: QuestionsData,
+                loginData,
+                quiz: QuizData,
+                category: CategoryData,
+                subcategory: SubcategoryData,
+                subjects,
+                page,
+                limit,
+                totalQuestions,
+                totalPages,
+                filters: {
+                    quizId: req.query.quizId || '',
+                    categoryId: req.query.categoryId || '',
+                    subcategoryId: req.query.subcategoryId || '',
+                    question_type: req.query.question_type || '',
+                    subject: req.query.subject || '',
+                    search: req.query.search || ''
+                }
+            });
         });
     } catch (error) {
         console.log(error.message);
@@ -498,49 +556,67 @@ const UpdateQuestions = async(req,res)=> {
             if (req.body.question_type == "text_only") {
                 optionType = "text_only";
                 optionData = {
-                    a: req.body.a,
-                    b: req.body.b,
-                    c: req.body.c,
-                    d: req.body.d,
+                    a: { text: bilingual(req.body.a, req.body.a_hi), image: '' },
+                    b: { text: bilingual(req.body.b, req.body.b_hi), image: '' },
+                    c: { text: bilingual(req.body.c, req.body.c_hi), image: '' },
+                    d: { text: bilingual(req.body.d, req.body.d_hi), image: '' },
                 };
 
             } else if (req.body.question_type == "true_false") {
                 optionType = "true_false";
                 optionData = {
-                    answer: req.body.answer,
+                    answer: bilingual(req.body.answer, req.body.answer_hi),
                 };
             } else if (req.body.question_type == "images") {
                 optionType ="images";
                 optionData = {
-                    a: req.body.img_a,
-                    b: req.body.img_b,
-                    c: req.body.img_c,
-                    d: req.body.img_d,
+                    a: {
+                        text: bilingual(req.body.a, req.body.a_hi),
+                        image: req.files.a_image && req.files.a_image[0] ? req.files.a_image[0].filename : ensureString(req.body.img_a)
+                    },
+                    b: {
+                        text: bilingual(req.body.b, req.body.b_hi),
+                        image: req.files.b_image && req.files.b_image[0] ? req.files.b_image[0].filename : ensureString(req.body.img_b)
+                    },
+                    c: {
+                        text: bilingual(req.body.c, req.body.c_hi),
+                        image: req.files.c_image && req.files.c_image[0] ? req.files.c_image[0].filename : ensureString(req.body.img_c)
+                    },
+                    d: {
+                        text: bilingual(req.body.d, req.body.d_hi),
+                        image: req.files.d_image && req.files.d_image[0] ? req.files.d_image[0].filename : ensureString(req.body.img_d)
+                    },
                 };
             }
             else if (req.body.question_type == "audio") {
                 optionType = "audio";
                 optionData = {
-                    a: req.body.audio_a,
-                    b: req.body.audio_b,
-                    c: req.body.audio_c,
-                    d: req.body.audio_d,
+                    a: { text: bilingual(req.body.audio_a, ''), image: '' },
+                    b: { text: bilingual(req.body.audio_b, ''), image: '' },
+                    c: { text: bilingual(req.body.audio_c, ''), image: '' },
+                    d: { text: bilingual(req.body.audio_d, ''), image: '' },
                 };
             }
+            const updateFields = {
+                categoryId: req.body.categoryId,
+                quizId: req.body.quizId,
+                question_title: bilingual(req.body.question_title, req.body.question_title_hi),
+                question_type : optionType,
+                option: optionData,
+                answer: bilingual(req.body.answer, req.body.answer_hi),
+                description: {
+                    en: req.body.description || '',
+                    hi: req.body.description_hi || ''
+                }
+            };
             if (req.files.image || req.files.audio) {
                 const UpdateQuestions = await Questions.findByIdAndUpdate({ _id: id },
                     {
                         $set:
                         {
-                            categoryId: req.body.categoryId,
-                            quizId: req.body.quizId,
-                            question_title: req.body.question_title,
+                            ...updateFields,
                             image: optionType === "images" ? req.files.image[0].filename : undefined,
-                            audio: optionType === "audio" ? req.files.audio[0].filename : undefined,
-                            question_type : optionType,
-                            option: optionData,
-                            answer: req.body.answer,
-                            description: req.body.description
+                            audio: optionType === "audio" ? req.files.audio[0].filename : undefined
                         }
                     });
                 const saveQuestions = await UpdateQuestions.save();
@@ -551,13 +627,7 @@ const UpdateQuestions = async(req,res)=> {
                     {
                         $set:
                         {
-                            categoryId: req.body.categoryId,
-                            quizId: req.body.quizId,
-                            question_title: req.body.question_title,
-                            question_type : optionType,
-                            option: optionData,
-                            answer: req.body.answer,
-                            description: req.body.description
+                            ...updateFields
                         }
                     });
                 const saveQuestions = await UpdateQuestions.save();
@@ -578,6 +648,9 @@ const deleteQuestions = async(req,res)=> {
     try {
         const id = req.query.id;
         const deleteQuestions = await Questions.deleteOne({_id:id});
+        if (req.query.ajax === '1') {
+            return res.json({ success: deleteQuestions.deletedCount > 0 });
+        }
         res.redirect('back');
         
     } catch (error) {

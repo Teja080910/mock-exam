@@ -225,49 +225,13 @@
     });
 </script> -->
 
+<!-- Questions list is now server-side paginated (viewQuestions) - no DataTable init.
+     The old client-side DataTable + dropdown filter block was removed because
+     quiz/type filters and pagination are handled by the server. -->
+
 <script type="text/javascript">
-    jQuery(document).ready(function () {
-        // Initialize the DataTable
-        var table = jQuery('#questionslist-table').DataTable({
-            lengthMenu: [
-                [5, 10, 20, 40, -1],
-                [5, 10, 20, 40, 'All'],
-            ],
-            info: false,
-            language: {
-                paginate: {
-                    next: '&#8594;', // or '→'
-                    previous: '&#8592;' // or '←' 
-                }
-            }
-        });
-        // Custom filtering function which will search data in the table
-        jQuery.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                // Only apply this filter on the questions page (where the
-                // quiz/type dropdowns exist). Without this guard, every
-                // DataTable on every page (e.g. view-subcategory) would be
-                // filtered out and show "No matching records found".
-                if (!jQuery('#QuizName').length || !jQuery('#QuestionType').length) {
-                    return true;
-                }
-                var selectedQuiz = jQuery('#QuizName').find("option:selected").text().trim().toLowerCase();
-                var selectedQuestions = jQuery('#QuestionType').find("option:selected").val().toLowerCase();
-                
-                var quiz = data[5].trim().toLowerCase(); // Use the correct column index for quiz
-                var questions = data[3].trim().toLowerCase(); // Use the correct column index for question type
-
-                var quizMatch = (selectedQuiz === 'all' || selectedQuiz === '' || selectedQuiz === 'select quiz' || quiz === selectedQuiz);
-                var questionsMatch = (selectedQuestions === 'all' || questions === selectedQuestions);
-
-                return quizMatch && questionsMatch;
-            }
-        );
-        // Trigger filter when dropdowns change
-        jQuery('#QuizName, #QuestionType').change(function () {
-            table.draw();
-        });
-    });
+    // Keep other tables' legacy filter guard harmless if referenced elsewhere
+</script>
 </script>
 <!-- Quill JS -->
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
@@ -341,5 +305,6 @@
         document.querySelector("form").submit();
     }
 </script>
+<script src="/assets/js/button-loading.js"></script>
 </body>
 </html>

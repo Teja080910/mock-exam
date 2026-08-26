@@ -103,3 +103,6 @@ app/mock_station/null
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
 **/.metadata
+
+# Hindi translation migration workfiles
+api/data/

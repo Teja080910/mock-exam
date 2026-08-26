@@ -2,3 +2,4 @@ node_modules
 Quiz App
 App Code
 .env
+.env.prod

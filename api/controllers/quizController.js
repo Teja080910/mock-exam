@@ -55,7 +55,7 @@ const viewQuiz = async(req,res)=> {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({_id:req.session.user_id});
-            const QuizData = await Quiz.find().populate('categoryId').sort({updatedAt: -1});
+            const QuizData = await Quiz.find().populate(['categoryId', 'subcategoryId']).sort({updatedAt: -1});
             const QuestionData = await Questions.find().populate('quizId');
             res.render('viewQuiz',{quiz:QuizData,loginData: loginData,question:QuestionData});
         });

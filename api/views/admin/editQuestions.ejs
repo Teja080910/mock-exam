@@ -108,15 +108,28 @@
                                                     <div class="col-md-12">
                                                         <div class="row">
                                                             <div class="col-sm-1">
-                                                                <label class="col-form-label" for="basic-icon-default-fullname">Question</label>
+                                                                <label class="col-form-label" for="basic-icon-default-fullname">Question (English)</label>
                                                             </div>
                                                             <div class="col-sm-11">
-                                                                <div id="questionTitle"></div>
-                                                                <input type="hidden" name="question_title" required value="<%= editdata.question_title %>"/>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                                 <div id="questionTitle"></div>
+                                                                 <input type="hidden" name="question_title" required value="<%= typeof editdata.question_title === 'string' ? editdata.question_title : (editdata.question_title && editdata.question_title.en || '') %>"/>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                                 <div class="row mb-4">
+                                                     <div class="col-md-12">
+                                                         <div class="row">
+                                                             <div class="col-sm-1">
+                                                                 <label class="col-form-label">Question (Hindi)</label>
+                                                             </div>
+                                                             <div class="col-sm-11">
+                                                                 <div id="questionTitleHi"></div>
+                                                                 <input type="hidden" name="question_title_hi" value="<%= typeof editdata.question_title === 'string' ? (editdata.question_title_hi || '') : (editdata.question_title && editdata.question_title.hi || '') %>"/>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                 </div>
                                                 <div class="row mb-4 audio-wrap">
                                                     <div class="col-md-12">
                                                         <div class="row">
@@ -243,11 +256,11 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option A</label>
+                                                                                                                                        <label class="col-form-label" for="basic-icon-default-fullname">Option A (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
-                                                                        <input type="text" class="form-control" name="audio_a" placeholder="Option A" value="<%= editdata.option.a %>"/>
+                                                                        <input type="text" class="form-control" name="audio_a" placeholder="Option A" value="<%= typeof editdata.option.a === 'string' ? editdata.option.a : ((editdata.option.a && editdata.option.a.text && editdata.option.a.text.en) || '') %>"/>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -255,11 +268,11 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option B (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
-                                                                        <input type="text" class="form-control" name="audio_b" placeholder="Option B" value="<%= editdata.option.b %>"/>
+                                                                        <input type="text" class="form-control" name="audio_b" placeholder="Option B" value="<%= typeof editdata.option.b === 'string' ? editdata.option.b : ((editdata.option.b && editdata.option.b.text && editdata.option.b.text.en) || '') %>"/>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -269,11 +282,11 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option C (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
-                                                                        <input type="text" class="form-control" name="audio_c" placeholder="Option C" value="<%= editdata.option.c %>"/>
+                                                                        <input type="text" class="form-control" name="audio_c" placeholder="Option C" value="<%= typeof editdata.option.c === 'string' ? editdata.option.c : ((editdata.option.c && editdata.option.c.text && editdata.option.c.text.en) || '') %>"/>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -281,31 +294,154 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-sm-2">
-                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D</label>
+                                                                    <label class="col-form-label" for="basic-icon-default-fullname">Option D (English)</label>
                                                                 </div>
                                                                 <div class="col-sm-10">
                                                                     <div class="input-group input-group-merge">
-                                                                        <input type="text" class="form-control" name="audio_d" placeholder="Option D" value="<%= editdata.option.d %>"/>
+                                                                        <input type="text" class="form-control" name="audio_d" placeholder="Option D" value="<%= typeof editdata.option.d === 'string' ? editdata.option.d : ((editdata.option.d && editdata.option.d.text && editdata.option.d.text.en) || '') %>"/>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                                                                  <div class="text-wrap">
+                                                     <div class="row mb-3">
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+                                                                      <label class="col-form-label">Option A (English)</label>
+                                                                  </div>
+                                                                  <div class="col-sm-10">
+                                                                      <div class="input-group input-group-merge">
+                                                                          <input type="text" class="form-control" name="a" placeholder="Option A" value="<%= typeof editdata.option.a === 'string' ? editdata.option.a : ((editdata.option.a && editdata.option.a.text && editdata.option.a.text.en) || '') %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+<label class="col-form-label">Option B (English)</label>
+                                                                  </div>
+                                                                  <div class="col-sm-10">
+                                                                      <div class="input-group input-group-merge">
+                                                                          <input type="text" class="form-control" name="b" placeholder="Option B" value="<%= typeof editdata.option.b === 'string' ? editdata.option.b : ((editdata.option.b && editdata.option.b.text && editdata.option.b.text.en) || '') %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                     <div class="row mb-3">
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+<label class="col-form-label">Option C (English)</label>
+                                                                  </div>
+                                                                  <div class="col-sm-10">
+                                                                      <div class="input-group input-group-merge">
+                                                                          <input type="text" class="form-control" name="c" placeholder="Option C" value="<%= typeof editdata.option.c === 'string' ? editdata.option.c : ((editdata.option.c && editdata.option.c.text && editdata.option.c.text.en) || '') %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+<label class="col-form-label">Option D (English)</label>
+                                                                  </div>
+                                                                  <div class="col-sm-10">
+                                                                      <div class="input-group input-group-merge">
+                                                                          <input type="text" class="form-control" name="d" placeholder="Option D" value="<%= typeof editdata.option.d === 'string' ? editdata.option.d : ((editdata.option.d && editdata.option.d.text && editdata.option.d.text.en) || '') %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                                 <div class="hindi-options-wrap">
+                                                     <div class="row mb-3">
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+                                                                     <label class="col-form-label">Option A (Hindi)</label>
+                                                                 </div>
+                                                                 <div class="col-sm-10">
+                                                                     <div class="input-group input-group-merge">
+                                                                         <input type="text" class="form-control" name="a_hi" placeholder="विकल्प A" value="<%= (typeof editdata.option.a === 'object' && editdata.option.a && editdata.option.a.text && typeof editdata.option.a.text === 'object' && editdata.option.a.text.hi) || '' %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+                                                                     <label class="col-form-label">Option B (Hindi)</label>
+                                                                 </div>
+                                                                 <div class="col-sm-10">
+                                                                     <div class="input-group input-group-merge">
+                                                                         <input type="text" class="form-control" name="b_hi" placeholder="विकल्प B" value="<%= (typeof editdata.option.b === 'object' && editdata.option.b && editdata.option.b.text && typeof editdata.option.b.text === 'object' && editdata.option.b.text.hi) || '' %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                     <div class="row mb-3">
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+                                                                     <label class="col-form-label">Option C (Hindi)</label>
+                                                                 </div>
+                                                                 <div class="col-sm-10">
+                                                                     <div class="input-group input-group-merge">
+                                                                         <input type="text" class="form-control" name="c_hi" placeholder="विकल्प C" value="<%= (typeof editdata.option.c === 'object' && editdata.option.c && editdata.option.c.text && typeof editdata.option.c.text === 'object' && editdata.option.c.text.hi) || '' %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                         <div class="col-md-6">
+                                                             <div class="row">
+                                                                 <div class="col-sm-2">
+                                                                     <label class="col-form-label">Option D (Hindi)</label>
+                                                                 </div>
+                                                                 <div class="col-sm-10">
+                                                                     <div class="input-group input-group-merge">
+                                                                         <input type="text" class="form-control" name="d_hi" placeholder="विकल्प D" value="<%= (typeof editdata.option.d === 'object' && editdata.option.d && editdata.option.d.text && typeof editdata.option.d.text === 'object' && editdata.option.d.text.hi) || '' %>"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                 </div>
                                                 <div class="row mb-3">
                                                     <label class="col-sm-1 col-form-label"
-                                                        for="basic-icon-default-fullname">Answer</label>
+                                                        for="basic-icon-default-fullname">Answer (English)</label>
                                                     <div class="col-sm-11">
                                                         <div class="input-group input-group-merge">
-                                                            <input type="text" class="form-control" name="answer" required placeholder="Enter Answer" value="<%= editdata.answer %>"/>
+                                                            <input type="text" class="form-control" name="answer" required placeholder="Enter Answer" value="<%= typeof editdata.answer === 'string' ? editdata.answer : (editdata.answer && editdata.answer.en || '') %>"/>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row mb-3">
-                                                    <label class="col-sm-1 col-form-label"for="basic-icon-default-fullname">Description</label>
+                                                    <label class="col-sm-1 col-form-label">Answer (Hindi)</label>
                                                     <div class="col-sm-11">
-                                                        <div id="description"><%- editdata.description %></div>
+                                                        <div class="input-group input-group-merge">
+                                                            <input type="text" class="form-control" name="answer_hi" placeholder="उत्तर (हिंदी)" value="<%= typeof editdata.answer === 'string' ? (editdata.answer_hi || '') : (editdata.answer && editdata.answer.hi || '') %>"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label"for="basic-icon-default-fullname">Description (English)</label>
+                                                    <div class="col-sm-11">
+                                                        <div id="description"><%- typeof editdata.description === 'string' ? editdata.description : (editdata.description && editdata.description.en || '') %></div>
                                                         <input name="description" type="hidden">
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-1 col-form-label">Description (Hindi)</label>
+                                                    <div class="col-sm-11">
+                                                        <div id="descriptionHi"><%- typeof editdata.description === 'string' ? (editdata.description_hi || '') : (editdata.description && editdata.description.hi || '') %></div>
+                                                        <input name="description_hi" type="hidden" value="<%= typeof editdata.description === 'string' ? (editdata.description_hi || '') : (editdata.description && editdata.description.hi || '') %>">
                                                     </div>
                                                 </div>
                                             </div>
@@ -370,6 +506,24 @@
         window.addEventListener('DOMContentLoaded', function() {
             const categoryId = document.getElementById('defaultSelect').value;
             updateOptions(categoryId);
+            updateOptionFields();
+        });
+
+        // Show/hide option sections based on the selected question type
+        function updateOptionFields() {
+            var type = document.querySelector('input[name="question_type"]:checked');
+            type = type ? type.value : 'text_only';
+            var text = document.querySelector('.text-wrap');
+            var hindi = document.querySelector('.hindi-options-wrap');
+            var img = document.querySelector('.option-image-fields');
+            var audio = document.querySelector('.audio-wrap');
+            if (text) text.style.display = (type === 'text_only' || type === 'true_false' || type === 'images') ? '' : 'none';
+            if (hindi) hindi.style.display = (type === 'text_only' || type === 'true_false' || type === 'images' || type === 'audio') ? '' : 'none';
+            if (img) img.style.display = (type === 'images') ? '' : 'none';
+            if (audio) audio.style.display = (type === 'audio') ? '' : 'none';
+        }
+        document.querySelectorAll('input[name="question_type"]').forEach(function (radio) {
+            radio.addEventListener('change', updateOptionFields);
         });
 
         // Initialize Quill editor for question title
@@ -400,6 +554,28 @@
                 questionTitleQuill.root.innerHTML = questionTitleInput.value;
             }
 
+            // Quill editor for question title (Hindi)
+            const questionTitleHiQuill = new Quill('#questionTitleHi', {
+                modules: {
+                    toolbar: questionTitleToolbarOptions
+                },
+                placeholder: 'हिंदी में प्रश्न शीर्षक दर्ज करें...',
+                theme: 'snow',
+            });
+            const questionTitleHiInput = document.querySelector('input[name=question_title_hi]');
+            if (questionTitleHiInput && questionTitleHiInput.value) {
+                questionTitleHiQuill.root.innerHTML = questionTitleHiInput.value;
+            }
+
+            // Quill editor for description (Hindi)
+            const descriptionHiQuill = new Quill('#descriptionHi', {
+                modules: {
+                    toolbar: questionTitleToolbarOptions
+                },
+                placeholder: 'हिंदी में विवरण दर्ज करें...',
+                theme: 'snow',
+            });
+
             // Paste plaintext into the editor
             questionTitleQuill.clipboard.addMatcher(Node.ELEMENT_NODE, function (node, delta) {
                 var plaintext = node.innerText
@@ -407,19 +583,27 @@
                 return new Delta().insert(plaintext)
             });
 
-            // Update the myFunction to include question title
+            // Update the myFunction to include all editors (explicit selectors)
             window.myFunction = function() {
-                // Get description editor content
-                var editor = document.getElementsByClassName('ql-editor')[0].innerHTML
                 var about = document.querySelector('input[name=description]');
-                about.value = editor
+                var descriptionEditor = document.querySelector('#description .ql-editor');
+                if (descriptionEditor) {
+                    about.value = descriptionEditor.innerHTML;
+                }
 
-                // Get question title editor content
                 var questionTitleEditor = document.querySelector('#questionTitle .ql-editor');
                 if (questionTitleEditor) {
-                    var questionTitleContent = questionTitleEditor.innerHTML;
-                    var questionTitleInput = document.querySelector('input[name=question_title]');
-                    questionTitleInput.value = questionTitleContent;
+                    document.querySelector('input[name=question_title]').value = questionTitleEditor.innerHTML;
+                }
+
+                var questionTitleHiEditor = document.querySelector('#questionTitleHi .ql-editor');
+                if (questionTitleHiEditor) {
+                    document.querySelector('input[name=question_title_hi]').value = questionTitleHiEditor.innerHTML;
+                }
+
+                var descriptionHiEditor = document.querySelector('#descriptionHi .ql-editor');
+                if (descriptionHiEditor) {
+                    document.querySelector('input[name=description_hi]').value = descriptionHiEditor.innerHTML;
                 }
             };
         });

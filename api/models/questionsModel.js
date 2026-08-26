@@ -1,4 +1,18 @@
 const mongoose = require('mongoose');
+
+// Bilingual sub-document: { en: "...", hi: "..." }
+const BilingualSchema = mongoose.Schema({
+    en: { type: String, default: '' },
+    hi: { type: String, default: '' }
+}, { _id: false });
+
+// Option value: text is bilingual, image is shared across languages
+// e.g. { text: { en: "Paris", hi: "पेरिस" }, image: "abc.jpg" }
+const OptionValueSchema = mongoose.Schema({
+    text: { type: BilingualSchema, default: () => ({}) },
+    image: { type: String, default: '' }
+}, { _id: false });
+
 const QuizSchema = mongoose.Schema({
 
     categoryId:{
@@ -24,9 +38,8 @@ const QuizSchema = mongoose.Schema({
         trim: true
     },
     question_title: {
-        type: String,
-        required: true,
-        trim: true
+        type: BilingualSchema,
+        default: () => ({}),
     },
     image:{
         type: String
@@ -34,20 +47,19 @@ const QuizSchema = mongoose.Schema({
     audio:{
         type: String
     },
-    // Updated option fields to accept either simple string or {text,image} object
     option: {
-        a: { type: mongoose.Schema.Types.Mixed, default: '' },
-        b: { type: mongoose.Schema.Types.Mixed, default: '' },
-        c: { type: mongoose.Schema.Types.Mixed, default: '' },
-        d: { type: mongoose.Schema.Types.Mixed, default: '' }
+        a: { type: OptionValueSchema, default: () => ({}) },
+        b: { type: OptionValueSchema, default: () => ({}) },
+        c: { type: OptionValueSchema, default: () => ({}) },
+        d: { type: OptionValueSchema, default: () => ({}) }
     },
     answer:{
-        type:String,
-        required:true,
-        trim: true
+        type: BilingualSchema,
+        default: () => ({}),
     },
     description:{
-        type:String 
+        type: BilingualSchema,
+        default: () => ({}),
     },
     is_active:{
         type:Number,

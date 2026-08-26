@@ -25,6 +25,7 @@
                                                     <th>Sr No</th>
                                                     <th>Image</th>
                                                     <th>Category</th>
+                                                    <th>Subcategory</th>
                                                     <th>Quiz Name</th>
                                                     <th>Questions Amount</th>
                                                     <th>is Enable</th>
@@ -45,6 +46,9 @@
                                                         </td>
                                                         <td>
                                                             <span class="badge bg-label-primary"><%= quizData.categoryId ? quizData.categoryId.name : 'No Category' %></span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-label-info"><%= quizData.subcategoryId ? quizData.subcategoryId.name : '-' %></span>
                                                         </td>
                                                         <td>
                                                             <strong><%= quizData.name %></strong>

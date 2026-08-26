@@ -1359,46 +1359,61 @@ const removeNonBreakingSpaces = (html) => {
   return html.replace(/&nbsp;/g, ""); // Remove &nbsp;
 };
 
+// Bilingual helpers — storage is nested {en, hi}; legacy flat strings are
+// normalized too so old documents keep working before/after migration.
+const bi = (v) => {
+  if (typeof v === "string") return { en: v, hi: "" };
+  return { en: v?.en || "", hi: v?.hi || "" };
+};
+const optionTextEn = (o) =>
+  typeof o === "string" ? o : typeof o?.text === "string" ? o.text : o?.text?.en || "";
+const optionTextHi = (o) =>
+  typeof o === "string" ? "" : typeof o?.text === "string" ? "" : o?.text?.hi || "";
+const optionImage = (o) => (typeof o === "object" && o ? o.image || "" : "");
+
+// Nested bilingual question shape for the mobile app:
+//   question_title / answer / description: { en, hi }
+//   option: { a: { text: { en, hi }, image }, ... }
+const toAppQuestion = (question) => {
+  const title = bi(question.question_title);
+  const descRaw = bi(question.description);
+  const stripBr = (s) => String(s || "").replace(/<p><br><\/p>/g, "");
+  const answer = bi(question.answer);
+  const opt = (key) => {
+    const o = question.option?.[key];
+    if (typeof o === "string") {
+      return { text: { en: o, hi: "" }, image: "" };
+    }
+    const t =
+      typeof o?.text === "string"
+        ? { en: o.text, hi: "" }
+        : bi(o?.text);
+    return { text: { en: t.en, hi: t.hi }, image: optionImage(o) };
+  };
+  return {
+    question_title: { en: title.en, hi: title.hi },
+    option: { a: opt("a"), b: opt("b"), c: opt("c"), d: opt("d") },
+    answer: { en: answer.en, hi: answer.hi },
+    description: { en: stripBr(descRaw.en), hi: stripBr(descRaw.hi) },
+  };
+};
+
 // Get Questions
 const GetQuestions = async (req, res) => {
   try {
-    let questions = await Questions.find({ is_active: 1 }).populate([
-      "categoryId",
-      "quizId",
-    ]);
+    let questions = await Questions.find({ is_active: 1 })
+      .populate(["categoryId", "quizId"])
+      .lean();
 
     if (questions.length > 0) {
       const questionsData = questions.map((question) => ({
         _id: question._id,
-        categoryId: question.categoryId._id,
-        quizId: question.quizId._id,
-        question_title: question.question_title,
+        categoryId: question.categoryId?._id || null,
+        quizId: question.quizId?._id || null,
         question_type: question.question_type,
         image: question.image,
         audio: question.audio,
-        answer: question.answer,
-        description: question.description
-          ? question.description.replace(/<p><br><\/p>/g, "")
-          : "",
-        //"description": question.description.replace(/<[^>]*>?/gm, ''),
-        option: {
-          a: {
-            text: question.option?.a?.text || question.option?.a || "",
-            image: question.option?.a?.image || "",
-          },
-          b: {
-            text: question.option?.b?.text || question.option?.b || "",
-            image: question.option?.b?.image || "",
-          },
-          c: {
-            text: question.option?.c?.text || question.option?.c || "",
-            image: question.option?.c?.image || "",
-          },
-          d: {
-            text: question.option?.d?.text || question.option?.d || "",
-            image: question.option?.d?.image || "",
-          },
-        },
+        ...toAppQuestion(question),
       }));
 
       res.json({
@@ -1427,53 +1442,31 @@ const GetQuestionsByQuizId = async (req, res) => {
     let questions = await Questions.find({
       quizId: req.body.quizId,
       is_active: 1,
-    }).populate(["categoryId", "subcategoryId", "quizId"]);
+    }).populate(["categoryId", "subcategoryId", "quizId"]).lean();
     console.log("Questions found:", questions.length);
     if (questions.length > 0) {
       const questionsData = questions.map((question) => ({
         _id: question._id,
-        categoryId: question.categoryId._id,
+        categoryId: question.categoryId?._id || null,
         subcategoryName: question.subcategoryId?.name || '',
         subject: question.subject || '',
         quizId: {
-          _id: question.quizId._id,
-          timer_status: question.quizId.timer_status,
-          minutes_per_quiz: question.quizId.minutes_per_quiz,
+          _id: question.quizId?._id || null,
+          timer_status: question.quizId?.timer_status,
+          minutes_per_quiz: question.quizId?.minutes_per_quiz,
           correct_ans_reward_per_question:
-            question.quizId.correct_ans_reward_per_question,
-          penalty_per_question: question.quizId.penalty_per_question,
-          name: question.quizId.name,
-          image: question.quizId.image,
-          description: question.quizId.description
-            ? question.quizId.description.replace(/<p><br><\/p>/g, "")
+            question.quizId?.correct_ans_reward_per_question,
+          penalty_per_question: question.quizId?.penalty_per_question,
+          name: question.quizId?.name,
+          image: question.quizId?.image,
+          description: question.quizId?.description
+            ? String(question.quizId.description).replace(/<p><br><\/p>/g, "")
             : "",
         },
-        question_title: question.question_title,
         question_type: question.question_type,
         image: question.image,
         audio: question.audio,
-        answer: question.answer,
-        description: question.description
-          ? question.description.replace(/<p><br><\/p>/g, "")
-          : "",
-        option: {
-          a: {
-            text: question.option?.a?.text || question.option?.a || "",
-            image: question.option?.a?.image || "",
-          },
-          b: {
-            text: question.option?.b?.text || question.option?.b || "",
-            image: question.option?.b?.image || "",
-          },
-          c: {
-            text: question.option?.c?.text || question.option?.c || "",
-            image: question.option?.c?.image || "",
-          },
-          d: {
-            text: question.option?.d?.text || question.option?.d || "",
-            image: question.option?.d?.image || "",
-          },
-        },
+        ...toAppQuestion(question),
       }));
 
       const responseObj = {
@@ -1481,8 +1474,8 @@ const GetQuestionsByQuizId = async (req, res) => {
           success: 1,
           message: "questions found",
           questionsDetails: questionsData,
-          correctAnsReward: questions[0].quizId.correct_ans_reward_per_question,
-          penaltyPerQuestion: questions[0].quizId.penalty_per_question,
+          correctAnsReward: questions[0].quizId?.correct_ans_reward_per_question,
+          penaltyPerQuestion: questions[0].quizId?.penalty_per_question,
           error: 0,
         },
       };
@@ -1505,22 +1498,17 @@ const GetQuestionsByCategoryId = async (req, res) => {
     let questions = await Questions.find({
       categoryId: req.body.categoryId,
       is_active: 1,
-    }).populate(["categoryId", "quizId"]);
+    }).populate(["categoryId", "quizId"]).lean();
 
     if (questions.length > 0) {
       const questionsData = questions.map((question) => ({
         _id: question._id,
-        categoryId: question.categoryId._id,
-        quizId: question.quizId._id,
-        question_title: question.question_title,
+        categoryId: question.categoryId?._id || null,
+        quizId: question.quizId?._id || null,
         question_type: question.question_type,
         image: question.image,
         audio: question.audio,
-        answer: question.answer,
-        description: question.description
-          ? question.description.replace(/<p><br><\/p>/g, "")
-          : "",
-        option: question.option,
+        ...toAppQuestion(question),
       }));
 
       res.json({
