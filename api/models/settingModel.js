@@ -37,6 +37,14 @@ const SettingSchema = mongoose.Schema({
         type: String,
         enum: ['unverified', 'verified'],
         default: 'unverified'
+    },
+    referral_reward_points: {
+        type: Number,
+        default: 0
+    },
+    referral_discount_percent: {
+        type: Number,
+        default: 0
     }
 },
     {

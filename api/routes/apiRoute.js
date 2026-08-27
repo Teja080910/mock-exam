@@ -10,6 +10,7 @@ const Ebook = require("../models/ebookModel");
 const CarouselBanner = require("../models/carouselBannerModel");
 const googleAuthController = require("../controllers/googleAuthController");
 const Subcategory = require("../models/subcategoryModel");
+const News = require("../models/newsModel");
 // Multer for file uploads
 const multer = require("multer");
 
@@ -31,6 +32,7 @@ const upload = multer({ storage: storage });
 api_route.post("/buyPlan", AuthMiddleware, apiController.buyPlan);
 api_route.post("/verifyPayment", AuthMiddleware, apiController.verifyPayment);
 api_route.get("/fetchUserPlan", AuthMiddleware, apiController.fetchUserPlan);
+api_route.get("/getReferralInfo", AuthMiddleware, apiController.getReferralInfo);
 
 // Signup
 api_route.post("/checkregistereduser", apiController.CheckRegisteredUser);
@@ -213,5 +215,32 @@ api_route.post("/getquizbysubcategory", (req, res, next) => {
 
 // Get Category Groups
 api_route.get("/category-groups", apiController.getCategoryGroups);
+
+// Get All News
+api_route.post("/getallnews", async (req, res) => {
+  try {
+    const news = await News.find({ is_active: 1 }).sort({ createdAt: -1 });
+    const newsData = news.map((item) => ({
+      _id: item._id,
+      title: item.title,
+      description: item.description,
+      link: item.link || "",
+      createdAt: item.createdAt,
+    }));
+    res.json({
+      data: {
+        success: 1,
+        message: "News retrieved successfully.",
+        error: 0,
+        news: newsData,
+      },
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      data: { success: 0, message: "Error retrieving news.", error: 1 },
+    });
+  }
+});
 
 module.exports = api_route;

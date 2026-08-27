@@ -69,6 +69,18 @@
                                                     </div>
                                                 </div>
                                                 <div class="row mb-3">
+                                                    <label for="defaultFormControlInput" class="col-form-label col-sm-6">Referral Reward Points (Referrer)</label>
+                                                    <div class="col-sm-6">
+                                                        <input type="text" class="form-control" name="referral_reward_points" value="<%= settingData ? settingData.referral_reward_points :  ''  %>" required placeholder="Enter Referral Reward Points" id="defaultFormControlInput"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label for="defaultFormControlInput" class="col-form-label col-sm-6">Referral Discount Percent (Referred)</label>
+                                                    <div class="col-sm-6">
+                                                        <input type="text" class="form-control" name="referral_discount_percent" value="<%= settingData ? settingData.referral_discount_percent :  ''  %>" required placeholder="Enter Referral Discount Percent" id="defaultFormControlInput"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
                                                     <div class="col-md-6"></div>
                                                     <div class="col-md-6">
                                                         <button type="submit" class="btn btn-primary">Submit</button>

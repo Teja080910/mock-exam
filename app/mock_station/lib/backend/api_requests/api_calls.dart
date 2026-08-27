@@ -11,6 +11,18 @@ const _kPrivateApiFunctionName = 'ffPrivateApiCall';
 
 /// Start Quiz Group Code
 
+/// Resolves a bilingual {en, hi} value (or plain String) returned by the
+/// questions API into a single display string (prefers en, falls back hi).
+String apiBiText(dynamic v) {
+  if (v == null) return '';
+  if (v is Map) {
+    final en = v['en']?.toString() ?? '';
+    final hi = v['hi']?.toString() ?? '';
+    return en.trim().isNotEmpty ? en : hi;
+  }
+  return v.toString();
+}
+
 class QuizGroup {
   static String getBaseUrl({  
     String? token = '',
@@ -748,7 +760,7 @@ class GetquestionsbyquizidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List<String>? questionTypeList(dynamic response) => (getJsonField(
@@ -766,7 +778,7 @@ class GetquestionsbyquizidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List? optionList(dynamic response) => getJsonField(
@@ -841,7 +853,7 @@ class GetquestionsbycategoryidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List<String>? optionaList(dynamic response) => (getJsonField(
@@ -850,7 +862,7 @@ class GetquestionsbycategoryidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List<String>? optionbList(dynamic response) => (getJsonField(
@@ -859,7 +871,7 @@ class GetquestionsbycategoryidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List<String>? optioncList(dynamic response) => (getJsonField(
@@ -868,7 +880,7 @@ class GetquestionsbycategoryidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List<String>? optiondList(dynamic response) => (getJsonField(
@@ -877,7 +889,7 @@ class GetquestionsbycategoryidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List<String>? questionsList(dynamic response) => (getJsonField(
@@ -886,7 +898,7 @@ class GetquestionsbycategoryidApiCall {
         true,
       ) as List?)
           ?.withoutNulls
-          .map((x) => castToType<String>(x))
+          .map(apiBiText)
           .withoutNulls
           .toList();
   List? optionList(dynamic response) => getJsonField(

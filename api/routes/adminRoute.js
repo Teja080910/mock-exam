@@ -58,6 +58,7 @@ const EbookController = require("../controllers/ebookController");
 const CarouselBannerController = require('../controllers/carouselBannerController');
 const SubcategoryController = CategoryController;
 const categoryGroupController = require('../controllers/categoryGroupController');
+const NewsController = require('../controllers/newsController');
 
 // Login
 admin_route.get('/', adminController.loginLoad);
@@ -173,6 +174,7 @@ admin_route.post('/setting', SettingController.addSetting);
 // Notifications
 admin_route.get('/add-notification', notificationController.loadNotification);
 admin_route.post('/add-notification', notificationController.addNotification);
+admin_route.get('/view-notification', notificationController.viewNotification);
 
 // SMTP Settings
 admin_route.get('/smtp-settings', smtpController.smtpLoad);
@@ -215,6 +217,15 @@ admin_route.get('/edit-category-group', categoryGroupController.loadEditGroup);
 admin_route.post('/edit-category-group', categoryGroupController.updateGroup);
 admin_route.get('/view-category-groups', categoryGroupController.viewGroups);
 admin_route.get('/delete-category-group', categoryGroupController.deleteGroup);
+
+// News
+admin_route.get('/add-news', NewsController.loadNews);
+admin_route.post('/add-news', NewsController.addNews);
+admin_route.get('/view-news', NewsController.viewNews);
+admin_route.get('/edit-news', NewsController.editNews);
+admin_route.post('/edit-news', NewsController.updateNews);
+admin_route.get('/delete-news', NewsController.deleteNews);
+admin_route.post('/news-is-active/:id/toggle', NewsController.activeStatus);
 
 admin_route.get('*', function (req, res) {
   res.redirect('/');

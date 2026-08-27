@@ -47,6 +47,34 @@ class _QuizReviewScreenCopyCopyWidgetState
     super.dispose();
   }
 
+  /// Resolves a nested {en, hi} value (or plain String) by app language with
+  /// fallback to the other language when the selected one is empty.
+  String biText(dynamic v) {
+    if (v == null) return '';
+    if (v is Map) {
+      final en = v['en']?.toString() ?? '';
+      final hi = v['hi']?.toString() ?? '';
+      final lang = FFAppState().quizLang;
+      return lang == 'hi'
+          ? (hi.trim().isNotEmpty ? hi : en)
+          : (en.trim().isNotEmpty ? en : hi);
+    }
+    return v.toString();
+  }
+
+  /// Resolves an option object ({text: {en, hi}, image} or flattened
+  /// {text: String, image}) into display text for the app language.
+  String biOptionText(dynamic opt) {
+    if (opt is Map && opt['text'] is Map) {
+      return biText(opt['text']);
+    }
+    if (opt is Map && opt['text'] is String) {
+      return opt['text'] as String;
+    }
+    if (opt is String) return opt;
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -220,10 +248,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           children: [
                                                             TextSpan(
                                                               text:
-                                                                  getJsonField(
-                                                                quesItem,
-                                                                r'''$.question_title''',
-                                                              ).toString(),
+                                                                  biText(getJsonField(quesItem, r'''$.question_title''')),
                                                               style:
                                                                   TextStyle(),
                                                             )
@@ -353,14 +378,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       children: [
                                                         Builder(
                                                           builder: (context) {
-                                                            if (getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.option.a''',
-                                                                ) ==
-                                                                getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.answer''',
-                                                                )) {
+                                                            if (biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                               return ClipRRect(
                                                                 borderRadius:
                                                                     BorderRadius
@@ -376,14 +394,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       .cover,
                                                                 ),
                                                               );
-                                                            } else if (getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.option.a''',
-                                                                ) ==
-                                                                getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.user_answer''',
-                                                                )) {
+                                                            } else if (biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                               return Container(
                                                                 width: 26.0,
                                                                 height: 26.0,
@@ -433,10 +444,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               children: [
                                                                 TextSpan(
                                                                   text:
-                                                                      getJsonField(
-                                                                    quesItem,
-                                                                    r'''$.option.a''',
-                                                                  ).toString(),
+                                                                      biOptionText(getJsonField(quesItem, r'''$.option.a''')),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -459,14 +467,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       TextStyle(),
                                                                 ),
                                                                 TextSpan(
-                                                                  text: getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.option.a''',
-                                                                          ) ==
-                                                                          getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.user_answer''',
-                                                                          )
+                                                                  text: biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))
                                                                       ? '(Your Answer)'
                                                                       : ' ',
                                                                   style:
@@ -665,14 +666,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       children: [
                                                         Builder(
                                                           builder: (context) {
-                                                            if (getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.option.b''',
-                                                                ) ==
-                                                                getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.answer''',
-                                                                )) {
+                                                            if (biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                               return ClipRRect(
                                                                 borderRadius:
                                                                     BorderRadius
@@ -688,14 +682,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       .cover,
                                                                 ),
                                                               );
-                                                            } else if (getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.option.b''',
-                                                                ) ==
-                                                                getJsonField(
-                                                                  quesItem,
-                                                                  r'''$.user_answer''',
-                                                                )) {
+                                                            } else if (biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                               return Container(
                                                                 width: 26.0,
                                                                 height: 26.0,
@@ -745,10 +732,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               children: [
                                                                 TextSpan(
                                                                   text:
-                                                                      getJsonField(
-                                                                    quesItem,
-                                                                    r'''$.option.b''',
-                                                                  ).toString(),
+                                                                      biOptionText(getJsonField(quesItem, r'''$.option.b''')),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -771,14 +755,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       TextStyle(),
                                                                 ),
                                                                 TextSpan(
-                                                                  text: getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.option.b''',
-                                                                          ) ==
-                                                                          getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.user_answer''',
-                                                                          )
+                                                                  text: biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))
                                                                       ? '(Your Answer)'
                                                                       : ' ',
                                                                   style:
@@ -974,14 +951,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                   children: [
                                                     Builder(
                                                       builder: (context) {
-                                                        if (getJsonField(
-                                                              quesItem,
-                                                              r'''$.option.c''',
-                                                            ) ==
-                                                            getJsonField(
-                                                              quesItem,
-                                                              r'''$.answer''',
-                                                            )) {
+                                                        if (biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                           return ClipRRect(
                                                             borderRadius:
                                                                 BorderRadius
@@ -995,14 +965,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               fit: BoxFit.cover,
                                                             ),
                                                           );
-                                                        } else if (getJsonField(
-                                                              quesItem,
-                                                              r'''$.option.c''',
-                                                            ) ==
-                                                            getJsonField(
-                                                              quesItem,
-                                                              r'''$.user_answer''',
-                                                            )) {
+                                                        } else if (biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                           return Container(
                                                             width: 26.0,
                                                             height: 26.0,
@@ -1050,10 +1013,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           children: [
                                                             TextSpan(
                                                               text:
-                                                                  getJsonField(
-                                                                quesItem,
-                                                                r'''$.option.c''',
-                                                              ).toString(),
+                                                                  biOptionText(getJsonField(quesItem, r'''$.option.c''')),
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium
@@ -1076,14 +1036,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   TextStyle(),
                                                             ),
                                                             TextSpan(
-                                                              text: getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.option.c''',
-                                                                      ) ==
-                                                                      getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.user_answer''',
-                                                                      )
+                                                              text: biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))
                                                                   ? '(Your Answer)'
                                                                   : ' ',
                                                               style: TextStyle(
@@ -1128,14 +1081,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                   children: [
                                                     Builder(
                                                       builder: (context) {
-                                                        if (getJsonField(
-                                                              quesItem,
-                                                              r'''$.option.d''',
-                                                            ) ==
-                                                            getJsonField(
-                                                              quesItem,
-                                                              r'''$.answer''',
-                                                            )) {
+                                                        if (biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                           return ClipRRect(
                                                             borderRadius:
                                                                 BorderRadius
@@ -1149,14 +1095,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               fit: BoxFit.cover,
                                                             ),
                                                           );
-                                                        } else if (getJsonField(
-                                                              quesItem,
-                                                              r'''$.option.d''',
-                                                            ) ==
-                                                            getJsonField(
-                                                              quesItem,
-                                                              r'''$.user_answer''',
-                                                            )) {
+                                                        } else if (biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                           return Container(
                                                             width: 26.0,
                                                             height: 26.0,
@@ -1204,10 +1143,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           children: [
                                                             TextSpan(
                                                               text:
-                                                                  getJsonField(
-                                                                quesItem,
-                                                                r'''$.option.d''',
-                                                              ).toString(),
+                                                                  biOptionText(getJsonField(quesItem, r'''$.option.d''')),
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium
@@ -1230,14 +1166,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   TextStyle(),
                                                             ),
                                                             TextSpan(
-                                                              text: getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.option.d''',
-                                                                      ) ==
-                                                                      getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.user_answer''',
-                                                                      )
+                                                              text: biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))
                                                                   ? '(Your Answer)'
                                                                   : ' ',
                                                               style: TextStyle(
@@ -1267,11 +1196,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       SizedBox(width: 6.0)),
                                                 ),
                                               ),
-                                            if (getJsonField(
-                                                  quesItem,
-                                                  r'''$.description''',
-                                                ) !=
-                                                null)
+                                            if (biText(getJsonField(quesItem, r'''$.description''')).isNotEmpty)
                                               Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
@@ -1284,10 +1209,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       queryParameters: {
                                                         'explanation':
                                                             serializeParam(
-                                                          getJsonField(
-                                                            quesItem,
-                                                            r'''$.description''',
-                                                          ).toString(),
+                                                          biText(getJsonField(quesItem, r'''$.description''')),
                                                           ParamType.String,
                                                         ),
                                                       }.withoutNulls,
@@ -1464,10 +1386,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           children: [
                                                             TextSpan(
                                                               text:
-                                                                  getJsonField(
-                                                                questionItem,
-                                                                r'''$.question_title''',
-                                                              ).toString(),
+                                                                  biText(getJsonField(questionItem, r'''$.question_title''')),
                                                               style:
                                                                   TextStyle(),
                                                             )
@@ -1507,14 +1426,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                 children: [
                                                   Builder(
                                                     builder: (context) {
-                                                      if (getJsonField(
-                                                            questionItem,
-                                                            r'''$.option.a''',
-                                                          ) ==
-                                                          getJsonField(
-                                                            questionItem,
-                                                            r'''$.answer''',
-                                                          )) {
+                                                      if (biOptionText(getJsonField(questionItem, r'''$.option.a''')) == biText(getJsonField(questionItem, r'''$.answer'''))) {
                                                         return ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -1557,10 +1469,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       text: TextSpan(
                                                         children: [
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                              questionItem,
-                                                              r'''$.option.a''',
-                                                            ).toString(),
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.a''')),
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -1582,14 +1491,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             style: TextStyle(),
                                                           ),
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.option.a''',
-                                                                    ) ==
-                                                                    getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.answer''',
-                                                                    )
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.a''')) == biText(getJsonField(questionItem, r'''$.answer'''))
                                                                 ? '(Correct Answer)'
                                                                 : ' ',
                                                             style: TextStyle(
@@ -1627,14 +1529,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                 children: [
                                                   Builder(
                                                     builder: (context) {
-                                                      if (getJsonField(
-                                                            questionItem,
-                                                            r'''$.option.b''',
-                                                          ) ==
-                                                          getJsonField(
-                                                            questionItem,
-                                                            r'''$.answer''',
-                                                          )) {
+                                                      if (biOptionText(getJsonField(questionItem, r'''$.option.b''')) == biText(getJsonField(questionItem, r'''$.answer'''))) {
                                                         return ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -1677,10 +1572,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       text: TextSpan(
                                                         children: [
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                              questionItem,
-                                                              r'''$.option.b''',
-                                                            ).toString(),
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.b''')),
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -1702,14 +1594,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             style: TextStyle(),
                                                           ),
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.option.b''',
-                                                                    ) ==
-                                                                    getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.answer''',
-                                                                    )
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.b''')) == biText(getJsonField(questionItem, r'''$.answer'''))
                                                                 ? '(Correct Answer)'
                                                                 : ' ',
                                                             style: TextStyle(
@@ -1747,14 +1632,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                 children: [
                                                   Builder(
                                                     builder: (context) {
-                                                      if (getJsonField(
-                                                            questionItem,
-                                                            r'''$.option.c''',
-                                                          ) ==
-                                                          getJsonField(
-                                                            questionItem,
-                                                            r'''$.answer''',
-                                                          )) {
+                                                      if (biOptionText(getJsonField(questionItem, r'''$.option.c''')) == biText(getJsonField(questionItem, r'''$.answer'''))) {
                                                         return ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -1797,10 +1675,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       text: TextSpan(
                                                         children: [
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                              questionItem,
-                                                              r'''$.option.c''',
-                                                            ).toString(),
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.c''')),
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -1822,14 +1697,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             style: TextStyle(),
                                                           ),
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.option.c''',
-                                                                    ) ==
-                                                                    getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.answer''',
-                                                                    )
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.c''')) == biText(getJsonField(questionItem, r'''$.answer'''))
                                                                 ? '(Correct Answer)'
                                                                 : ' ',
                                                             style: TextStyle(
@@ -1867,14 +1735,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                 children: [
                                                   Builder(
                                                     builder: (context) {
-                                                      if (getJsonField(
-                                                            questionItem,
-                                                            r'''$.option.d''',
-                                                          ) ==
-                                                          getJsonField(
-                                                            questionItem,
-                                                            r'''$.answer''',
-                                                          )) {
+                                                      if (biOptionText(getJsonField(questionItem, r'''$.option.d''')) == biText(getJsonField(questionItem, r'''$.answer'''))) {
                                                         return ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -1917,10 +1778,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                       text: TextSpan(
                                                         children: [
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                              questionItem,
-                                                              r'''$.option.d''',
-                                                            ).toString(),
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.d''')),
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -1942,14 +1800,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             style: TextStyle(),
                                                           ),
                                                           TextSpan(
-                                                            text: getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.option.d''',
-                                                                    ) ==
-                                                                    getJsonField(
-                                                                      questionItem,
-                                                                      r'''$.answer''',
-                                                                    )
+                                                            text: biOptionText(getJsonField(questionItem, r'''$.option.d''')) == biText(getJsonField(questionItem, r'''$.answer'''))
                                                                 ? '(Correct Answer)'
                                                                 : ' ',
                                                             style: TextStyle(

@@ -20,6 +20,8 @@
                                                     <th>Email</th>
                                                     <th>Phone</th>
                                                     <th>Points</th>
+                                                    <th>Referral Code</th>
+                                                    <th>Referred By</th>
                                                     <th>Verify</th>
                                                     <th>Action</th>
                                                 </tr>
@@ -54,6 +56,16 @@
                                                             </td>
                                                             <td>
                                                                 <strong><%= users[i].points %></strong>
+                                                            </td>
+                                                            <td>
+                                                                <%= users[i].referral_code ? users[i].referral_code : '-' %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (users[i].referred_by && users[i].referred_by.username) { %>
+                                                                    <%= users[i].referred_by.username %>
+                                                                <% } else { %>
+                                                                    -
+                                                                <% } %>
                                                             </td>
                                                             <td>
                                                                 <% if (users[i].is_verified=="1" ) { %>

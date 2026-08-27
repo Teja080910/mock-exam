@@ -6,13 +6,25 @@ import '/backend/schema/util/firestore_util.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
 
+/// Resolves a bilingual {en, hi} value (or plain String) to a single string,
+/// preferring English and falling back to Hindi when English is empty.
+String resolveBiText(dynamic v) {
+  if (v == null) return '';
+  if (v is Map) {
+    final en = v['en']?.toString() ?? '';
+    final hi = v['hi']?.toString() ?? '';
+    return en.trim().isNotEmpty ? en : hi;
+  }
+  return v.toString();
+}
+
 class OptionModel {
   final String text;
   final String image;
   OptionModel({required this.text, required this.image});
 
   factory OptionModel.fromMap(Map<String, dynamic> data) => OptionModel(
-    text: data['text'] ?? '',
+    text: resolveBiText(data['text']),
     image: data['image'] ?? '',
   );
 
@@ -72,9 +84,9 @@ class QuesModelStruct extends FFFirebaseStruct {
   OptionModel? get optionD => _optionD;
 
   static QuesModelStruct fromMap(Map<String, dynamic> data) => QuesModelStruct(
-        questionTitle: data['question_title'] as String?,
+        questionTitle: resolveBiText(data['question_title']),
         questionType: data['question_type'] as String?,
-        answer: data['answer'] as String?,
+        answer: resolveBiText(data['answer']),
         optionA: data['option'] != null && data['option']['a'] != null ? OptionModel.fromMap(data['option']['a']) : null,
         optionB: data['option'] != null && data['option']['b'] != null ? OptionModel.fromMap(data['option']['b']) : null,
         optionC: data['option'] != null && data['option']['c'] != null ? OptionModel.fromMap(data['option']['c']) : null,

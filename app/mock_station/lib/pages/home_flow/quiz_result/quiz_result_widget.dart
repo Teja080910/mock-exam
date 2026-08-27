@@ -91,11 +91,29 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     return '';
   }
 
+  // Resolves a nested {en, hi} value (or plain String) by app language with
+  // fallback to the other language when the selected one is empty.
+  String biText(dynamic v) {
+    if (v == null) return '';
+    if (v is Map) {
+      final en = v['en']?.toString() ?? '';
+      final hi = v['hi']?.toString() ?? '';
+      final lang = FFAppState().quizLang;
+      return lang == 'hi'
+          ? (hi.trim().isNotEmpty ? hi : en)
+          : (en.trim().isNotEmpty ? en : hi);
+    }
+    return v.toString();
+  }
+
   // Helper function to extract option text
   String extractOptionText(dynamic optionData) {
     if (optionData is Map) {
       final text = getJsonField(optionData, r'$.text');
       if (text is Map) {
+        if (text['en'] != null || text['hi'] != null) {
+          return biText(text);
+        }
         return getJsonField(text, r'$.text')?.toString() ?? '';
       } else if (text != null) {
         return text.toString();
@@ -664,10 +682,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       final options = _optionMap(item);
       final userAnswer = _cleanText((item is Map ? item['user_answer'] : null) ?? questionData['user_answer']).toLowerCase();
       final correctAnswer = _cleanText(
-        (item is Map ? item['correct_answer'] : null) ??
-            (item is Map ? item['answer'] : null) ??
-            questionData['correct_answer'] ??
-            questionData['answer'],
+        biText(
+          (item is Map ? item['correct_answer'] : null) ??
+              (item is Map ? item['answer'] : null) ??
+              questionData['correct_answer'] ??
+              questionData['answer'],
+        ),
       );
       final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
       final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
@@ -890,10 +910,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       final options = _optionMap(q);
       final userAnswer = _cleanText((q is Map ? q['user_answer'] : null) ?? questionData['user_answer']).toLowerCase();
       final correctAnswer = _cleanText(
-        (q is Map ? q['correct_answer'] : null) ??
-            (q is Map ? q['answer'] : null) ??
-            questionData['correct_answer'] ??
-            questionData['answer'],
+        biText(
+          (q is Map ? q['correct_answer'] : null) ??
+              (q is Map ? q['answer'] : null) ??
+              questionData['correct_answer'] ??
+              questionData['answer'],
+        ),
       );
       final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
       final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
@@ -971,7 +993,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         final quesItem = questions[quesIndex];
         final options = quesItem['option'] ?? {};
         final userAnswer = quesItem['user_answer'];
-        final correctAnswer = quesItem['correct_answer'] ?? quesItem['answer'];
+        final correctAnswer =
+            biText(quesItem['correct_answer'] ?? quesItem['answer']);
 
         return Container(
           width: double.infinity,
@@ -1011,8 +1034,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       child: _buildQuestionHtmlWidget(
                         context: context,
                         questionHtml:
-                            getJsonField(quesItem, r'''$.question_title''')
-                                .toString(),
+                            biText(getJsonField(quesItem, r'''$.question_title''')),
                       ),
                     ),
                   ],
@@ -1064,10 +1086,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       .toLowerCase();
 
                   final optionText = option != null && option['text'] != null
-                      ? (option['text'] is Map
-                          ? (option['text']['text'] ??
-                              option['text'].toString())
-                          : option['text'].toString())
+                      ? extractOptionText(option)
                       : '';
 
                   final optionTextNormalized = normalize(optionText);
@@ -1220,7 +1239,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         final questionItem = questions[questionIndex];
         final options = questionItem['option'] ?? {};
         final correctAnswer =
-            questionItem['correct_answer'] ?? questionItem['answer'];
+            biText(questionItem['correct_answer'] ?? questionItem['answer']);
 
         return Container(
           width: double.infinity,
@@ -1260,8 +1279,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       child: _buildQuestionHtmlWidget(
                         context: context,
                         questionHtml:
-                            getJsonField(questionItem, r'''$.question_title''')
-                                .toString(),
+                            biText(getJsonField(questionItem, r'''$.question_title''')),
                       ),
                     ),
                   ],
@@ -1361,10 +1379,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       .toLowerCase();
 
                   final optionText = option != null && option['text'] != null
-                      ? (option['text'] is Map
-                          ? (option['text']['text'] ??
-                              option['text'].toString())
-                          : option['text'].toString())
+                      ? extractOptionText(option)
                       : '';
 
                   final optionTextNormalized = normalize(optionText);
@@ -1705,6 +1720,11 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final option = options[key];
     if (option is Map) {
       final textValue = getJsonField(option, r'''$.text''');
+      if (textValue is Map &&
+          (textValue['en'] != null || textValue['hi'] != null)) {
+        final text = _cleanText(biText(textValue));
+        if (text.isNotEmpty) return text;
+      }
       final nestedText = textValue is Map
           ? getJsonField(textValue, r'''$.text''') ?? getJsonField(textValue, r'''$.value''')
           : textValue;

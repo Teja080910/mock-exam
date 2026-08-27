@@ -770,6 +770,14 @@ class FFAppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Language selected in the exam UI ('en' or 'hi').
+  String _quizLang = 'en';
+  String get quizLang => _quizLang;
+  set quizLang(String value) {
+    _quizLang = value;
+    notifyListeners();
+  }
+
   int _LinearBarTimer = 6;
   int get LinearBarTimer => _LinearBarTimer;
   set LinearBarTimer(int value) {

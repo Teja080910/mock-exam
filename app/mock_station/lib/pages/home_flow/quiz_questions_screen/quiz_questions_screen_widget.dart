@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'quiz_questions_screen_model.dart';
-import 'package:google_cloud_translation/google_cloud_translation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
@@ -61,12 +60,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Translation related state
-  late Translation _translation;
+  // Language toggle state ('en' or 'hi') — uses Hindi content entered from admin
   String _selectedLang = 'en';
-  String _translatedQuestion = '';
-  List<String> _translatedOptions = [];
-  bool _isTranslating = false;
 
   // Track selected option index for each question
   Map<int, int> selectedOptionPerQuestion = {};
@@ -195,12 +190,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   }
 
   String _resolveQuestionHtml(dynamic questionItem) {
-    final rawHtml = _selectedLang == 'en'
-        ? getJsonField(questionItem, r'''$.question_title''').toString()
-        : _translatedQuestion.isNotEmpty
-            ? _translatedQuestion
-            : getJsonField(questionItem, r'''$.question_title''').toString();
-    return rawHtml.replaceAll('&quot;', '"');
+    final rawHtml =
+        _biText(questionItem, r'''$.question_title''').replaceAll('&quot;', '"');
+    return rawHtml;
   }
 
   Map<String, Style> _questionHtmlStyle(BuildContext context) {
@@ -496,6 +488,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8.0),
+                  _buildLanguageToggle(),
                   const SizedBox(width: 8.0),
                   if (widget.image != null && widget.image!.isNotEmpty)
                     ClipOval(
@@ -814,9 +808,6 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       });
     });
     _model = createModel(context, () => QuizQuestionsScreenModel());
-    _translation = Translation(
-        apiKey:
-            'AIzaSyCsrdktiTiJHrsd9n3EZ323XksrqVBIUzw'); // <-- Replace with your API key
 
     // Lock the app to the quiz flow while the quiz is open
     FFAppState().isQuizActive = true;
@@ -885,24 +876,82 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     super.didChangeDependencies();
   }
 
-  Future<void> _translateQuestionAndOptions(
-      String question, List<String> options) async {
+  void _toggleLanguage() {
     setState(() {
-      _isTranslating = true;
+      _selectedLang = _selectedLang == 'en' ? 'hi' : 'en';
     });
-    final translatedQ =
-        await _translation.translate(text: question, to: _selectedLang);
-    final translatedOpts = <String>[];
-    for (final opt in options) {
-      final t = await _translation.translate(text: opt, to: _selectedLang);
-      translatedOpts.add(t.translatedText);
+    FFAppState().quizLang = _selectedLang;
+    _invalidateQuestionHtmlCache();
+  }
+
+  /// Picks text by language with fallback to the other language when empty.
+  String biPick(String? en, String? hi, String lang) => lang == 'hi'
+      ? ((hi ?? '').trim().isNotEmpty ? hi! : (en ?? ''))
+      : ((en ?? '').trim().isNotEmpty ? en! : (hi ?? ''));
+
+  /// Reads ONE json path expected to hold a nested {en, hi} map and picks the
+  /// text for [_selectedLang], falling back to the other language when empty.
+  String _biText(dynamic questionItem, String basePath) {
+    final v = getJsonField(questionItem, basePath);
+    if (v is Map) {
+      return biPick(
+          v['en']?.toString(), v['hi']?.toString(), _selectedLang);
     }
-    setState(() {
-      _translatedQuestion = translatedQ.translatedText;
-      _translatedOptions = translatedOpts;
-      _isTranslating = false;
-      _invalidateQuestionHtmlCache();
-    });
+    return v == null ? '' : v.toString();
+  }
+
+  /// Resolves the correct answer text for the selected language.
+  String _answerText(dynamic q) => _biText(q, r'''$.answer''');
+
+  /// Resolves an option object ({text: {en, hi}, image}) into display text.
+  String optionBiText(dynamic option) {
+    if (option is Map && option['text'] is Map) {
+      final t = option['text'] as Map;
+      return biPick(
+          t['en']?.toString(), t['hi']?.toString(), _selectedLang);
+    }
+    if (option is Map && option['text'] is String) {
+      return option['text'] as String;
+    }
+    return '';
+  }
+
+  Widget _buildLanguageToggle() {
+    final isHi = _selectedLang == 'hi';
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20.0),
+        onTap: _toggleLanguage,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+          decoration: BoxDecoration(
+            color: isHi ? const Color(0xFF4338CA) : const Color(0xFFEEEBFF),
+            borderRadius: BorderRadius.circular(20.0),
+            border: Border.all(color: const Color(0xFFC7BFFF)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.translate_rounded,
+                size: 16.0,
+                color: isHi ? Colors.white : const Color(0xFF4338CA),
+              ),
+              const SizedBox(width: 4.0),
+              Text(
+                isHi ? 'हिं' : 'EN',
+                style: TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w700,
+                  color: isHi ? Colors.white : const Color(0xFF4338CA),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -1355,64 +1404,38 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           categorywisequizItem,
                                                                           r'''$.option.d''');
 
-                                                                      String extractOptionText(
-                                                                          dynamic
-                                                                              option) {
-                                                                        if (option
-                                                                                is Map &&
-                                                                            option['text']
-                                                                                is String) {
-                                                                          return option[
-                                                                              'text'];
-                                                                        } else if (option
-                                                                                is Map &&
-                                                                            option['text']
-                                                                                is Map &&
-                                                                            option['text']['text']
-                                                                                is String) {
-                                                                          return option['text']
-                                                                              [
-                                                                              'text'];
-                                                                        }
-                                                                        return '';
-                                                                      }
-
                                                                       final optionAImage = (optionA is Map &&
                                                                               optionA['image'] !=
                                                                                   null)
                                                                           ? optionA['image']
                                                                               .toString()
                                                                           : '';
-                                                                      final optionAText =
-                                                                          extractOptionText(
-                                                                              optionA);
-                                                                      final optionBImage = (optionB is Map &&
-                                                                              optionB['image'] !=
-                                                                                  null)
-                                                                          ? optionB['image']
-                                                                              .toString()
-                                                                          : '';
-                                                                      final optionBText =
-                                                                          extractOptionText(
-                                                                              optionB);
-                                                                      final optionCImage = (optionC is Map &&
-                                                                              optionC['image'] !=
-                                                                                  null)
-                                                                          ? optionC['image']
-                                                                              .toString()
-                                                                          : '';
-                                                                      final optionCText =
-                                                                          extractOptionText(
-                                                                              optionC);
-                                                                      final optionDImage = (optionD is Map &&
-                                                                              optionD['image'] !=
-                                                                                  null)
-                                                                          ? optionD['image']
-                                                                              .toString()
-                                                                          : '';
-                                                                      final optionDText =
-                                                                          extractOptionText(
-                                                                              optionD);
+                                                                      final optionAText = optionBiText(
+                                                                          optionA);
+                                                                       final optionBImage = (optionB is Map &&
+                                                                               optionB['image'] !=
+                                                                                   null)
+                                                                           ? optionB['image']
+                                                                               .toString()
+                                                                           : '';
+                                                                       final optionBText = optionBiText(
+                                                                            optionB);
+                                                                       final optionCImage = (optionC is Map &&
+                                                                               optionC['image'] !=
+                                                                                   null)
+                                                                           ? optionC['image']
+                                                                               .toString()
+                                                                           : '';
+                                                                       final optionCText = optionBiText(
+                                                                            optionC);
+                                                                       final optionDImage = (optionD is Map &&
+                                                                               optionD['image'] !=
+                                                                                   null)
+                                                                           ? optionD['image']
+                                                                               .toString()
+                                                                           : '';
+                                                                       final optionDText = optionBiText(
+                                                                            optionD);
                                                                       final questionHtml =
                                                                           _resolveQuestionHtml(
                                                                               categorywisequizItem);
@@ -1539,7 +1562,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                         ),
                                                                                       _buildOptionTile(
                                                                                         label: 'A',
-                                                                                        text: _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
+                                                                                        text: optionAText,
                                                                                         isSelected: selectedIndex == 0,
                                                                                         onTap: () async {
                                                                                           if (quizAutoSubmitted) return;
@@ -1551,7 +1574,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.a''').toString();
-                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                             FFAppState().selectedColorIndex = 0;
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'a';
@@ -1562,7 +1585,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       ),
                                                                                       _buildOptionTile(
                                                                                         label: 'B',
-                                                                                        text: _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
+                                                                                        text: optionBText,
                                                                                         isSelected: selectedIndex == 1,
                                                                                         onTap: () async {
                                                                                           if (quizAutoSubmitted) return;
@@ -1574,7 +1597,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.b''').toString();
-                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                             FFAppState().selectedColorIndex = 1;
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'b';
@@ -1585,7 +1608,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       ),
                                                                                       _buildOptionTile(
                                                                                         label: 'C',
-                                                                                        text: _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
+                                                                                        text: optionCText,
                                                                                         isSelected: selectedIndex == 2,
                                                                                         onTap: () async {
                                                                                           if (quizAutoSubmitted) return;
@@ -1597,7 +1620,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.c''').toString();
-                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 2;
                                                                                             FFAppState().selectedColorIndex = 2;
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'c';
@@ -1608,7 +1631,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                       ),
                                                                                       _buildOptionTile(
                                                                                         label: 'D',
-                                                                                        text: _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
+                                                                                        text: optionDText,
                                                                                         isSelected: selectedIndex == 3,
                                                                                         onTap: () async {
                                                                                           if (quizAutoSubmitted) return;
@@ -1620,7 +1643,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.d''').toString();
-                                                                                            _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                            _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 3;
                                                                                             FFAppState().selectedColorIndex = 3;
                                                                                             userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'd';
@@ -1681,10 +1704,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               FFAppState().selectedColorIndex = -1;
                                                                                             } else {
                                                                                               _model.userAnswer = 'True';
-                                                                                              _model.actualAnswer = getJsonField(
-                                                                                                categorywisequizItem,
-                                                                                                r'''$.answer''',
-                                                                                              ).toString();
+                                                                                              _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                               FFAppState().selectedColorIndex = 0;
                                                                                             }
@@ -1735,10 +1755,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               FFAppState().selectedColorIndex = -1;
                                                                                             } else {
                                                                                               _model.userAnswer = 'False';
-                                                                                              _model.actualAnswer = getJsonField(
-                                                                                                categorywisequizItem,
-                                                                                                r'''$.answer''',
-                                                                                              ).toString();
+                                                                                              _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                               FFAppState().selectedColorIndex = 1;
                                                                                             }
@@ -1963,7 +1980,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: GestureDetector(
                                                                                                 onTap: () {
                                                                                                   _model.userAnswer = 'a';
-                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                                   FFAppState().selectedColorIndex = 0;
                                                                                                   userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
@@ -1995,7 +2012,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: GestureDetector(
                                                                                                 onTap: () {
                                                                                                   _model.userAnswer = 'b';
-                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                                   FFAppState().selectedColorIndex = 1;
                                                                                                   userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
@@ -2027,7 +2044,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: GestureDetector(
                                                                                                 onTap: () {
                                                                                                   _model.userAnswer = 'c';
-                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 2;
                                                                                                   FFAppState().selectedColorIndex = 2;
                                                                                                   userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
@@ -2059,7 +2076,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: GestureDetector(
                                                                                                 onTap: () {
                                                                                                   _model.userAnswer = 'd';
-                                                                                                  _model.actualAnswer = getJsonField(categorywisequizItem, r'''$.answer''').toString();
+                                                                                                  _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 3;
                                                                                                   FFAppState().selectedColorIndex = 3;
                                                                                                   userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
@@ -2109,24 +2126,14 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             final optionD =
                                                                                 getJsonField(categorywisequizItem, r'''$.option.d''');
 
-                                                                            String
-                                                                                extractOptionText(dynamic option) {
-                                                                              if (option is Map && option['text'] is String) {
-                                                                                return option['text'];
-                                                                              } else if (option is Map && option['text'] is Map && option['text']['text'] is String) {
-                                                                                return option['text']['text'];
-                                                                              }
-                                                                              return '';
-                                                                            }
-
                                                                             final optionAText =
-                                                                                extractOptionText(optionA);
+                                                                                optionBiText(optionA);
                                                                             final optionBText =
-                                                                                extractOptionText(optionB);
+                                                                                optionBiText(optionB);
                                                                             final optionCText =
-                                                                                extractOptionText(optionC);
+                                                                                optionBiText(optionC);
                                                                             final optionDText =
-                                                                                extractOptionText(optionD);
+                                                                                optionBiText(optionD);
                                                                             final questionHtml =
                                                                                 _resolveQuestionHtml(categorywisequizItem);
                                                                             final selectedIndex =
@@ -2213,10 +2220,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                 categorywisequizItem,
                                                                                                 r'''$.option.a''',
                                                                                               ).toString();
-                                                                                              _model.actualAnswer = getJsonField(
-                                                                                                categorywisequizItem,
-                                                                                                r'''$.answer''',
-                                                                                              ).toString();
+                                                                                              _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                               FFAppState().selectedColorIndex = 0;
                                                                                             }
@@ -2236,7 +2240,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: Padding(
                                                                                                 padding: EdgeInsets.all(16.0),
                                                                                                 child: Text(
-                                                                                                  _selectedLang == 'en' ? optionAText : (_translatedOptions.isNotEmpty ? _translatedOptions[0] : optionAText),
+                                                                                                  optionAText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
                                                                                                         fontSize: 16.0,
@@ -2270,10 +2274,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                 categorywisequizItem,
                                                                                                 r'''$.option.b''',
                                                                                               ).toString();
-                                                                                              _model.actualAnswer = getJsonField(
-                                                                                                categorywisequizItem,
-                                                                                                r'''$.answer''',
-                                                                                              ).toString();
+                                                                                              _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                               FFAppState().selectedColorIndex = 1;
                                                                                             }
@@ -2292,7 +2293,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: Padding(
                                                                                                 padding: EdgeInsets.all(16.0),
                                                                                                 child: Text(
-                                                                                                  _selectedLang == 'en' ? optionBText : (_translatedOptions.isNotEmpty ? _translatedOptions[1] : optionBText),
+                                                                                                  optionBText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
                                                                                                         fontSize: 16.0,
@@ -2326,10 +2327,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                 categorywisequizItem,
                                                                                                 r'''$.option.c''',
                                                                                               ).toString();
-                                                                                              _model.actualAnswer = getJsonField(
-                                                                                                categorywisequizItem,
-                                                                                                r'''$.answer''',
-                                                                                              ).toString();
+                                                                                              _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                               selectedOptionPerQuestion[categorywisequizIndex] = 2;
                                                                                               FFAppState().selectedColorIndex = 2;
                                                                                             }
@@ -2348,7 +2346,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               child: Padding(
                                                                                                 padding: EdgeInsets.all(16.0),
                                                                                                 child: Text(
-                                                                                                  _selectedLang == 'en' ? optionCText : (_translatedOptions.isNotEmpty ? _translatedOptions[2] : optionCText),
+                                                                                                  optionCText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
                                                                                                         fontSize: 16.0,
@@ -2380,10 +2378,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               categorywisequizItem,
                                                                                               r'''$.option.d''',
                                                                                             ).toString();
-                                                                                            _model.actualAnswer = getJsonField(
-                                                                                              categorywisequizItem,
-                                                                                              r'''$.answer''',
-                                                                                            ).toString();
+                                                                                            _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 3;
                                                                                             FFAppState().selectedColorIndex = 3;
                                                                                           }
@@ -2402,7 +2397,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             child: Padding(
                                                                                               padding: EdgeInsets.all(16.0),
                                                                                               child: Text(
-                                                                                                _selectedLang == 'en' ? optionDText : (_translatedOptions.isNotEmpty ? _translatedOptions[3] : optionDText),
+                                                                                                optionDText,
                                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                       fontFamily: 'Roboto',
                                                                                                       fontSize: 16.0,
@@ -2602,12 +2597,12 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               ''))
                                                                           ?.elementAtOrNull(
                                                                               _model.pageViewCurrentIndex);
-                                                                      final correctAnswer = getJsonField(
-                                                                          currentQuestion,
-                                                                          r'''$.answer''');
-                                                                      final correctAnswerStr =
-                                                                          normalizeAnswer(
-                                                                              correctAnswer);
+                                                                      final correctAnswer =
+                                                                          _answerText(
+                                                                              currentQuestion);
+                                                                       final correctAnswerStr =
+                                                                           normalizeAnswer(
+                                                                               correctAnswer);
 
                                                                       // Check if the option key matches directly
                                                                       final userKeyNormalized =
@@ -2634,12 +2629,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               '';
                                                                           if (selectedOption
                                                                               is Map) {
-                                                                            if (selectedOption['text'] is Map &&
-                                                                                selectedOption['text']['text'] != null) {
-                                                                              optionText = selectedOption['text']['text'].toString();
-                                                                            } else if (selectedOption['text'] != null) {
-                                                                              optionText = selectedOption['text'].toString();
-                                                                            }
+                                                                            optionText =
+                                                                                optionBiText(selectedOption);
                                                                           } else {
                                                                             optionText =
                                                                                 selectedOption.toString();
@@ -2666,11 +2657,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               final opt = options[key];
                                                                               String optText = '';
                                                                               if (opt is Map) {
-                                                                                if (opt['text'] is Map && opt['text']['text'] != null) {
-                                                                                  optText = opt['text']['text'].toString();
-                                                                                } else if (opt['text'] != null) {
-                                                                                  optText = opt['text'].toString();
-                                                                                }
+                                                                                optText = optionBiText(opt);
                                                                               } else {
                                                                                 optText = opt.toString();
                                                                               }
@@ -2801,6 +2788,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               is String) {
                                                                             textValue =
                                                                                 opt['text'];
+                                                                          } else if (opt['text']
+                                                                              is Map) {
+                                                                            textValue = biPick(
+                                                                                opt['text']['en']
+                                                                                    ?.toString(),
+                                                                                opt['text']['hi']
+                                                                                    ?.toString(),
+                                                                                FFAppState()
+                                                                                    .quizLang);
                                                                           } else if (opt['text'] is Map &&
                                                                               opt['text']['text'] is String) {
                                                                             textValue =
@@ -2847,9 +2843,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                         final userAnswer =
                                                                             userAnswersPerQuestion[i] ??
                                                                                 'skipped';
-                                                                        final correctAnswer = getJsonField(
-                                                                            q,
-                                                                            r'''$.answer''');
+                                                                        final correctAnswer =
+                                                                            _answerText(
+                                                                                q);
 
                                                                         // Count correct/wrong/skipped
                                                                         if (userAnswer ==
@@ -3233,18 +3229,18 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                         'subject': getJsonField(
                                                                             q,
                                                                             r'''$.subject'''),
-                                                                        'option': getJsonField(
-                                                                            q,
-                                                                            r'''$.option'''),
-                                                                        'answer': getJsonField(
-                                                                            q,
-                                                                            r'''$.answer'''),
-                                                                        'user_answer':
-                                                                            userAnswer,
-                                                                        'description': getJsonField(
-                                                                            q,
-                                                                            r'''$.description'''),
-                                                                      });
+                                                                         'option': getJsonField(
+                                                                             q,
+                                                                             r'''$.option'''),
+                                                                         'answer': getJsonField(
+                                                                             q,
+                                                                             r'''$.answer'''),
+                                                                         'user_answer':
+                                                                             userAnswer,
+                                                                         'description': getJsonField(
+                                                                             q,
+                                                                             r'''$.description'''),
+                                                                       });
                                                                     }
 
                                                                     // Update FFAppState().quesReviewList

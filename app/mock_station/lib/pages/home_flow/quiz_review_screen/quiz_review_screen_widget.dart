@@ -53,11 +53,29 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     return '';
   }
 
+  // Resolves a nested {en, hi} value (or plain String) by app language with
+  // fallback to the other language when the selected one is empty.
+  String biText(dynamic v) {
+    if (v == null) return '';
+    if (v is Map) {
+      final en = v['en']?.toString() ?? '';
+      final hi = v['hi']?.toString() ?? '';
+      final lang = FFAppState().quizLang;
+      return lang == 'hi'
+          ? (hi.trim().isNotEmpty ? hi : en)
+          : (en.trim().isNotEmpty ? en : hi);
+    }
+    return v.toString();
+  }
+
   // Helper function to extract option text
   String extractOptionText(dynamic optionData) {
     if (optionData is Map) {
       final text = getJsonField(optionData, r'$.text');
       if (text is Map) {
+        if (text['en'] != null || text['hi'] != null) {
+          return biText(text);
+        }
         return getJsonField(text, r'$.text')?.toString() ?? '';
       } else if (text != null) {
         return text.toString();

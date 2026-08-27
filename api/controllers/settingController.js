@@ -25,7 +25,9 @@ const addSetting = async (req, res) => {
                     penalty_per_question: req.body.penalty_per_question,
                     self_challenge_mode: req.body.self_challenge_mode == "on" ? 1 : 0,
                     self_challenge_correct_ans_reward_per_question: req.body.self_challenge_correct_ans_reward_per_question,
-                    self_challenge_penalty_per_question: req.body.self_challenge_penalty_per_question
+                    self_challenge_penalty_per_question: req.body.self_challenge_penalty_per_question,
+                    referral_reward_points: req.body.referral_reward_points,
+                    referral_discount_percent: req.body.referral_discount_percent
                 });
                 const saveSetting = await settingData.save();
                 if (saveSetting) {
@@ -43,7 +45,9 @@ const addSetting = async (req, res) => {
                             penalty_per_question: req.body.penalty_per_question,
                             self_challenge_mode: req.body.self_challenge_mode == "on" ? 1 : 0,
                             self_challenge_correct_ans_reward_per_question: req.body.self_challenge_correct_ans_reward_per_question,
-                            self_challenge_penalty_per_question: req.body.self_challenge_penalty_per_question
+                            self_challenge_penalty_per_question: req.body.self_challenge_penalty_per_question,
+                            referral_reward_points: req.body.referral_reward_points,
+                            referral_discount_percent: req.body.referral_discount_percent
                         }
                     },
                     { new: true }

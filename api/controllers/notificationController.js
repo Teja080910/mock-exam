@@ -13,6 +13,17 @@ const loadNotification = async (req, res) => {
     }
 }
 
+// View notifications list
+const viewNotification = async (req, res) => {
+    try {
+        const loginData = await Admin.findById({ _id: req.session.user_id });
+        const notifications = await common_Notification.find().sort({ createdAt: -1 });
+        res.render('viewNotification', { notifications: notifications, loginData: loginData });
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 // Add notification
 const addNotification = async (req, res) => {
     try {
@@ -80,5 +91,6 @@ function sendPushNotification(registrationTokens, title, body) {
 
 module.exports = {
     loadNotification,
+    viewNotification,
     addNotification
 }

@@ -188,12 +188,35 @@ const Signup = async (req, res) => {
   try {
     const pass = sha256.x2(req.body.password);
 
+    let referralCode = "";
+    let referredBy = null;
+
+    const generateReferralCode = () => randomstring.generate({ length: 8, charset: "alphanumeric", capitalization: "uppercase" });
+
+    // Generate unique referral code
+    let isUnique = false;
+    while (!isUnique) {
+      referralCode = generateReferralCode();
+      const existingCode = await User.findOne({ referral_code: referralCode });
+      if (!existingCode) isUnique = true;
+    }
+
+    // Handle referral
+    if (req.body.referralCode) {
+      const referrer = await User.findOne({ referral_code: req.body.referralCode });
+      if (referrer) {
+        referredBy = referrer._id;
+      }
+    }
+
     const userData = new User({
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       username: req.body.username,
       email: req.body.email,
       password: pass,
+      referral_code: referralCode,
+      referred_by: referredBy,
     });
 
     const emailExist = await User.findOne({ email: req.body.email });
@@ -1010,6 +1033,7 @@ const GetUser = async (req, res) => {
             total_wrong_answers: user.total_wrong_answers
               ? user.total_wrong_answers
               : 0,
+            referral_code: user.referral_code ? user.referral_code : "",
           },
           error: 0,
         },
@@ -2506,10 +2530,23 @@ const buyPlan = async (req, res) => {
     const amount = plan.price;
 
     // ============================
+    // 🎁 REFERRAL DISCOUNT
+    // ============================
+    let finalAmount = amount;
+    const user = await User.findById(userId);
+    if (user && user.referred_by) {
+      const setting = await Setting.findOne();
+      const discountPercent = setting ? setting.referral_discount_percent || 0 : 0;
+      if (discountPercent > 0) {
+        finalAmount = Math.round(amount * (100 - discountPercent)) / 100;
+      }
+    }
+
+    // ============================
     // 🔐 RAZORPAY ORDER
     // ============================
 
-    const amountInPaise = amount * 100;
+    const amountInPaise = finalAmount * 100;
 
     const order = await razorpay.orders.create({
       amount: amountInPaise,
@@ -2616,6 +2653,34 @@ const verifyPayment = async (req, res) => {
 
     await userPlan.save();
 
+    // ===============================
+    // 🎁 REFERRAL REWARD
+    // ===============================
+    const user = await User.findById(userId);
+    if (user && user.referred_by && !user.referred_reward_credited) {
+      const setting = await Setting.findOne();
+      const referrer = await User.findById(user.referred_by);
+
+      if (referrer && setting) {
+        const rewardPoints = setting.referral_reward_points || 0;
+
+        if (rewardPoints > 0) {
+          referrer.points = (referrer.points || 0) + rewardPoints;
+          await referrer.save();
+
+          await Points.create({
+            userId: referrer._id,
+            points: rewardPoints,
+            description: "Referral Reward",
+          });
+        }
+
+        // Mark referred reward as credited (one-time)
+        user.referred_reward_credited = true;
+        await user.save();
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: "Payment verified & plan activated",
@@ -2661,6 +2726,34 @@ const fetchUserPlan = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Unable to fetch user plan",
+    });
+  }
+};
+
+const getReferralInfo = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const user = await User.findById(userId);
+    const setting = await Setting.findOne();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      referralCode: user.referral_code || "",
+      rewardPoints: setting ? setting.referral_reward_points || 0 : 0,
+      discountPercent: setting ? setting.referral_discount_percent || 0 : 0,
+    });
+  } catch (error) {
+    console.error("Get Referral Info Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch referral info",
     });
   }
 };
@@ -2712,4 +2805,5 @@ module.exports = {
   buyPlan,
   verifyPayment,
   fetchUserPlan,
+  getReferralInfo,
 };

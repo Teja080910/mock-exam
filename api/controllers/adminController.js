@@ -39,14 +39,14 @@ const login = async (req, res) => {
 
 // Load dashboard
 const dashboardLoad = async (req, res) => {
-    try { 
+    try {
         await verifyAdminAccess(req, res, async () => {
             const users = await User.find();
             const questions = await Questions.find();
             const categories = await Category.find();
             const feat_categories = await Category.find({ is_feature: 1 })
             const quizzes = await Quiz.find();
-            res.render('dashboard', { users: users, questions: questions, categories: categories, quizzes: quizzes,feat_categories:feat_categories });
+            res.render('dashboard', { users: users, questions: questions, categories: categories, quizzes: quizzes, feat_categories: feat_categories });
         });
     } catch (error) {
         console.log(error.message);
@@ -146,8 +146,8 @@ const resetAdminPassword = async (req, res) => {
 const viewUsers = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
-            let loginData = await Admin.findById({_id: req.session.user_id});
-            const user = await User.find().sort({ updatedAt: -1 });
+            let loginData = await Admin.findById({ _id: req.session.user_id });
+            const user = await User.find().populate('referred_by', 'username email').sort({ updatedAt: -1 });
             res.render("viewUsers", { users: user, loginData: loginData });
         });
     } catch (error) {

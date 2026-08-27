@@ -52,6 +52,19 @@ const userSchema = new mongoose.Schema ({
     active:{
         type:Boolean,
         default:true
+    },
+    referral_code:{
+        type:String,
+        unique:true,
+        sparse:true
+    },
+    referred_by:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    referred_reward_credited:{
+        type:Boolean,
+        default:false
     }
 },
 { timestamps: true });

@@ -44,6 +44,34 @@ class _SelfChallengeQuizPageCopyWidgetState
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  /// Resolves a nested {en, hi} value (or plain String) by app language with
+  /// fallback to the other language when the selected one is empty.
+  String biText(dynamic v) {
+    if (v == null) return '';
+    if (v is Map) {
+      final en = v['en']?.toString() ?? '';
+      final hi = v['hi']?.toString() ?? '';
+      final lang = FFAppState().quizLang;
+      return lang == 'hi'
+          ? (hi.trim().isNotEmpty ? hi : en)
+          : (en.trim().isNotEmpty ? en : hi);
+    }
+    return v.toString();
+  }
+
+  /// Resolves an option object ({text: {en, hi}, image} or flattened
+  /// {text: String, image}) into display text for the app language.
+  String biOptionText(dynamic opt) {
+    if (opt is Map && opt['text'] is Map) {
+      return biText(opt['text']);
+    }
+    if (opt is Map && opt['text'] is String) {
+      return opt['text'] as String;
+    }
+    if (opt is String) return opt;
+    return '';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -550,10 +578,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                         0.0,
                                                                         24.0),
                                                             child: Text(
-                                                              getJsonField(
-                                                                selfchallengeQuizItem,
-                                                                r'''$.question_title''',
-                                                              ).toString(),
+                                                              biText(getJsonField(selfchallengeQuizItem, r'''$.question_title''')),
                                                               textAlign:
                                                                   TextAlign
                                                                       .start,
@@ -598,10 +623,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                     .transparent,
                                                             onTap: () async {
                                                               _model.userAnswer =
-                                                                  getJsonField(
-                                                                selfchallengeQuizItem,
-                                                                r'''$.option.a''',
-                                                              ).toString();
+                                                                  biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.a'''));
                                                               _model.actualAnswer =
                                                                   getJsonField(
                                                                 selfchallengeQuizItem,
@@ -644,10 +666,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                           .all(
                                                                               16.0),
                                                                   child: Text(
-                                                                    getJsonField(
-                                                                      selfchallengeQuizItem,
-                                                                      r'''$.option.a''',
-                                                                    ).toString(),
+                                                                    biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.a''')),
                                                                     style: FlutterFlowTheme.of(
                                                                             context)
                                                                         .bodyMedium
@@ -691,10 +710,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                     .transparent,
                                                             onTap: () async {
                                                               _model.userAnswer =
-                                                                  getJsonField(
-                                                                selfchallengeQuizItem,
-                                                                r'''$.option.b''',
-                                                              ).toString();
+                                                                  biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.b'''));
                                                               _model.actualAnswer =
                                                                   getJsonField(
                                                                 selfchallengeQuizItem,
@@ -737,10 +753,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                           .all(
                                                                               16.0),
                                                                   child: Text(
-                                                                    getJsonField(
-                                                                      selfchallengeQuizItem,
-                                                                      r'''$.option.b''',
-                                                                    ).toString(),
+                                                                    biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.b''')),
                                                                     style: FlutterFlowTheme.of(
                                                                             context)
                                                                         .bodyMedium
@@ -784,10 +797,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                     .transparent,
                                                             onTap: () async {
                                                               _model.userAnswer =
-                                                                  getJsonField(
-                                                                selfchallengeQuizItem,
-                                                                r'''$.option.c''',
-                                                              ).toString();
+                                                                  biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.c'''));
                                                               _model.actualAnswer =
                                                                   getJsonField(
                                                                 selfchallengeQuizItem,
@@ -830,10 +840,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                           .all(
                                                                               16.0),
                                                                   child: Text(
-                                                                    getJsonField(
-                                                                      selfchallengeQuizItem,
-                                                                      r'''$.option.c''',
-                                                                    ).toString(),
+                                                                    biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.c''')),
                                                                     style: FlutterFlowTheme.of(
                                                                             context)
                                                                         .bodyMedium
@@ -868,10 +875,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                               .transparent,
                                                           onTap: () async {
                                                             _model.userAnswer =
-                                                                getJsonField(
-                                                              selfchallengeQuizItem,
-                                                              r'''$.option.d''',
-                                                            ).toString();
+                                                                biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.d'''));
                                                             _model.actualAnswer =
                                                                 getJsonField(
                                                               selfchallengeQuizItem,
@@ -911,10 +915,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                         .all(
                                                                             16.0),
                                                                 child: Text(
-                                                                  getJsonField(
-                                                                    selfchallengeQuizItem,
-                                                                    r'''$.option.d''',
-                                                                  ).toString(),
+                                                                  biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.d''')),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium

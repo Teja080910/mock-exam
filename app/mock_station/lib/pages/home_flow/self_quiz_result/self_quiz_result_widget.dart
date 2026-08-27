@@ -158,6 +158,21 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
         .trim();
   }
 
+  // Resolves a nested {en, hi} value (or plain String) by app language with
+  // fallback to the other language when the selected one is empty.
+  String biText(dynamic v) {
+    if (v == null) return '';
+    if (v is Map) {
+      final en = v['en']?.toString() ?? '';
+      final hi = v['hi']?.toString() ?? '';
+      final lang = FFAppState().quizLang;
+      return lang == 'hi'
+          ? (hi.trim().isNotEmpty ? hi : en)
+          : (en.trim().isNotEmpty ? en : hi);
+    }
+    return v.toString();
+  }
+
   bool _isAnsweredQuestion(dynamic item) {
     final userAnswer = _cleanText(getJsonField(item, r'''$.user_answer'''));
     return userAnswer.isNotEmpty && userAnswer.toLowerCase() != 'skipped';
@@ -175,6 +190,11 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     final option = options[key];
     if (option is Map) {
       final textValue = getJsonField(option, r'''$.text''');
+      if (textValue is Map &&
+          (textValue['en'] != null || textValue['hi'] != null)) {
+        final text = _cleanText(biText(textValue));
+        if (text.isNotEmpty) return text;
+      }
       final nestedText = textValue is Map
           ? getJsonField(textValue, r'''$.text''') ?? getJsonField(textValue, r'''$.value''')
           : textValue;
@@ -203,10 +223,12 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
   }
 
   String _questionLabel(dynamic item, int index) {
+    final title = biText(getJsonField(item, r'''$.question_title'''));
     final label = _cleanText(
-      getJsonField(item, r'''$.question_title''') ??
-          getJsonField(item, r'''$.question''') ??
-          getJsonField(item, r'''$.title'''),
+      title.trim().isNotEmpty
+          ? title
+          : getJsonField(item, r'''$.question''') ??
+              getJsonField(item, r'''$.title'''),
     );
     return label.isNotEmpty ? label : 'Q${index + 1}';
   }
@@ -299,7 +321,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
   }) {
     final options = _optionMap(item);
     final userAnswer = _cleanText(getJsonField(item, r'''$.user_answer'''));
-    final answer = getJsonField(item, r'''$.answer''');
+    final answer = biText(getJsonField(item, r'''$.answer'''));
     final correctKey = _normalizedAnswerKey(answer, options);
     final userKey = _normalizedAnswerKey(userAnswer, options);
     final isAnswered = userAnswer.isNotEmpty && userAnswer.toLowerCase() != 'skipped';

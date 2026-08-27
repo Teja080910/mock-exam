@@ -51,6 +51,34 @@ class _CompletedquizzesScreenDetailWidgetState
     super.dispose();
   }
 
+  /// Resolves a nested {en, hi} value (or plain String) by app language with
+  /// fallback to the other language when the selected one is empty.
+  String biText(dynamic v) {
+    if (v == null) return '';
+    if (v is Map) {
+      final en = v['en']?.toString() ?? '';
+      final hi = v['hi']?.toString() ?? '';
+      final lang = FFAppState().quizLang;
+      return lang == 'hi'
+          ? (hi.trim().isNotEmpty ? hi : en)
+          : (en.trim().isNotEmpty ? en : hi);
+    }
+    return v.toString();
+  }
+
+  /// Resolves an option object ({text: {en, hi}, image} or flattened
+  /// {text: String, image}) into display text for the app language.
+  String biOptionText(dynamic opt) {
+    if (opt is Map && opt['text'] is Map) {
+      return biText(opt['text']);
+    }
+    if (opt is Map && opt['text'] is String) {
+      return opt['text'] as String;
+    }
+    if (opt is String) return opt;
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -271,10 +299,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                     children: [
                                                                       TextSpan(
                                                                         text:
-                                                                            getJsonField(
-                                                                          quesItem,
-                                                                          r'''$.question_title''',
-                                                                        ).toString(),
+                                                                            biText(getJsonField(quesItem, r'''$.question_title''')),
                                                                         style:
                                                                             TextStyle(),
                                                                       )
@@ -454,14 +479,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                   Builder(
                                                                     builder:
                                                                         (context) {
-                                                                      if (getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.option.a''',
-                                                                          ) ==
-                                                                          getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.answer''',
-                                                                          )) {
+                                                                      if (biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                         return ClipRRect(
                                                                           borderRadius:
                                                                               BorderRadius.circular(8.0),
@@ -476,14 +494,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                                 BoxFit.cover,
                                                                           ),
                                                                         );
-                                                                      } else if (getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.option.a''',
-                                                                          ) ==
-                                                                          getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.user_answer''',
-                                                                          )) {
+                                                                      } else if (biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                         return Container(
                                                                           width:
                                                                               26.0,
@@ -534,10 +545,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                         children: [
                                                                           TextSpan(
                                                                             text:
-                                                                                getJsonField(
-                                                                              quesItem,
-                                                                              r'''$.option.a''',
-                                                                            ).toString(),
+                                                                                biOptionText(getJsonField(quesItem, r'''$.option.a''')).toString(),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
                                                                                   fontSize: 17.0,
@@ -555,23 +563,9 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                           TextSpan(
                                                                             text:
                                                                                 () {
-                                                                              if (getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.option.a''',
-                                                                                  ) ==
-                                                                                  getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.user_answer''',
-                                                                                  )) {
+                                                                              if (biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                                 return '(Your Answer)';
-                                                                              } else if (getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.option.a''',
-                                                                                  ) ==
-                                                                                  getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.answer''',
-                                                                                  )) {
+                                                                              } else if (biOptionText(getJsonField(quesItem, r'''$.option.a''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                                 return '(Correct Answer)';
                                                                               } else {
                                                                                 return ' ';
@@ -774,14 +768,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                   Builder(
                                                                     builder:
                                                                         (context) {
-                                                                      if (getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.option.b''',
-                                                                          ) ==
-                                                                          getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.answer''',
-                                                                          )) {
+                                                                      if (biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                         return ClipRRect(
                                                                           borderRadius:
                                                                               BorderRadius.circular(8.0),
@@ -796,14 +783,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                                 BoxFit.cover,
                                                                           ),
                                                                         );
-                                                                      } else if (getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.option.b''',
-                                                                          ) ==
-                                                                          getJsonField(
-                                                                            quesItem,
-                                                                            r'''$.user_answer''',
-                                                                          )) {
+                                                                      } else if (biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                         return Container(
                                                                           width:
                                                                               26.0,
@@ -854,10 +834,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                         children: [
                                                                           TextSpan(
                                                                             text:
-                                                                                getJsonField(
-                                                                              quesItem,
-                                                                              r'''$.option.b''',
-                                                                            ).toString(),
+                                                                                biOptionText(getJsonField(quesItem, r'''$.option.b''')).toString(),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
                                                                                   fontSize: 17.0,
@@ -875,23 +852,9 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                           TextSpan(
                                                                             text:
                                                                                 () {
-                                                                              if (getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.option.b''',
-                                                                                  ) ==
-                                                                                  getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.user_answer''',
-                                                                                  )) {
+                                                                              if (biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                                 return '(Your Answer)';
-                                                                              } else if (getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.option.b''',
-                                                                                  ) ==
-                                                                                  getJsonField(
-                                                                                    quesItem,
-                                                                                    r'''$.answer''',
-                                                                                  )) {
+                                                                              } else if (biOptionText(getJsonField(quesItem, r'''$.option.b''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                                 return '(Correct Answer)';
                                                                               } else {
                                                                                 return ' ';
@@ -1092,14 +1055,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                               Builder(
                                                                 builder:
                                                                     (context) {
-                                                                  if (getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.option.c''',
-                                                                      ) ==
-                                                                      getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.answer''',
-                                                                      )) {
+                                                                  if (biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                     return ClipRRect(
                                                                       borderRadius:
                                                                           BorderRadius.circular(
@@ -1115,14 +1071,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .cover,
                                                                       ),
                                                                     );
-                                                                  } else if (getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.option.c''',
-                                                                      ) ==
-                                                                      getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.user_answer''',
-                                                                      )) {
+                                                                  } else if (biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                     return Container(
                                                                       width:
                                                                           26.0,
@@ -1174,10 +1123,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                     children: [
                                                                       TextSpan(
                                                                         text:
-                                                                            getJsonField(
-                                                                          quesItem,
-                                                                          r'''$.option.c''',
-                                                                        ).toString(),
+                                                                            biOptionText(getJsonField(quesItem, r'''$.option.c''')).toString(),
                                                                         style: FlutterFlowTheme.of(context)
                                                                             .bodyMedium
                                                                             .override(
@@ -1197,23 +1143,9 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                       TextSpan(
                                                                         text:
                                                                             () {
-                                                                          if (getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.option.c''',
-                                                                              ) ==
-                                                                              getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.user_answer''',
-                                                                              )) {
+                                                                          if (biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                             return '(Your Answer)';
-                                                                          } else if (getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.option.c''',
-                                                                              ) ==
-                                                                              getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.answer''',
-                                                                              )) {
+                                                                          } else if (biOptionText(getJsonField(quesItem, r'''$.option.c''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                             return '(Correct Answer)';
                                                                           } else {
                                                                             return ' ';
@@ -1269,14 +1201,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                               Builder(
                                                                 builder:
                                                                     (context) {
-                                                                  if (getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.option.d''',
-                                                                      ) ==
-                                                                      getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.answer''',
-                                                                      )) {
+                                                                  if (biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                     return ClipRRect(
                                                                       borderRadius:
                                                                           BorderRadius.circular(
@@ -1292,14 +1217,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .cover,
                                                                       ),
                                                                     );
-                                                                  } else if (getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.option.d''',
-                                                                      ) ==
-                                                                      getJsonField(
-                                                                        quesItem,
-                                                                        r'''$.user_answer''',
-                                                                      )) {
+                                                                  } else if (biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                     return Container(
                                                                       width:
                                                                           26.0,
@@ -1351,10 +1269,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                     children: [
                                                                       TextSpan(
                                                                         text:
-                                                                            getJsonField(
-                                                                          quesItem,
-                                                                          r'''$.option.d''',
-                                                                        ).toString(),
+                                                                            biOptionText(getJsonField(quesItem, r'''$.option.d''')).toString(),
                                                                         style: FlutterFlowTheme.of(context)
                                                                             .bodyMedium
                                                                             .override(
@@ -1374,23 +1289,9 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                       TextSpan(
                                                                         text:
                                                                             () {
-                                                                          if (getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.option.d''',
-                                                                              ) ==
-                                                                              getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.user_answer''',
-                                                                              )) {
+                                                                          if (biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.user_answer'''))) {
                                                                             return '(Your Answer)';
-                                                                          } else if (getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.option.d''',
-                                                                              ) ==
-                                                                              getJsonField(
-                                                                                quesItem,
-                                                                                r'''$.answer''',
-                                                                              )) {
+                                                                          } else if (biOptionText(getJsonField(quesItem, r'''$.option.d''')) == biText(getJsonField(quesItem, r'''$.answer'''))) {
                                                                             return '(Correct Answer)';
                                                                           } else {
                                                                             return ' ';
@@ -1425,11 +1326,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                 width: 6.0)),
                                                           ),
                                                         ),
-                                                      if ('' !=
-                                                          getJsonField(
-                                                            quesItem,
-                                                            r'''$.description''',
-                                                          ).toString())
+                                                      if ('' != biText(getJsonField(quesItem, r'''$.description''')))
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
@@ -1441,6 +1338,12 @@ class _CompletedquizzesScreenDetailWidgetState
                                                           child: FFButtonWidget(
                                                             onPressed:
                                                                 () async {
+                                                              String explanationText =
+                                                                  biText(
+                                                                      getJsonField(
+                                                                quesItem,
+                                                                r'''$.description''',
+                                                              ));
                                                               context.pushNamed(
                                                                 ExplanationPageWidget
                                                                     .routeName,
@@ -1448,10 +1351,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                     {
                                                                   'explanation':
                                                                       serializeParam(
-                                                                    getJsonField(
-                                                                      quesItem,
-                                                                      r'''$.description''',
-                                                                    ).toString(),
+                                                                    explanationText,
                                                                     ParamType
                                                                         .String,
                                                                   ),
