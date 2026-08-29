@@ -45,52 +45,61 @@ class _LogoutDialogWidgetState extends State<LogoutDialogWidget> {
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(16.0),
-          ),
+        padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+        child: Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24.0),
+          elevation: 8,
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(19.0, 31.5, 19.0, 31.5),
+            padding: EdgeInsetsDirectional.fromSTEB(24.0, 32.0, 24.0, 28.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 120.0,
-                  height: 120.0,
+                  width: 96.0,
+                  height: 96.0,
                   decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).primary,
+                    color: const Color(0xFF2563EB),
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withOpacity(0.35),
+                        blurRadius: 16.0,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   alignment: AlignmentDirectional(0.0, 0.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/logout_FILL0_wght400_GRAD0_opsz24(11)_1.svg',
-                      width: 50.0,
-                      height: 50.0,
-                      fit: BoxFit.cover,
+                  child: SvgPicture.asset(
+                    'assets/images/logout_FILL0_wght400_GRAD0_opsz24(11)_1.svg',
+                    width: 44.0,
+                    height: 44.0,
+                    fit: BoxFit.contain,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 26.0, 0.0, 0.0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
                   child: Text(
-                    'Are you sure you want to \nlog out ?',
+                    'Are you sure you want to\nlog out ?',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: 24.0,
+                          color: const Color(0xFF111827),
+                          fontSize: 22.0,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
+                          lineHeight: 1.3,
                           useGoogleFonts: false,
                         ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 26.0, 0.0, 0.0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 28.0, 0.0, 0.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -100,33 +109,32 @@ class _LogoutDialogWidgetState extends State<LogoutDialogWidget> {
                               0.0, 0.0, 8.0, 0.0),
                           child: FFButtonWidget(
                             onPressed: () async {
-                              Navigator.pop(context);
+                              await widget.onTapYes?.call();
                             },
-                            text: 'No',
+                            text: 'Yes',
                             options: FFButtonOptions(
-                              height: 56.0,
+                              height: 52.0,
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   24.0, 0.0, 24.0, 0.0),
                               iconPadding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              color: Color(0x00FFFFFF),
+                              color: const Color(0xFF2563EB),
                               textStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
                                     fontFamily: 'Roboto',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    fontSize: 18.0,
+                                    color: Colors.white,
+                                    fontSize: 16.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
                                     useGoogleFonts: false,
                                   ),
-                              elevation: 0.0,
+                              elevation: 2.0,
                               borderSide: BorderSide(
-                                color: FlutterFlowTheme.of(context).primaryText,
+                                color: Colors.transparent,
                                 width: 1.0,
                               ),
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
                           ),
                         ),
@@ -137,33 +145,32 @@ class _LogoutDialogWidgetState extends State<LogoutDialogWidget> {
                               8.0, 0.0, 0.0, 0.0),
                           child: FFButtonWidget(
                             onPressed: () async {
-                              await widget.onTapYes?.call();
+                              Navigator.pop(context);
                             },
-                            text: 'Yes',
+                            text: 'No',
                             options: FFButtonOptions(
-                              height: 56.0,
+                              height: 52.0,
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   24.0, 0.0, 24.0, 0.0),
                               iconPadding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
+                              color: Colors.white,
                               textStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
                                     fontFamily: 'Roboto',
-                                    color: FlutterFlowTheme.of(context).white,
-                                    fontSize: 18.0,
+                                    color: const Color(0xFF111827),
+                                    fontSize: 16.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
                                     useGoogleFonts: false,
-                                    lineHeight: 1.2,
                                   ),
                               elevation: 0.0,
                               borderSide: BorderSide(
-                                color: Colors.transparent,
+                                color: const Color(0xFFD1D5DB),
                                 width: 1.0,
                               ),
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
                           ),
                         ),

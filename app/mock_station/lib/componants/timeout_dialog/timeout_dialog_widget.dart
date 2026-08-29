@@ -40,6 +40,17 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
     super.dispose();
   }
 
+  Widget _buildConfettiDot(Color color, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(size * 0.3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -47,15 +58,13 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
       child: Align(
         alignment: AlignmentDirectional(0.0, 0.0),
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.circular(16.0),
-            ),
+          padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24.0),
+            elevation: 8,
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 32.0, 16.0, 32.0),
+              padding: EdgeInsetsDirectional.fromSTEB(24.0, 32.0, 24.0, 28.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -63,69 +72,77 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset(
-                        'assets/images/Group_1171274967.svg',
-                        width: 90.0,
-                        height: 90.0,
-                        fit: BoxFit.contain,
+                      SizedBox(
+                        width: 104,
+                        height: 96,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/images/Group_1171274967.svg',
+                              width: 82.0,
+                              height: 82.0,
+                              fit: BoxFit.contain,
+                            ),
+                            Positioned(top: 4, left: 6, child: _buildConfettiDot(const Color(0xFF7C3AED), 8)), // purple
+                            Positioned(top: 8, right: 8, child: _buildConfettiDot(const Color(0xFFF59E0B), 7)), // orange
+                            Positioned(bottom: 6, left: 10, child: _buildConfettiDot(const Color(0xFFEC4899), 7)), // pink
+                            Positioned(bottom: 10, right: 12, child: _buildConfettiDot(const Color(0xFF7C3AED), 6)), // purple
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 16.0),
+                      const SizedBox(width: 8.0),
                       Text(
                         "Time's Up!",
                         textAlign: TextAlign.center,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'Roboto',
+                              color: const Color(0xFF111827),
                               fontSize: 24.0,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.bold,
                               useGoogleFonts: false,
-                              lineHeight: 1.5,
                             ),
                       ),
                     ],
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 26.0, 0.0, 0.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, 28.0, 0.0, 0.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Expanded(
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                8.0, 0.0, 0.0, 0.0),
-                            child: FFButtonWidget(
-                              onPressed: () async {
-                                await widget.istimeout?.call();
-                              },
-                              text: 'View Test Result',
-                              iconData: Icons.emoji_events_rounded,
-                              options: FFButtonOptions(
-                                height: 56.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    24.0, 0.0, 24.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 8.0, 0.0),
-                                iconSize: 20.0,
-                                color: FlutterFlowTheme.of(context).primary,
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      fontFamily: 'Roboto',
-                                      color: FlutterFlowTheme.of(context).white,
-                                      fontSize: 18.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w600,
-                                      useGoogleFonts: false,
-                                      lineHeight: 1.2,
-                                    ),
-                                elevation: 0.0,
-                                borderSide: BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(12.0),
+                          child: FFButtonWidget(
+                            onPressed: () async {
+                              await widget.istimeout?.call();
+                            },
+                            text: 'View Test Result',
+                            iconData: Icons.emoji_events_rounded,
+                            options: FFButtonOptions(
+                              height: 52.0,
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  24.0, 0.0, 24.0, 0.0),
+                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 8.0, 0.0),
+                              iconSize: 20.0,
+                              color: const Color(0xFF2563EB),
+                              textStyle: FlutterFlowTheme.of(context)
+                                  .titleSmall
+                                  .override(
+                                    fontFamily: 'Roboto',
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.bold,
+                                    useGoogleFonts: false,
+                                  ),
+                              elevation: 2.0,
+                              borderSide: BorderSide(
+                                color: Colors.transparent,
+                                width: 1.0,
                               ),
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
                           ),
                         ),

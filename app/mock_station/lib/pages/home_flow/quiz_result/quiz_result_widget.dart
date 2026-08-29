@@ -6,6 +6,7 @@ import '/custom_code/utils/html_stripper.dart';
 import '/flutter_flow/flutter_flow_audio_player.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -1011,7 +1012,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(14.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1019,17 +1020,22 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Q${quesIndex + 1}. ',
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'Roboto',
-                            fontSize: 15.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
-                            useGoogleFonts: false,
-                            lineHeight: 1.5,
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3E8FF),
+                        borderRadius: BorderRadius.circular(6.0),
+                      ),
+                      child: Text(
+                        'Q${quesIndex + 1}',
+                        style: const TextStyle(
+                          color: Color(0xFF7C3AED),
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 8.0),
                     Expanded(
                       child: _buildQuestionHtmlWidget(
                         context: context,
@@ -1075,6 +1081,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       ),
                     ),
                   ),
+                const SizedBox(height: 12.0),
                 ...List.generate(options.length, (optionIndex) {
                   final optionKeys = options.keys.toList();
                   final optionKey = optionKeys[optionIndex];
@@ -1113,112 +1120,178 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 24.0,
-                          height: 24.0,
-                          child: isUserCorrect
-                              ? const Icon(Icons.check_circle,
-                                  color: Colors.green, size: 24.0)
-                              : isCorrectAnswer
-                                  ? const Icon(Icons.check_circle,
-                                      color: Colors.green, size: 24.0)
-                                  : isUserSelected
-                                      ? const Icon(Icons.cancel,
-                                          color: Colors.red, size: 24.0)
-                                      : Icon(Icons.cancel,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          size: 24.0),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                      decoration: BoxDecoration(
+                        color: isUserCorrect || isCorrectAnswer
+                            ? const Color(0xFFF0FBF4)
+                            : isUserSelected
+                                ? const Color(0xFFFFF3F3)
+                                : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(
+                          color: isUserCorrect || isCorrectAnswer
+                              ? const Color(0xFF86EFAC)
+                              : isUserSelected
+                                  ? const Color(0xFFFECACA)
+                                  : const Color(0xFFE5E7EB),
+                          width: 1.0,
                         ),
-                        const SizedBox(width: 12.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (getJsonField(quesItem,
-                                              r'''$.question_type''')
-                                          .toString() ==
-                                      'images' &&
-                                  option != null &&
-                                  option['image'] != null &&
-                                  option['image'].toString().isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      0.0, 0.0, 0.0, 8.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: CachedNetworkImage(
-                                      imageUrl:
-                                          '${FFAppConstants.imageBaseURL}${option['image']}',
-                                      width: 50.0,
-                                      height: 50.0,
-                                      fit: BoxFit.contain,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24.0,
+                            height: 24.0,
+                            alignment: Alignment.center,
+                            child: isUserCorrect || isCorrectAnswer
+                                ? const Icon(Icons.check_circle,
+                                    color: Color(0xFF16A34A), size: 22.0)
+                                : isUserSelected
+                                    ? const Icon(Icons.cancel,
+                                        color: Color(0xFFEF4444), size: 22.0)
+                                    : const Icon(Icons.cancel,
+                                        color: Color(0xFF9CA3AF), size: 22.0),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Container(
+                            width: 26.0,
+                            height: 26.0,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            child: Text(
+                              '${optionIndex + 1}',
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (getJsonField(quesItem,
+                                                r'''$.question_type''')
+                                            .toString() ==
+                                        'images' &&
+                                    option != null &&
+                                    option['image'] != null &&
+                                    option['image'].toString().isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        0.0, 0.0, 0.0, 8.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: CachedNetworkImage(
+                                        imageUrl:
+                                            '${FFAppConstants.imageBaseURL}${option['image']}',
+                                        width: 50.0,
+                                        height: 50.0,
+                                        fit: BoxFit.contain,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              RichText(
-                                textScaler:
-                                    MediaQuery.of(context).textScaler,
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: extractOptionText(option),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Roboto',
-                                            fontSize: 17.0,
-                                            letterSpacing: 0.0,
-                                            useGoogleFonts: false,
-                                            lineHeight: 1.5,
+                                RichText(
+                                  textScaler:
+                                      MediaQuery.of(context).textScaler,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: extractOptionText(option),
+                                        style: const TextStyle(
+                                          color: Color(0xFF111827),
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      if (isUserCorrect)
+                                        const TextSpan(
+                                          text:
+                                              ' (Correct Answer & Your Answer)',
+                                          style: TextStyle(
+                                            color: Color(0xFF16A34A),
+                                            fontSize: 13.0,
+                                            fontWeight: FontWeight.w700,
                                           ),
-                                    ),
-                                    if (isUserCorrect)
-                                      const TextSpan(
-                                        text:
-                                            ' (Correct Answer & Your Answer)',
-                                        style: TextStyle(
-                                          color: Color(0xFF1D66E5),
-                                          fontWeight: FontWeight.w600,
+                                        )
+                                      else if (isCorrectAnswer)
+                                        const TextSpan(
+                                          text: ' (Correct Answer)',
+                                          style: TextStyle(
+                                            color: Color(0xFF16A34A),
+                                            fontSize: 13.0,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        )
+                                      else if (isUserSelected)
+                                        const TextSpan(
+                                          text: ' (Your Answer)',
+                                          style: TextStyle(
+                                            color: Color(0xFFEF4444),
+                                            fontSize: 13.0,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      )
-                                    else if (isCorrectAnswer)
-                                      const TextSpan(
-                                        text: ' (Correct Answer)',
-                                        style: TextStyle(
-                                          color: Color(0xFF1D66E5),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      )
-                                    else if (isUserSelected)
-                                      const TextSpan(
-                                        text: ' (Your Answer)',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                  ],
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Roboto',
-                                        fontSize: 17.0,
-                                        letterSpacing: 0.0,
-                                        useGoogleFonts: false,
-                                        lineHeight: 1.5,
-                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 }),
+                const SizedBox(height: 14.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: FFButtonWidget(
+                    onPressed: () async {
+                      final desc = biText(
+                        (quesItem is Map ? quesItem['description'] : null) ??
+                            (quesItem is Map && quesItem['question'] is Map ? quesItem['question']['description'] : null),
+                      );
+                      context.pushNamed(
+                        ExplanationPageWidget.routeName,
+                        queryParameters: {
+                          'explanation': serializeParam(
+                            desc.isNotEmpty ? desc : 'No explanation available for this question.',
+                            ParamType.String,
+                          ),
+                        }.withoutNulls,
+                      );
+                    },
+                    text: 'View Solution',
+                    icon: const Icon(
+                      Icons.visibility_rounded,
+                      color: Color(0xFF1D66E5),
+                      size: 18.0,
+                    ),
+                    options: FFButtonOptions(
+                      width: double.infinity,
+                      height: 44.0,
+                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+                      color: const Color(0xFFF1F6FF),
+                      textStyle: const TextStyle(
+                        color: Color(0xFF1D66E5),
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      elevation: 0.0,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1256,7 +1329,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+            padding: const EdgeInsets.all(14.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1264,17 +1337,22 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Q${questionIndex + 1}. ',
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'Roboto',
-                            fontSize: 15.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
-                            useGoogleFonts: false,
-                            lineHeight: 1.5,
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3E8FF),
+                        borderRadius: BorderRadius.circular(6.0),
+                      ),
+                      child: Text(
+                        'Q${questionIndex + 1}',
+                        style: const TextStyle(
+                          color: Color(0xFF7C3AED),
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 8.0),
                     Expanded(
                       child: _buildQuestionHtmlWidget(
                         context: context,
@@ -1368,6 +1446,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           .disabledRestoreOnForeground,
                     ),
                   ),
+                const SizedBox(height: 12.0),
                 ...List.generate(options.length, (optionIndex) {
                   final optionKeys = options.keys.toList();
                   final optionKey = optionKeys[optionIndex];
@@ -1395,89 +1474,152 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 24.0,
-                          height: 24.0,
-                          child: isCorrectAnswer
-                              ? const Icon(Icons.check_circle,
-                                  color: Colors.green, size: 24.0)
-                              : Icon(Icons.radio_button_unchecked,
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                  size: 24.0),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                      decoration: BoxDecoration(
+                        color: isCorrectAnswer
+                            ? const Color(0xFFF0FBF4)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(
+                          color: isCorrectAnswer
+                              ? const Color(0xFF86EFAC)
+                              : const Color(0xFFE5E7EB),
+                          width: 1.0,
                         ),
-                        const SizedBox(width: 12.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (getJsonField(questionItem,
-                                              r'''$.question_type''')
-                                          .toString() ==
-                                      'images' &&
-                                  option != null &&
-                                  option['image'] != null &&
-                                  option['image'].toString().isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      0.0, 0.0, 0.0, 8.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: CachedNetworkImage(
-                                      imageUrl:
-                                          '${FFAppConstants.imageBaseURL}${option['image']}',
-                                      width: 50.0,
-                                      height: 50.0,
-                                      fit: BoxFit.contain,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24.0,
+                            height: 24.0,
+                            alignment: Alignment.center,
+                            child: isCorrectAnswer
+                                ? const Icon(Icons.check_circle,
+                                    color: Color(0xFF16A34A), size: 22.0)
+                                : const Icon(Icons.cancel,
+                                    color: Color(0xFF9CA3AF), size: 22.0),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Container(
+                            width: 26.0,
+                            height: 26.0,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            child: Text(
+                              '${optionIndex + 1}',
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (getJsonField(questionItem,
+                                                r'''$.question_type''')
+                                            .toString() ==
+                                        'images' &&
+                                    option != null &&
+                                    option['image'] != null &&
+                                    option['image'].toString().isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        0.0, 0.0, 0.0, 8.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: CachedNetworkImage(
+                                        imageUrl:
+                                            '${FFAppConstants.imageBaseURL}${option['image']}',
+                                        width: 50.0,
+                                        height: 50.0,
+                                        fit: BoxFit.contain,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              RichText(
-                                textScaler:
-                                    MediaQuery.of(context).textScaler,
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: extractOptionText(option),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Roboto',
-                                            fontSize: 17.0,
-                                            letterSpacing: 0.0,
-                                            useGoogleFonts: false,
-                                            lineHeight: 1.5,
-                                          ),
-                                    ),
-                                    if (isCorrectAnswer)
-                                      const TextSpan(
-                                        text: ' (Correct Answer)',
-                                        style: TextStyle(
-                                          color: Color(0xFF1D66E5),
+                                RichText(
+                                  textScaler:
+                                      MediaQuery.of(context).textScaler,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: extractOptionText(option),
+                                        style: const TextStyle(
+                                          color: Color(0xFF111827),
+                                          fontSize: 14.0,
                                           fontWeight: FontWeight.w600,
+                                          height: 1.4,
                                         ),
                                       ),
-                                  ],
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Roboto',
-                                        fontSize: 17.0,
-                                        letterSpacing: 0.0,
-                                        useGoogleFonts: false,
-                                        lineHeight: 1.5,
-                                      ),
+                                      if (isCorrectAnswer)
+                                        const TextSpan(
+                                          text: ' (Correct Answer)',
+                                          style: TextStyle(
+                                            color: Color(0xFF16A34A),
+                                            fontSize: 13.0,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 }),
+                const SizedBox(height: 14.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: FFButtonWidget(
+                    onPressed: () async {
+                      final desc = biText(
+                        (questionItem is Map ? questionItem['description'] : null) ??
+                            (questionItem is Map && questionItem['question'] is Map ? questionItem['question']['description'] : null),
+                      );
+                      context.pushNamed(
+                        ExplanationPageWidget.routeName,
+                        queryParameters: {
+                          'explanation': serializeParam(
+                            desc.isNotEmpty ? desc : 'No explanation available for this question.',
+                            ParamType.String,
+                          ),
+                        }.withoutNulls,
+                      );
+                    },
+                    text: 'View Solution',
+                    icon: const Icon(
+                      Icons.visibility_rounded,
+                      color: Color(0xFF1D66E5),
+                      size: 18.0,
+                    ),
+                    options: FFButtonOptions(
+                      width: double.infinity,
+                      height: 44.0,
+                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+                      color: const Color(0xFFF1F6FF),
+                      textStyle: const TextStyle(
+                        color: Color(0xFF1D66E5),
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      elevation: 0.0,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

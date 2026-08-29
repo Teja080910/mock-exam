@@ -130,6 +130,164 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
     super.dispose();
   }
 
+  Widget _buildScopeSection(BuildContext context, String title, List<CategoryGroup> groups) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 18.0, right: 16.0, bottom: 6.0),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...groups.map((group) => _buildGroupCard(context, group)),
+      ],
+    );
+  }
+
+  Widget _buildGroupCard(BuildContext context, CategoryGroup group) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 10.0, right: 16.0, bottom: 4.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  group.displayName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => CategoryViewallWidget(
+                      allowedCategoryIds: group.categories.map((c) => c.id).toSet(),
+                    ),
+                  ));
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: FlutterFlowTheme.of(context).alternate),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View All',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: FlutterFlowTheme.of(context).primary,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF2563EB)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 0,
+              mainAxisSpacing: 0,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: group.categories.length,
+            itemBuilder: (context, index) {
+              final category = group.categories[index];
+              return InkWell(
+                onTap: () {
+                  if (functions.hasCategoryAccess(
+                    FFAppState().planStatus,
+                    FFAppState().subsIsSelectedAll,
+                    FFAppState().allowedCategoryIds,
+                    category.id,
+                    group.id,
+                  )) {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => CategoryDetailPageWidget(
+                        title: category.displayName.isNotEmpty ? category.displayName : category.name,
+                        catId: category.id,
+                        image: category.image,
+                      ),
+                    ));
+                  } else {
+                    showSubscriptionDialog(context);
+                  }
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    category.image.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: category.image.startsWith('http') ? category.image : '${FFAppConstants.imageBaseURL}${category.image}',
+                          width: 44, height: 44,
+                          placeholder: (context, url) => const SizedBox(width: 44, height: 44, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                          errorWidget: (context, url, error) => const Icon(Icons.category, size: 44),
+                        )
+                      : const Icon(Icons.category, size: 44),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2, left: 1, right: 1),
+                      child: Text(
+                        category.displayName.isNotEmpty ? category.displayName : category.name,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -290,7 +448,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                     ),
                   ),
 
-                  // Category Groups
+                  // Category Groups (Central wise + State wise + Other)
                   SliverToBoxAdapter(
                     child: FutureBuilder<List<CategoryGroup>>(
                       future: _model.categoryGroupsFuture ??= fetchCategoryGroups(),
@@ -313,129 +471,19 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                             child: Center(child: Text('No categories found')),
                           );
                         }
+
+                        final centralGroups = snapshot.data!.where((g) => g.scope == 'central').toList();
+                        final stateGroups = snapshot.data!.where((g) => g.scope == 'state').toList();
+                        final otherGroups = snapshot.data!.where((g) => g.scope != 'central' && g.scope != 'state').toList();
+
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
-                          children: snapshot.data!.map((group) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0, bottom: 4.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        group.displayName,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                          fontFamily: 'Roboto',
-                                        ),
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          Navigator.push(context, MaterialPageRoute(
-                                            builder: (context) => CategoryViewallWidget(
-                                              allowedCategoryIds: group.categories.map((c) => c.id).toSet(),
-                                            ),
-                                          ));
-                                        },
-                                        borderRadius: BorderRadius.circular(20),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context).secondaryBackground,
-                                            borderRadius: BorderRadius.circular(20),
-                                            border: Border.all(color: FlutterFlowTheme.of(context).alternate),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                'View All',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: FlutterFlowTheme.of(context).primary,
-                                                  fontFamily: 'Roboto',
-                                                ),
-                                              ),
-                                              const SizedBox(width: 2),
-                                              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF2563EB)),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  child: GridView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 4,
-                                      crossAxisSpacing: 0,
-                                      mainAxisSpacing: 0,
-                                      childAspectRatio: 1.1,
-                                    ),
-                                    itemCount: group.categories.length,
-                                    itemBuilder: (context, index) {
-                                      final category = group.categories[index];
-                                      return InkWell(
-                                        onTap: () {
-                                          if (functions.hasCategoryAccess(
-                                            FFAppState().planStatus,
-                                            FFAppState().subsIsSelectedAll,
-                                            FFAppState().allowedCategoryIds,
-                                            category.id,
-                                            group.id,
-                                          )) {
-                                            Navigator.push(context, MaterialPageRoute(
-                                              builder: (context) => CategoryDetailPageWidget(
-                                                title: category.displayName.isNotEmpty ? category.displayName : category.name,
-                                                catId: category.id,
-                                                image: category.image,
-                                              ),
-                                            ));
-                                          } else {
-                                            // Show subscription required dialog
-                                            showSubscriptionDialog(context);
-                                          }
-                                        },
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            category.image.isNotEmpty
-                                              ? CachedNetworkImage(
-                                                  imageUrl: category.image.startsWith('http') ? category.image : '${FFAppConstants.imageBaseURL}${category.image}',
-                                                  width: 44, height: 44,
-                                                  placeholder: (context, url) => const SizedBox(width: 44, height: 44, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                                                  errorWidget: (context, url, error) => const Icon(Icons.category, size: 44),
-                                                )
-                                              : const Icon(Icons.category, size: 44),
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 2, left: 1, right: 1),
-                                              child: Text(
-                                                category.displayName.isNotEmpty ? category.displayName : category.name,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                          children: [
+                            if (centralGroups.isNotEmpty) _buildScopeSection(context, 'Central wise', centralGroups),
+                            if (stateGroups.isNotEmpty) _buildScopeSection(context, 'State wise', stateGroups),
+                            if (otherGroups.isNotEmpty) _buildScopeSection(context, 'Other', otherGroups),
+                          ],
                         );
                       },
                     ),
@@ -525,15 +573,18 @@ class Category {
 class CategoryGroup {
   final String id;
   final String displayName;
+  final String scope;
   final List<Category> categories;
   CategoryGroup({
     required this.id,
     required this.displayName,
+    required this.scope,
     required this.categories,
   });
   factory CategoryGroup.fromJson(Map<String, dynamic> json) => CategoryGroup(
         id: json['_id'] ?? '',
         displayName: json['displayName'] ?? '',
+        scope: (json['scope'] is String) ? json['scope'] as String : 'none',
         categories: (json['categories'] as List?)?.map((e) => Category.fromJson(e as Map<String, dynamic>)).toList() ?? [],
       );
 }
@@ -563,21 +614,26 @@ Future<List<CategoryGroup>> fetchCategoryGroups() async {
         // Remove empty groups
         groups.removeWhere((g) => g.categories.isEmpty);
 
-        // Sort to ensure 'Railway', 'SSC', and 'PSU' are at the top in order
+        // Sort: central first, then state, then none. Inside each, priority by name
+        int scopeRank(String s) {
+          if (s == 'central') return 0;
+          if (s == 'state') return 1;
+          return 2;
+        }
+        int getPriority(String name) {
+          if (name.contains('railway')) return 1;
+          if (name.contains('ssc')) return 2;
+          if (name.contains('psu')) return 3;
+          return 100;
+        }
         groups.sort((a, b) {
+          int rA = scopeRank(a.scope);
+          int rB = scopeRank(b.scope);
+          if (rA != rB) return rA.compareTo(rB);
           String nameA = a.displayName.toLowerCase();
           String nameB = b.displayName.toLowerCase();
-          
-          int getPriority(String name) {
-            if (name.contains('railway')) return 1;
-            if (name.contains('ssc')) return 2;
-            if (name.contains('psu')) return 3;
-            return 100;
-          }
-          
           int pA = getPriority(nameA);
           int pB = getPriority(nameB);
-          
           if (pA != pB) return pA.compareTo(pB);
           return nameA.compareTo(nameB);
         });

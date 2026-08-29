@@ -12,6 +12,7 @@ const Admin = require("../models/adminModel");
 const Category = require("../models/categoryModel");
 const Quiz = require("../models/quizModel");
 const Subcategory = require("../models/subcategoryModel");
+const CategoryGroup = require("../models/categoryGroupModel");
 
 // Load questions
 const loadQuestions = async (req, res) => {
@@ -470,6 +471,20 @@ const viewQuestions = async (req, res) => {
             if (req.query.subcategoryId) filter.subcategoryId = req.query.subcategoryId;
             if (req.query.question_type) filter.question_type = req.query.question_type;
             if (req.query.subject) filter.subject = req.query.subject;
+            if (req.query.scope) {
+                const scopeGroups = await CategoryGroup.find({ scope: req.query.scope }).lean();
+                const scopeCategoryIds = [];
+                scopeGroups.forEach(g => (g.categories || []).forEach(c => scopeCategoryIds.push(c)));
+                if (scopeCategoryIds.length > 0) {
+                    if (filter.categoryId) {
+                        filter.categoryId = { $in: scopeCategoryIds, $eq: filter.categoryId };
+                    } else {
+                        filter.categoryId = { $in: scopeCategoryIds };
+                    }
+                } else {
+                    filter.categoryId = null;
+                }
+            }
             if (req.query.search && String(req.query.search).trim()) {
                 const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 filter.$or = [
@@ -498,13 +513,33 @@ const viewQuestions = async (req, res) => {
                 .limit(limit)
                 .lean();
 
+            const categoryGroups = await CategoryGroup.find({}).populate('categories').lean();
+            const categoryScopeMap = {};
+            categoryGroups.forEach(group => {
+                const scope = group.scope || 'none';
+                (group.categories || []).forEach(cat => {
+                    const catId = cat._id ? cat._id.toString() : cat.toString();
+                    if (!categoryScopeMap[catId]) {
+                        categoryScopeMap[catId] = scope;
+                    }
+                });
+            });
+
+            const questionsWithScope = QuestionsData.map(q => ({
+                ...q,
+                scope: q.categoryId ? (categoryScopeMap[q.categoryId._id ? q.categoryId._id.toString() : q.categoryId.toString()] || 'none') : 'none'
+            }));
+
+            const scopes = ['central', 'state', 'none'];
+
             res.render('viewQuestions',{
-                questions: QuestionsData,
+                questions: questionsWithScope,
                 loginData,
                 quiz: QuizData,
                 category: CategoryData,
                 subcategory: SubcategoryData,
                 subjects,
+                scopes,
                 page,
                 limit,
                 totalQuestions,
@@ -515,7 +550,8 @@ const viewQuestions = async (req, res) => {
                     subcategoryId: req.query.subcategoryId || '',
                     question_type: req.query.question_type || '',
                     subject: req.query.subject || '',
-                    search: req.query.search || ''
+                    search: req.query.search || '',
+                    scope: req.query.scope || ''
                 }
             });
         });

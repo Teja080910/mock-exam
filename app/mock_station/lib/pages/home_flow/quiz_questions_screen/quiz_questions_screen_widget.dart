@@ -477,7 +477,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     ),
                   ),
                   const SizedBox(width: 8.0),
-                  Expanded(
+                   Expanded(
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
@@ -488,8 +488,6 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8.0),
-                  _buildLanguageToggle(),
                   const SizedBox(width: 8.0),
                   if (widget.image != null && widget.image!.isNotEmpty)
                     ClipOval(
@@ -558,7 +556,34 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   backgroundColor: const Color(0xFFFDEBEC),
                   textColor: const Color(0xFFEF4444),
                 ),
-                const Spacer(),
+                 const Spacer(),
+                Container(
+                  width: 36.0,
+                  height: 36.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0F111827),
+                        blurRadius: 12.0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: _toggleLanguage,
+                    icon: Icon(
+                      Icons.translate_rounded,
+                      size: 18.0,
+                      color: const Color(0xFF4338CA),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
                 Container(
                   width: 36.0,
                   height: 36.0,
@@ -916,43 +941,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     return '';
   }
 
-  Widget _buildLanguageToggle() {
-    final isHi = _selectedLang == 'hi';
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20.0),
-        onTap: _toggleLanguage,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-          decoration: BoxDecoration(
-            color: isHi ? const Color(0xFF4338CA) : const Color(0xFFEEEBFF),
-            borderRadius: BorderRadius.circular(20.0),
-            border: Border.all(color: const Color(0xFFC7BFFF)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.translate_rounded,
-                size: 16.0,
-                color: isHi ? Colors.white : const Color(0xFF4338CA),
-              ),
-              const SizedBox(width: 4.0),
-              Text(
-                isHi ? 'हिं' : 'EN',
-                style: TextStyle(
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.w700,
-                  color: isHi ? Colors.white : const Color(0xFF4338CA),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 
   @override
   void dispose() {
@@ -1047,59 +1036,90 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
           body: showBody
               ? Scaffold(
                   bottomNavigationBar: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8.0, right: 8.0, bottom: 40),
+                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 32.0),
                     child: SizedBox(
-                      height: 50.0,
+                      width: double.infinity,
+                      height: 54.0,
                       child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  FlutterFlowTheme.of(context).primary,
-                              foregroundColor: Colors.white),
-                          onPressed: () {
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                FlutterFlowTheme.of(context).primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            elevation: 0),
+                        onPressed: () {
                             if (quizAutoSubmitted) return;
                             setState(() {
                               showBody = false;
                               SchedulerBinding.instance
                                   .addPostFrameCallback((_) async {
-                                FFAppState().quesIndex =
-                                    _model.pageViewCurrentIndex + 1;
-                                safeSetState(() {});
-                                try {
-                                  _model.quizRes = await QuizGroup
-                                      .getquestionsbyquizidApiCall
-                                      .call(
-                                    quizId: widget.quizID,
-                                    token: FFAppState().loginToken,
-                                  );
-                                } catch (e) {}
-                                FFAppState().questionType = getJsonField(
-                                  (_model.quizRes?.jsonBody ?? ''),
-                                  r'''$.question_type''',
-                                ).toString().toString();
-                                safeSetState(() {});
-                                _model.isLoading = false;
-                                safeSetState(() {});
-
-                                // Start the quiz timer immediately after quiz data is loaded
-                                // Start timer right away to ensure it starts on first question
-                                if (!timerStarted &&
-                                    _model.quizRes?.jsonBody != null) {
-                                  // Start timer synchronously
-                                  await startQuizTimer();
-                                  // Force state update to ensure timer widget rebuilds
+                                  FFAppState().quesIndex =
+                                      _model.pageViewCurrentIndex + 1;
                                   safeSetState(() {});
-                                }
+                                  try {
+                                    _model.quizRes = await QuizGroup
+                                        .getquestionsbyquizidApiCall
+                                        .call(
+                                      quizId: widget.quizID,
+                                      token: FFAppState().loginToken,
+                                    );
+                                  } catch (e) {}
+                                  FFAppState().questionType = getJsonField(
+                                    (_model.quizRes?.jsonBody ?? ''),
+                                    r'''$.question_type''',
+                                  ).toString().toString();
+                                  safeSetState(() {});
+                                  _model.isLoading = false;
+                                  safeSetState(() {});
 
-                                await Future.delayed(
-                                    const Duration(milliseconds: 1000));
+                                  // Start the quiz timer immediately after quiz data is loaded
+                                  // Start timer right away to ensure it starts on first question
+                                  if (!timerStarted &&
+                                      _model.quizRes?.jsonBody != null) {
+                                    // Start timer synchronously
+                                    await startQuizTimer();
+                                    // Force state update to ensure timer widget rebuilds
+                                    safeSetState(() {});
+                                  }
+
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 1000));
+                                });
+
+                                WidgetsBinding.instance.addPostFrameCallback(
+                                    (_) => safeSetState(() {}));
                               });
-
-                              WidgetsBinding.instance.addPostFrameCallback(
-                                  (_) => safeSetState(() {}));
-                            });
-                          },
-                          child: Text('Agree & Continue')),
+                            },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 32.0,
+                              height: 32.0,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 18.0,
+                                color: FlutterFlowTheme.of(context).primary,
+                              ),
+                            ),
+                            const SizedBox(width: 12.0),
+                            const Text(
+                              'Agree & Continue',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   body: Column(
@@ -1178,12 +1198,68 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                     ),
                                 ],
                               ),
-                              const SizedBox(height: 16.0),
-                              custom_widgets.HtmlConverterExp(
-                                width: double.infinity,
-                                height: null,
-                                text: widget.description!,
-                              ),
+                               const SizedBox(height: 16.0),
+                               custom_widgets.HtmlConverterExp(
+                                 width: double.infinity,
+                                 height: null,
+                                 text: widget.description!,
+                               ),
+                               const SizedBox(height: 16.0),
+                               const Divider(
+                                 height: 24.0,
+                                 thickness: 1.0,
+                                 color: Color(0xFFE5E7EB),
+                               ),
+                               const SizedBox(height: 8.0),
+                               Row(
+                                 mainAxisAlignment: MainAxisAlignment.end,
+                                 children: [
+                                   Material(
+                                     color: Colors.transparent,
+                                     child: InkWell(
+                                       onTap: _toggleLanguage,
+                                       borderRadius: BorderRadius.circular(8.0),
+                                       child: Container(
+                                         padding: const EdgeInsets.symmetric(
+                                             horizontal: 12.0, vertical: 8.0),
+                                         decoration: BoxDecoration(
+                                           color: Colors.white,
+                                           borderRadius: BorderRadius.circular(8.0),
+                                           border: Border.all(
+                                               color: const Color(0xFFD1D5DB)),
+                                         ),
+                                         child: Row(
+                                           mainAxisSize: MainAxisSize.min,
+                                           children: [
+                                             const Icon(
+                                               Icons.translate_rounded,
+                                               size: 16.0,
+                                               color: Color(0xFF4338CA),
+                                             ),
+                                             const SizedBox(width: 8.0),
+                                             Text(
+                                               _selectedLang == 'hi'
+                                                   ? 'हिन्दी'
+                                                   : 'English',
+                                               style: const TextStyle(
+                                                 fontSize: 14.0,
+                                                 fontWeight: FontWeight.w500,
+                                                 color: Color(0xFF374151),
+                                               ),
+                                             ),
+                                             const SizedBox(width: 6.0),
+                                             const Icon(
+                                               Icons.keyboard_arrow_down_rounded,
+                                               size: 18.0,
+                                               color: Color(0xFF6B7280),
+                                             ),
+                                           ],
+                                         ),
+                                       ),
+                                     ),
+                                   ),
+                                 ],
+                               ),
                             ],
                           ),
                         ),

@@ -1,0 +1,44 @@
+# Taste (Continuously Learned by [CommandCode][cmd])
+- Wants pixel-exact UI replication from screenshots/designs; asks for "exact UI same like this" and points out small misalignments (e.g., "5% was visible remaining under that first guy profile icon", "1/4 should be visible", "cup 10% was gone under top"). Confidence: 0.95
+- Iterates on same UI across multiple messages until visually correct; will revert if a previous version was closer ("i revert lasted changes", "bro you removed that circle why?"). Confidence: 0.9
+- Frequently points out overflow errors and expects them fixed (e.g., "bottom overflowed by 11 pixels", "bottom overflowed by 17 pixels", "bottom overflowed by 7.0 pixels"). Confidence: 0.95
+- Cares about proper safe-area / status bar handling; content should not go under status bar ("top design going under status bar can you keep it after status bar", "Start exam page... content going up on the status can you fix that issue"). Confidence: 0.9
+- Cares about vertical alignment between sections (e.g., wants text centered between upper and lower design blocks, crown/cup icons fully visible above profile icons). Confidence: 0.9
+- Prefers using actual images/visuals over code-drawn approximations when fidelity matters ("you can use image for that mobile pensils with box instead of code"). Confidence: 0.7
+- Wants padding/spacing added between tab and tab components ("ok can keep some space from tab and tab components"). Confidence: 0.8
+- Wants cards/containers to not have excessive empty space; wants content to fill appropriately ("in cards lot of empty space is there"). Confidence: 0.8
+- Notices and dislikes overlapping/poorly spaced bottom UI ("overlapping UI bottom so much is space is there fix properly as is"). Confidence: 0.85
+- Cares about small/precise visual details — partial visibility of circles, exact positioning of dots, alignment of icons. Confidence: 0.9
+- Wants text to follow existing codebase font family/size, not screenshot fonts ("We need follow font and font size of existing code base design we can follow based on given screenshot but font and text should follow existing codebase", "can you keep same font size"). Confidence: 0.95
+- Wants responsive text sizing based on screen size to prevent truncation ("based on screen size we need to maintain text size otherwise text was truncating", "entire application not only in subscription"). Confidence: 0.9
+- Considers existing font sizes "big/clumsy" when not aligned with rest of UI ("still leaderboard looking clumsy big font and not aligned properly"). Confidence: 0.85
+- Wants content to fit screen without unnecessary scrolling when it can fit ("many places... if question and answers fit to the screen then why we need scroll"). Confidence: 0.8
+- Strongly opposes hardcoded values; expects data to come from API ("why hardcode?", "make sure those are not hardcode right?", "But in UO only general coming" — wants dynamic subject names from API). Confidence: 0.95
+- Expects consistency between API responses and UI rendering (e.g., if API returns 3 subjects, all 3 must show; if it returns "test_only" instead of subject names, that's a bug). Confidence: 0.9
+- Notices duplicate data rendering ("question was coming 2 times can you check"). Confidence: 0.85
+- Wants HTML entities/tags stripped or properly rendered in content, not displayed as raw markup ("in answer key tab question and answers coming in html codes can you fix this issue"). Confidence: 0.9
+- After making changes, often says previous version was better and reverts; needs preservation of working elements when fixing others ("you fixed google image only but see still entire image all components not in good alignment", "i revert lasted changes"). Confidence: 0.85
+- Asks for confirmation of which file/scope a change applies to before bulk changes ("in which file your applying this UI example path ALP -> RRB ALP CBT 1 -> exams listing page ( this only ) ?"). Confidence: 0.8
+- Tends to send same request multiple times when not addressed; re-asks rather than rephrasing ("still only subject wise coming can you check" sent twice). Confidence: 0.7
+- Posts compiler errors verbatim and expects them fixed ("Undefined name 'statusBarTop'", "Undefined name 'subjectKeys'", "The method '_rankForIndex' isn't defined"). Confidence: 0.95
+- Posts syntax errors verbatim ("Expected to find ')'." often; "many places we have like this in the same file"). Confidence: 0.9
+- Complains when changes are not visible/applied ("where are you changes, there are no changes in test result page", "still not changed"). Confidence: 0.85
+- Uses casual, informal Indian-English phrasing: "bro", "ok fine", "can you", "still X coming". Confidence: 0.95
+- Often combines multiple issues in one message and numbers them ("1. ... 2. ..."). Confidence: 0.8
+- Frequently uses "still" to indicate a recurring/unresolved issue across iterations. Confidence: 0.9
+- Shows the desired UI (screenshots/designs) and expects the assistant to match it; rarely describes in words. Confidence: 0.85
+- References design/feature with brief fragment descriptions rather than full sentences ("this one", "Thsi one", "This one also", "like this can update UI"). Confidence: 0.9
+- Tends to ask questions about state ("api which was returning?", "what are those subject names?") to debug together. Confidence: 0.75
+- Starts a few interactions with simple greetings ("hi") which is acceptable. Confidence: 0.7
+- Applies theming/UI updates globally, not just to one screen ("we need to update the new theme for all pages", "entire application not only in subscription"). Confidence: 0.9
+- Often wants similar UI treatment across multiple related screens in one go (e.g., applying same look to multiple listing/detail pages). Confidence: 0.85
+- Working on a Flutter app (Dart widgets like `login_screen_widget.dart`, `quiz_result_widget.dart`, etc.) with a backend API (Node/Python likely — `api/.env`, `apicontroller` references). Confidence: 0.9
+- App is "mock_station" — a quiz/mock-test application. Confidence: 0.95
+- Uses FlutterFlow-style generated widget pattern (e.g., `*_widget.dart` paired with `*_model.dart`). Confidence: 0.85
+- Asks the assistant to verify changes across the full stack (admin pages, imports, API response shape) rather than just trust that "it compiles" — wants confirmation that downstream consumers (e.g., Flutter reading new fields) actually receive the data, not just that syntax is valid. Confidence: 0.9
+- Expects thorough static verification when live infra is unavailable: parse templates, run unit-style tests on pure functions, render with mock data including legacy/edge cases (undefined, null, empty, garbage, case-sensitivity) to prove no crashes. Confidence: 0.85
+- Prefers the assistant to not bring up missing infrastructure (MongoDB etc.) destructively; instead do the deepest static review possible. Confidence: 0.8
+- Wants change requests to be implemented across the full stack in one go — admin panel + Flutter app, backend + frontend (e.g., "we need to show in home page... can you update like this in admin and app"). Confidence: 0.9
+- When adding a new field to an existing MongoDB-backed schema, expects a migration/backfill script for existing data rather than relying on defaults alone (e.g., "for existing data how we need to manage i think one script needed"). Confidence: 0.85
+- Prefers new schema fields to be non-breaking — add a safe default so legacy docs still render correctly without crashing the UI. Confidence: 0.85
+- Prefers auto-classification scripts to include a `--dry-run` flag so changes can be previewed before being written. Confidence: 0.8

@@ -113,13 +113,21 @@
                                                 </select>
                                             </div>
                                             <% } %>
-                                            <div class="col-md-3 question_type">
+                                             <div class="col-md-3 question_type">
                                                 <select name="question_type" class="form-select text-capitalize" onchange="document.getElementById('questionsFilterForm').submit()">
                                                     <option value="">All Types</option>
                                                     <option value="text_only" <%= filters.question_type === 'text_only' ? 'selected' : '' %>>Text Only</option>
                                                     <option value="true_false" <%= filters.question_type === 'true_false' ? 'selected' : '' %>>True or False</option>
                                                     <option value="images" <%= filters.question_type === 'images' ? 'selected' : '' %>>Images</option>
                                                     <option value="audio" <%= filters.question_type === 'audio' ? 'selected' : '' %>>Audio</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 scope_filter">
+                                                <select name="scope" class="form-select text-capitalize" onchange="document.getElementById('questionsFilterForm').submit()">
+                                                    <option value="">All Scopes</option>
+                                                    <option value="central" <%= filters.scope === 'central' ? 'selected' : '' %>>Central</option>
+                                                    <option value="state" <%= filters.scope === 'state' ? 'selected' : '' %>>State</option>
+                                                    <option value="none" <%= filters.scope === 'none' ? 'selected' : '' %>>None</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-8 mt-2">
@@ -142,6 +150,7 @@
                                                         <th class="option-width">Options</th>
                                                         <th>Question Type</th>
                                                         <th>Category</th>
+                                                        <th>Scope</th>
                                                         <th>Subcategory</th>
                                                         <th>Subject</th>
                                                         <th class="quiz-width">Quiz Name</th>
@@ -175,8 +184,17 @@
                                                             <td>
                                                                 <%= questionsData.question_type %>
                                                             </td>
-                                                            <td>
+                                                             <td>
                                                                 <%= questionsData.categoryId ? questionsData.categoryId.name : '-' %>
+                                                            </td>
+                                                            <td>
+                                                                <% if(questionsData.scope === 'central') { %>
+                                                                    <span class="badge bg-label-info">Central</span>
+                                                                <% } else if(questionsData.scope === 'state') { %>
+                                                                    <span class="badge bg-label-warning">State</span>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-label-secondary">None</span>
+                                                                <% } %>
                                                             </td>
                                                             <td>
                                                                 <%= questionsData.subcategoryId ? questionsData.subcategoryId.name : '-' %>
@@ -226,8 +244,8 @@
                                             </span>
                                             <nav aria-label="Questions pagination">
                                                 <ul class="pagination mb-0">
-                                                    <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
-                                                        <a class="page-link" href="<%= page <= 1 ? '#' : '/view-questions?page=' + (page-1) + '&quizId=' + filters.quizId + '&question_type=' + filters.question_type + '&subject=' + filters.subject + '&search=' + encodeURIComponent(filters.search) %>">Prev</a>
+                                                     <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+                                                        <a class="page-link" href="<%= page <= 1 ? '#' : '/view-questions?page=' + (page-1) + '&quizId=' + filters.quizId + '&question_type=' + filters.question_type + '&subject=' + filters.subject + '&scope=' + filters.scope + '&search=' + encodeURIComponent(filters.search) %>">Prev</a>
                                                     </li>
                                                     <%
                                                         let startPage = Math.max(1, page - 2);
@@ -235,12 +253,12 @@
                                                         if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
                                                         for (let p = startPage; p <= endPage; p++) {
                                                     %>
-                                                    <li class="page-item <%= p === page ? 'active' : '' %>">
-                                                        <a class="page-link" href="/view-questions?page=<%= p %>&quizId=<%= filters.quizId %>&question_type=<%= filters.question_type %>&subject=<%= filters.subject %>&search=<%= encodeURIComponent(filters.search) %>"><%= p %></a>
+                                                     <li class="page-item <%= p === page ? 'active' : '' %>">
+                                                        <a class="page-link" href="/view-questions?page=<%= p %>&quizId=<%= filters.quizId %>&question_type=<%= filters.question_type %>&subject=<%= filters.subject %>&scope=<%= filters.scope %>&search=<%= encodeURIComponent(filters.search) %>"><%= p %></a>
                                                     </li>
                                                     <% } %>
-                                                    <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
-                                                        <a class="page-link" href="<%= page >= totalPages ? '#' : '/view-questions?page=' + (page+1) + '&quizId=' + filters.quizId + '&question_type=' + filters.question_type + '&subject=' + filters.subject + '&search=' + encodeURIComponent(filters.search) %>">Next</a>
+                                                     <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+                                                        <a class="page-link" href="<%= page >= totalPages ? '#' : '/view-questions?page=' + (page+1) + '&quizId=' + filters.quizId + '&question_type=' + filters.question_type + '&subject=' + filters.subject + '&scope=' + filters.scope + '&search=' + encodeURIComponent(filters.search) %>">Next</a>
                                                     </li>
                                                 </ul>
                                             </nav>

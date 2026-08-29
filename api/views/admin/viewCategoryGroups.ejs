@@ -16,14 +16,19 @@
                                     <thead>
                                         <tr>
                                             <th>Display Name</th>
+                                            <th>Scope</th>
                                             <th>Categories</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <% groups.forEach(function(group) { %>
+                                            <% var scope = (group.scope && ['central','state','none'].indexOf(group.scope) !== -1) ? group.scope : 'none'; %>
+                                            <% var scopeLabel = scope === 'central' ? 'Central wise' : (scope === 'state' ? 'State wise' : 'None'); %>
+                                            <% var scopeClass = scope === 'central' ? 'bg-primary' : (scope === 'state' ? 'bg-success' : 'bg-secondary'); %>
                                             <tr>
                                                 <td><%= group.displayName %></td>
+                                                <td><span class="badge <%= scopeClass %>"><%= scopeLabel %></span></td>
                                                 <td>
                                                     <% group.categories.forEach(function(cat, idx) { %>
                                                         <span class="badge bg-info"><%= cat.displayName || cat.name %></span>

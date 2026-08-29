@@ -1,6 +1,11 @@
 const CategoryGroup = require('../models/categoryGroupModel');
 const Category = require('../models/categoryModel');
 
+const normalizeScope = (value) => {
+  const allowed = ['central', 'state', 'none'];
+  return allowed.includes(value) ? value : 'none';
+};
+
 // Render add group form
 exports.loadAddGroup = async (req, res) => {
   const categories = await Category.find({});
@@ -9,10 +14,11 @@ exports.loadAddGroup = async (req, res) => {
 
 // Add group
 exports.addGroup = async (req, res) => {
-  const { displayName, categories } = req.body;
+  const { displayName, categories, scope } = req.body;
   const group = new CategoryGroup({
     displayName,
-    categories: Array.isArray(categories) ? categories : [categories]
+    scope: normalizeScope(scope),
+    categories: Array.isArray(categories) ? categories : (categories ? [categories] : [])
   });
   await group.save();
   res.redirect('/view-category-groups');
@@ -27,10 +33,11 @@ exports.loadEditGroup = async (req, res) => {
 
 // Update group
 exports.updateGroup = async (req, res) => {
-  const { id, displayName, categories } = req.body;
+  const { id, displayName, categories, scope } = req.body;
   await CategoryGroup.findByIdAndUpdate(id, {
     displayName,
-    categories: Array.isArray(categories) ? categories : [categories]
+    scope: normalizeScope(scope),
+    categories: Array.isArray(categories) ? categories : (categories ? [categories] : [])
   });
   res.redirect('/view-category-groups');
 };
@@ -45,4 +52,4 @@ exports.viewGroups = async (req, res) => {
 exports.deleteGroup = async (req, res) => {
   await CategoryGroup.findByIdAndDelete(req.query.id);
   res.redirect('/view-category-groups');
-}; 
+};
