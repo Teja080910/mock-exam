@@ -42,8 +42,13 @@ const viewEbook = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({ _id: req.session.user_id });
-            const EbookData = await Ebook.find().sort({ updatedAt: -1 });
-            res.render('viewEbook', { ebook: EbookData, loginData: loginData });
+            const page = parseInt(req.query.page) || 1;
+            const limit = 20;
+            const skip = (page - 1) * limit;
+            const totalItems = await Ebook.countDocuments();
+            const totalPages = Math.ceil(totalItems / limit);
+            const EbookData = await Ebook.find().sort({ updatedAt: -1 }).skip(skip).limit(limit);
+            res.render('viewEbook', { ebook: EbookData, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
         });
     } catch (error) {
         console.log(error.message);

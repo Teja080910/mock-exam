@@ -36,8 +36,13 @@ const addNews = async (req, res) => {
 const viewNews = async (req, res) => {
     try {
         let loginData = await Admin.findById({ _id: req.session.user_id });
-        const newsData = await News.find().sort({ updatedAt: -1 });
-        res.render('viewNews', { news: newsData, loginData: loginData });
+        const page = parseInt(req.query.page) || 1;
+        const limit = 20;
+        const skip = (page - 1) * limit;
+        const totalItems = await News.countDocuments();
+        const totalPages = Math.ceil(totalItems / limit);
+        const newsData = await News.find().sort({ updatedAt: -1 }).skip(skip).limit(limit);
+        res.render('viewNews', { news: newsData, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
     } catch (error) {
         console.log(error.message);
     }

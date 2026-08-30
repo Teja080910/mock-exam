@@ -21,7 +21,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-hover" id="list-table">
+                                            <table class="table table-hover" id="server-ebook-table">
                                                 <thead>
                                                     <tr>
                                                         <th>Sr No</th>
@@ -34,65 +34,70 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <% let cnt=1 %>
-                                                        <% ebook.forEach(function(allEbook){ %>
-                                                            <tr>
-                                                                <td class="align-center">
-                                                                    <strong><%= cnt++ %></strong>
+                                                    <% ebook.forEach(function(allEbook, i){ %>
+                                                        <tr>
+                                                            <td class="align-center">
+                                                                <strong><%= (currentPage - 1) * limit + i + 1 %></strong>
+                                                            </td>
+                                                            <td>
+                                                                <strong><%= allEbook.name %></strong>
+                                                            </td>
+                                                            <td>
+                                                                <strong><%= allEbook.language %></strong>
+                                                            </td>
+                                                            <td>
+                                                                <img src="./assets/userImages/<%= allEbook.image %>" alt="Ebook Cover" style="max-width: 100px; height: auto;">
+                                                            </td>
+                                                            <td>
+                                                                <a href="<%= allEbook.link %>" target="_blank" class="btn btn-primary btn-sm">Open Link</a>
+                                                            </td>
+                                                            <% if (loginData.is_admin == 1) { %>
+                                                                <td class="pe-0">
+                                                                    <form action="/ebook-is-active/<%= allEbook._id %>/toggle" id="featureForm" method="POST">
+                                                                        <a id="toggleButton" >
+                                                                            <div class="form-check form-switch mb-0">
+                                                                                <input type="hidden" name="title" value="<%= allEbook.name %>"/>
+                                                                                <input class="form-check-input" type="checkbox" name="is_active" <% if(allEbook.is_active == 1) { %> checked <% }else{} %>>
+                                                                            </div>
+                                                                        </a>
+                                                                    </form>                   
                                                                 </td>
                                                                 <td>
-                                                                    <strong><%= allEbook.name %></strong>
+                                                                    <div class="d-flex gap-3">
+                                                                        <a href="/edit-ebook?id=<%= allEbook._id %>"class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
+                                                                        <a href="/delete-ebook?id=<%= allEbook._id %>" onclick="return confirm('Are you sure want to delete this <%= allEbook.name %>' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
+                                                                    </div>
+                                                                </td>
+                                                                <% } else { %>
+                                                                <td>
+                                                                    <div class="form-check form-switch mb-0" onclick="alert('You have no access to change status..!!')">
+                                                                        <input class="form-check-input" type="checkbox" name="is_active"  <% if(allEbook.is_active==1) { %> checked <% }else{} %>disabled>
+                                                                    </div>
                                                                 </td>
                                                                 <td>
-                                                                    <strong><%= allEbook.language %></strong>
+                                                                    <div class="d-flex gap-3">
+                                                                        <a href="/edit-ebook?id=<%= allEbook._id %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
+                                                                        <a href="" onclick="return alert('You have no access to delete <%= allEbook.name %>.' )" class="text-danger"><i class="bx bx-trash"></i></a>
+                                                                    </div>
                                                                 </td>
-                                                                <td>
-                                                                    <img src="./assets/userImages/<%= allEbook.image %>" alt="Ebook Cover" style="max-width: 100px; height: auto;">
-                                                                </td>
-                                                                <td>
-                                                                    <a href="<%= allEbook.link %>" target="_blank" class="btn btn-primary btn-sm">Open Link</a>
-                                                                </td>
-                                                                <% if (loginData.is_admin == 1) { %>
-                                                                    <td class="pe-0">
-                                                                        <form action="/ebook-is-active/<%= allEbook._id %>/toggle" id="featureForm" method="POST">
-                                                                            <a id="toggleButton" >
-                                                                                <div class="form-check form-switch mb-0">
-                                                                                    <input type="hidden" name="title" value="<%= allEbook.name %>"/>
-                                                                                    <input class="form-check-input" type="checkbox" name="is_active" <% if(allEbook.is_active == 1) { %> checked <% }else{} %>>
-                                                                                </div>
-                                                                            </a>
-                                                                        </form>                   
-                                                                    </td>
-                                                                    <td>
-                                                                        <div class="d-flex gap-3">
-                                                                            <a href="/edit-ebook?id=<%= allEbook._id %>"class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
-                                                                            <a href="/delete-ebook?id=<%= allEbook._id %>" onclick="return confirm('Are you sure want to delete this <%= allEbook.name %>' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
-                                                                        </div>
-                                                                    </td>
-                                                                    <% } else { %>
-                                                                    <td>
-                                                                        <div class="form-check form-switch mb-0" onclick="alert('You have no access to change status..!!')">
-                                                                            <input class="form-check-input" type="checkbox" name="is_active"  <% if(allEbook.is_active==1) { %> checked <% }else{} %>disabled>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div class="d-flex gap-3">
-                                                                            <a href="/edit-ebook?id=<%= allEbook._id %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
-                                                                            <a href="" onclick="return alert('You have no access to delete <%= allEbook.name %>.' )" class="text-danger"><i class="bx bx-trash"></i></a>
-                                                                        </div>
-                                                                    </td>
-                                                                    <%  }%>
-                                                                </tr>
-                                                            <% }); %>
-                                                        </tbody>
-                                                    <table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                                                <%  }%>
+                                                            </tr>
+                                                        <% }); %>
+                                                    </tbody>
+                                                 </table>
+                                             </div>
+
+                                         <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                     </div>
+                 </div>
+
 <script type="text/javascript">
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     

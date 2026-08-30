@@ -1,3 +1,15 @@
+<%
+  function isActive(paths) {
+    if (!currentPath) return false;
+    return paths.some(function(p) { return currentPath === p || currentPath.startsWith(p + '/'); });
+  }
+  function menuClass(paths) { return isActive(paths) ? 'menu-item active' : 'menu-item'; }
+  function subMenuClass(paths) { return isActive(paths) ? 'menu-link active' : 'menu-link'; }
+  function parentClass(paths) {
+    if (!currentPath) return 'menu-item';
+    return isActive(paths) ? 'menu-item open' : 'menu-item';
+  }
+%>
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 	<div class="app-brand demo">
 		<a href="/dashboard" class="app-brand-link">
@@ -13,234 +25,253 @@
 	<div class="menu-inner-shadow"></div>
 	<ul class="menu-inner py-1">
 		<li class="menu-header small text-uppercase"><span class="menu-header-text" data-i18n="Payment">Quiz</span></li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/dashboard']) %>">
 			<a href="/dashboard" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-home-circle"></i>
 				<div data-i18n="Analytics">Dashboard</div>
 			</a>
 		</li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/view-users']) %>">
 			<a href="/view-users" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-user-pin"></i>
 				<div data-i18n="Analytics">Users</div>
 			</a>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-intro', '/view-intro', '/edit-intro']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-food-menu"></i>
 				<div data-i18n="Authentications">Intro</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-intro" class="menu-link">
+				<li class="<%= menuClass(['/add-intro']) %>">
+					<a href="/add-intro" class="<%= subMenuClass(['/add-intro']) %>">
 						<div data-i18n="Basic">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-intro" class="menu-link">
+				<li class="<%= menuClass(['/view-intro', '/edit-intro']) %>">
+					<a href="/view-intro" class="<%= subMenuClass(['/view-intro', '/edit-intro']) %>">
 						<div data-i18n="Basic">View Intro</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-banner', '/view-banner', '/edit-banner']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-slider"></i>
 				<div data-i18n="Authentications">Banner</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-banner" class="menu-link">
+				<li class="<%= menuClass(['/add-banner']) %>">
+					<a href="/add-banner" class="<%= subMenuClass(['/add-banner']) %>">
 						<div data-i18n="Basic">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-banner" class="menu-link">
+				<li class="<%= menuClass(['/view-banner', '/edit-banner']) %>">
+					<a href="/view-banner" class="<%= subMenuClass(['/view-banner', '/edit-banner']) %>">
 						<div data-i18n="Basic">View Banner</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-category', '/view-category', '/edit-category', '/view-featured-category']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-category-alt"></i>
 				<div data-i18n="Layouts">Category</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-category" class="menu-link">
+				<li class="<%= menuClass(['/add-category']) %>">
+					<a href="/add-category" class="<%= subMenuClass(['/add-category']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-category" class="menu-link">
+				<li class="<%= menuClass(['/view-category', '/edit-category', '/view-featured-category']) %>">
+					<a href="/view-category" class="<%= subMenuClass(['/view-category', '/edit-category', '/view-featured-category']) %>">
 						<div data-i18n="Account">View Category</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-subcategory', '/view-subcategory', '/edit-subcategory']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-category"></i>
 				<div data-i18n="Layouts">Subcategory</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-subcategory" class="menu-link">
+				<li class="<%= menuClass(['/add-subcategory']) %>">
+					<a href="/add-subcategory" class="<%= subMenuClass(['/add-subcategory']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-subcategory" class="menu-link">
+				<li class="<%= menuClass(['/view-subcategory', '/edit-subcategory']) %>">
+					<a href="/view-subcategory" class="<%= subMenuClass(['/view-subcategory', '/edit-subcategory']) %>">
 						<div data-i18n="Account">View Subcategory</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-quiz', '/view-quiz', '/edit-quiz']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<span class="menu-icon quiz-img"></span>
 				<div data-i18n="Layouts">Quizzes</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-quiz" class="menu-link">
+				<li class="<%= menuClass(['/add-quiz']) %>">
+					<a href="/add-quiz" class="<%= subMenuClass(['/add-quiz']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-quiz" class="menu-link">
+				<li class="<%= menuClass(['/view-quiz', '/edit-quiz']) %>">
+					<a href="/view-quiz" class="<%= subMenuClass(['/view-quiz', '/edit-quiz']) %>">
 						<div data-i18n="Account">View Quizzes</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-questions', '/view-questions', '/edit-questions', '/import-questions-csv']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<span class="menu-icon questions-img"></span>
 				<div data-i18n="Layouts">Questions</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-questions" class="menu-link">
+				<li class="<%= menuClass(['/add-questions']) %>">
+					<a href="/add-questions" class="<%= subMenuClass(['/add-questions']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-questions" class="menu-link">
+				<li class="<%= menuClass(['/view-questions', '/edit-questions']) %>">
+					<a href="/view-questions" class="<%= subMenuClass(['/view-questions', '/edit-questions']) %>">
 						<div data-i18n="Account">View All Questions</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-ebook', '/view-ebook', '/edit-ebook']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-book"></i>
 				<div data-i18n="Layouts">Ebook</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-ebook" class="menu-link">
+				<li class="<%= menuClass(['/add-ebook']) %>">
+					<a href="/add-ebook" class="<%= subMenuClass(['/add-ebook']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-ebook" class="menu-link">
+				<li class="<%= menuClass(['/view-ebook', '/edit-ebook']) %>">
+					<a href="/view-ebook" class="<%= subMenuClass(['/view-ebook', '/edit-ebook']) %>">
 						<div data-i18n="Account">View Ebook</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-plan', '/view-plan', '/edit-plan']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<span class="menu-icon bx bx-notepad"></span>
 				<div data-i18n="Layouts">Plan</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-plan" class="menu-link">
+				<li class="<%= menuClass(['/add-plan']) %>">
+					<a href="/add-plan" class="<%= subMenuClass(['/add-plan']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-plan" class="menu-link">
+				<li class="<%= menuClass(['/view-plan', '/edit-plan']) %>">
+					<a href="/view-plan" class="<%= subMenuClass(['/view-plan', '/edit-plan']) %>">
 						<div data-i18n="Account">View Plan</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/pages']) %>">
 			<a href="/pages" class="menu-link">
 				<i class='menu-icon bx bx-book'></i>
 				<div data-i18n="Layouts">Pages</div>
 			</a>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/upload-media', '/view-media']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<span class="menu-icon bx bx-cloud-upload"></span>
 				<div data-i18n="Layouts">Media</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/upload-media" class="menu-link">
+				<li class="<%= menuClass(['/upload-media']) %>">
+					<a href="/upload-media" class="<%= subMenuClass(['/upload-media']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-media" class="menu-link">
+				<li class="<%= menuClass(['/view-media']) %>">
+					<a href="/view-media" class="<%= subMenuClass(['/view-media']) %>">
 						<div data-i18n="Account">View Media</div>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/smtp-settings']) %>">
 			<a href="/smtp-settings" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-envelope"></i>
 				<div data-i18n="Analytics">SMTP</div>
 			</a>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-news', '/view-news', '/edit-news']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-news"></i>
 				<div data-i18n="Layouts">News</div>
 			</a>
 			<ul class="menu-sub">
-				<li class="menu-item">
-					<a href="/add-news" class="menu-link">
+				<li class="<%= menuClass(['/add-news']) %>">
+					<a href="/add-news" class="<%= subMenuClass(['/add-news']) %>">
 						<div data-i18n="Account">Add New</div>
 					</a>
 				</li>
-				<li class="menu-item">
-					<a href="/view-news" class="menu-link">
+				<li class="<%= menuClass(['/view-news', '/edit-news']) %>">
+					<a href="/view-news" class="<%= subMenuClass(['/view-news', '/edit-news']) %>">
 						<div data-i18n="Account">View News</div>
 					</a>
 				</li>
 			</ul>
 		</li>
 		<li class="menu-header small text-uppercase"><span class="menu-header-text" data-i18n="Payment">Notification</span></li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/add-notification']) %>">
 			<a href="/add-notification" class="menu-link">
 				<i class='menu-icon bx bx-bell'></i>
 				<div data-i18n="Layouts">Send Notification</div>
 			</a>
 		</li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/view-notification']) %>">
 			<a href="/view-notification" class="menu-link">
 				<i class='menu-icon bx bx-bell'></i>
 				<div data-i18n="Layouts">View Notifications</div>
 			</a>
 		</li>
 		<li class="menu-header small text-uppercase"><span class="menu-header-text" data-i18n="Payment">Settings</span></li>
-		<li class="menu-item">
+		<li class="<%= menuClass(['/setting']) %>">
 			<a href="/setting" class="menu-link">
 				<i class='menu-icon bx bx-cog'></i>
 				<div data-i18n="Analytics">Settings</div>
 			</a>
 		</li>
-		<li class="menu-item">
+		<li class="<%= parentClass(['/add-category-group', '/edit-category-group', '/view-category-groups']) %>">
 			<a href="/view-category-groups" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-category"></i>
 				<div>Category Groups</div>
+			</a>
+		</li>
+		<li class="menu-header small text-uppercase mt-2"><span class="menu-header-text">Account</span></li>
+		<li class="<%= menuClass(['/edit-profile']) %>">
+			<a href="/edit-profile" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-user"></i>
+				<div>Edit Profile</div>
+			</a>
+		</li>
+		<li class="<%= menuClass(['/change-password']) %>">
+			<a href="/change-password" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-lock"></i>
+				<div>Change Password</div>
+			</a>
+		</li>
+		<li class="<%= menuClass(['/currency']) %>">
+			<a href="/currency" class="menu-link">
+				<i class='menu-icon bx bx-dollar-circle'></i>
+				<div>Currency</div>
 			</a>
 		</li>
 	</ul>

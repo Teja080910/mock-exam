@@ -55,9 +55,14 @@ const viewQuiz = async(req,res)=> {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({_id:req.session.user_id});
-            const QuizData = await Quiz.find().populate(['categoryId', 'subcategoryId']).sort({updatedAt: -1});
+            const page = parseInt(req.query.page) || 1;
+            const limit = 20;
+            const skip = (page - 1) * limit;
+            const totalItems = await Quiz.countDocuments();
+            const totalPages = Math.ceil(totalItems / limit);
+            const QuizData = await Quiz.find().populate(['categoryId', 'subcategoryId']).sort({updatedAt: -1}).skip(skip).limit(limit);
             const QuestionData = await Questions.find().populate('quizId');
-            res.render('viewQuiz',{quiz:QuizData,loginData: loginData,question:QuestionData});
+            res.render('viewQuiz',{quiz:QuizData,loginData: loginData,question:QuestionData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit});
         });
     } catch (error) {
         console.log(error.message);

@@ -42,8 +42,13 @@ const viewBanner = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({ _id: req.session.user_id });
-            const BannerData = await CarouselBanner.find().sort({ order: 1, updatedAt: -1 });
-            res.render('viewBanner', { banner: BannerData, loginData: loginData });
+            const page = parseInt(req.query.page) || 1;
+            const limit = 20;
+            const skip = (page - 1) * limit;
+            const totalItems = await CarouselBanner.countDocuments();
+            const totalPages = Math.ceil(totalItems / limit);
+            const BannerData = await CarouselBanner.find().sort({ order: 1, updatedAt: -1 }).skip(skip).limit(limit);
+            res.render('viewBanner', { banner: BannerData, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
         });
     } catch (error) {
         console.log(error.message);

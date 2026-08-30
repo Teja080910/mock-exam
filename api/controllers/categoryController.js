@@ -51,10 +51,15 @@ const viewCategory = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({_id:req.session.user_id});
-            const allCategory = await Category.find({}).sort({ updatedAt: -1 });
+            const page = parseInt(req.query.page) || 1;
+            const limit = 20;
+            const skip = (page - 1) * limit;
+            const totalItems = await Category.countDocuments();
+            const totalPages = Math.ceil(totalItems / limit);
+            const allCategory = await Category.find({}).sort({ updatedAt: -1 }).skip(skip).limit(limit);
             const quiz = await Quiz.find().populate('categoryId');
             if (allCategory) {
-                res.render('viewCategory', { category: allCategory, loginData: loginData, quiz: quiz });
+                res.render('viewCategory', { category: allCategory, loginData: loginData, quiz: quiz, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
             }
             else {
                 console.log(error.message);
@@ -239,23 +244,22 @@ const addSubcategory = async (req, res) => {
 // View subcategories
 const viewSubcategory = async (req, res) => {
     try {
-        console.log('=== VIEW SUBCATEGORY CALLED ===');
         let loginData = await Admin.findById({ _id: req.session.user_id });
-        console.log('Login data found:', !!loginData);
-        
-        const allSubcategory = await Subcategory.find({}).populate('categoryId').sort({ updatedAt: -1 });
-        console.log('Subcategories found:', allSubcategory.length);
-        console.log('Subcategories:', allSubcategory);
+        const page = parseInt(req.query.page) || 1;
+        const limit = 20;
+        const skip = (page - 1) * limit;
+        const totalItems = await Subcategory.countDocuments();
+        const totalPages = Math.ceil(totalItems / limit);
+        const allSubcategory = await Subcategory.find({}).populate('categoryId').sort({ updatedAt: -1 }).skip(skip).limit(limit);
         
         if (allSubcategory) {
-            res.render('viewSubcategory', { subcategory: allSubcategory, loginData: loginData });
+            res.render('viewSubcategory', { subcategory: allSubcategory, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
         } else {
-            console.log('No subcategories found');
-            res.render('viewSubcategory', { subcategory: [], loginData: loginData });
+            res.render('viewSubcategory', { subcategory: [], loginData: loginData, currentPage: 1, totalPages: 0, totalItems: 0, limit: limit });
         }
     } catch (error) {
         console.log('Error in viewSubcategory:', error.message);
-        res.render('viewSubcategory', { subcategory: [], loginData: null });
+        res.render('viewSubcategory', { subcategory: [], loginData: null, currentPage: 1, totalPages: 0, totalItems: 0, limit: 20 });
     }
 }
 

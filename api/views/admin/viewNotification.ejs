@@ -21,7 +21,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-hover" id="list-table">
+                                            <table class="table table-hover" id="server-notification-table">
                                                 <thead>
                                                     <tr>
                                                         <th>Sr No</th>
@@ -31,11 +31,10 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <% let cnt=1 %>
-                                                    <% notifications.forEach(function(notification){ %>
+                                                    <% notifications.forEach(function(notification, i){ %>
                                                         <tr>
                                                             <td class="align-center">
-                                                                <strong><%= cnt++ %></strong>
+                                                                <strong><%= (currentPage - 1) * limit + i + 1 %></strong>
                                                             </td>
                                                             <td>
                                                                 <strong><%= notification.title %></strong>
@@ -48,11 +47,12 @@
                                                             </td>
                                                         </tr>
                                                     <% }); %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                                        </tbody>
+                                    </table>
                                 </div>
+
+                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+
                             </div>
                         </div>
                     </div>
@@ -60,4 +60,5 @@
             </div>
         </div>
     </div>
+
 <%- include('../layout/footer.ejs') %>

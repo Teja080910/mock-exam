@@ -49,6 +49,12 @@ app.use(passport.session());
 app.use(flash())
 app.use(flashmiddleware.setflash);
 
+// Make current path available to all EJS templates for sidebar highlighting
+app.use((req, res, next) => {
+  res.locals.currentPath = req.path;
+  next();
+});
+
 // Load The Public Directory
 const path = require("path");
 app.use(express.static(path.join(__dirname, 'public')));

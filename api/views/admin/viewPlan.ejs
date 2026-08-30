@@ -21,7 +21,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-hover" id="list-table">
+                                            <table class="table table-hover" id="server-plan-table">
                                                 <thead>
                                                     <tr>
                                                         <th>Sr No</th>
@@ -34,50 +34,49 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <% let cnt=1 %>
-                                                        <% plan.forEach(function(allPlan){ %>
-                                                            <tr>
-                                                                <td>
-                                                                    <%= cnt++ %>
-                                                                </td>
-                                                                <td>
-                                                                    <strong>
-                                                                        <%= allPlan.planId %>
-                                                                    </strong>
-                                                                </td>
-                                                                <td>
-                                                                    <strong>
-                                                                        <%= allPlan.planName %>
-                                                                    </strong>
-                                                                </td>
-                                                                <td>
-                                                                    <strong>
-                                                                        <%= allPlan.categoryGroup ?
-                                                                            allPlan.categoryGroup.displayName
-                                                                            : 'All Category Groups' %>
-                                                                    </strong>
-                                                                </td>
-                                                                <td>
-                                                                    <strong>
-                                                                        <%= allPlan.planValidity %>
-                                                                    </strong>
-                                                                </td>
+                                                    <% plan.forEach(function(allPlan, i){ %>
+                                                        <tr>
+                                                            <td>
+                                                                <%= (currentPage - 1) * limit + i + 1 %>
+                                                            </td>
+                                                            <td>
+                                                                <strong>
+                                                                    <%= allPlan.planId %>
+                                                                </strong>
+                                                            </td>
+                                                            <td>
+                                                                <strong>
+                                                                    <%= allPlan.planName %>
+                                                                </strong>
+                                                            </td>
+                                                            <td>
+                                                                <strong>
+                                                                    <%= allPlan.categoryGroup ?
+                                                                        allPlan.categoryGroup.displayName
+                                                                        : 'All Category Groups' %>
+                                                                </strong>
+                                                            </td>
+                                                            <td>
+                                                                <strong>
+                                                                    <%= allPlan.planValidity %>
+                                                                </strong>
+                                                            </td>
 
-                                                                <td>
-                                                                    <strong>
-                                                                        ₹ <%= allPlan.price %>
-                                                                    </strong>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex gap-3">
-                                                                        <% if (loginData.is_admin==1) { %>
-                                                                            <a href="/edit-plan?id=<%= allPlan._id %>"
-                                                                                class="text-success me-3"><i
-                                                                                    class="bx bx-edit-alt"></i></a>
-                                                                            <a href="/delete-plan?id=<%= allPlan._id %>"
-                                                                                onclick="return confirm('Are you sure want to delete this <%= allPlan.planId %> ?' )"
-                                                                                class="text-danger me-3"><i
-                                                                                    class="bx bx-trash"></i></a>
+                                                            <td>
+                                                                <strong>
+                                                                    ₹ <%= allPlan.price %>
+                                                                </strong>
+                                                            </td>
+                                                            <td>
+                                                                <div class="d-flex gap-3">
+                                                                    <% if (loginData.is_admin==1) { %>
+                                                                        <a href="/edit-plan?id=<%= allPlan._id %>"
+                                                                            class="text-success me-3"><i
+                                                                                class="bx bx-edit-alt"></i></a>
+                                                                        <a href="/delete-plan?id=<%= allPlan._id %>"
+                                                                            onclick="return confirm('Are you sure want to delete this <%= allPlan.planId %> ?' )"
+                                                                            class="text-danger me-3"><i
+                                                                                class="bx bx-trash"></i></a>
                                                                             <% } else { %>
                                                                                 <a href="/edit-plan?id=<%= allPlan._id %>"
                                                                                     class="text-success me-3"><i
@@ -87,17 +86,22 @@
                                                                                     class="text-danger me-3"><i
                                                                                         class="bx bx-trash"></i></a>
                                                                                 <% } %>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                            <% }); %>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
                                                 </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                             </table>
+                                         </div>
+
+                                     <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                     </div>
+                 </div>
+
                 <%- include('../layout/footer.ejs') %>

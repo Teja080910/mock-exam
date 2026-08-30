@@ -147,8 +147,13 @@ const viewUsers = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({ _id: req.session.user_id });
-            const user = await User.find().populate('referred_by', 'username email').sort({ updatedAt: -1 });
-            res.render("viewUsers", { users: user, loginData: loginData });
+            const page = parseInt(req.query.page) || 1;
+            const limit = 20;
+            const skip = (page - 1) * limit;
+            const totalItems = await User.countDocuments();
+            const totalPages = Math.ceil(totalItems / limit);
+            const users = await User.find().populate('referred_by', 'username email').sort({ updatedAt: -1 }).skip(skip).limit(limit);
+            res.render("viewUsers", { users: users, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
         });
     } catch (error) {
         console.log(error.message);

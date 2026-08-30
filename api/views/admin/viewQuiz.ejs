@@ -19,7 +19,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-hover" id="list-table">
+                                        <table class="table table-hover" id="server-quiz-table">
                                             <thead>
                                                 <tr>
                                                     <th>Sr No</th>
@@ -33,10 +33,9 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <% let cnt=1 %>
-                                                <% quiz.forEach(function(quizData){ %>
+                                                <% quiz.forEach(function(quizData, i){ %>
                                                     <tr>
-                                                        <td><%= cnt++ %></td>
+                                                        <td><%= (currentPage - 1) * limit + i + 1 %></td>
                                                         <td>
                                                             <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
                                                                 <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" class="avatar def-avatar avatar-xs pull-up" title="<%= quizData.title %>" data-bs-original-title="">
@@ -95,11 +94,15 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
     <script src="/assets/js/statusEnable.js"></script>
 <%- include('../layout/footer.ejs') %>

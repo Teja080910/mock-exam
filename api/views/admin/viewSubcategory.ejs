@@ -21,7 +21,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-hover" id="list-table">
+                                    <table class="table table-hover" id="server-subcategory-table">
                                         <thead>
                                             <tr>
                                                 <th>Sr No</th>
@@ -34,10 +34,9 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <% let cnt=1 %>
-                                            <% subcategory.forEach(function(subcat){ %>
+                                            <% subcategory.forEach(function(subcat, i){ %>
                                                 <tr>
-                                                    <td><strong><%= cnt++ %></strong></td>
+                                                    <td><strong><%= (currentPage - 1) * limit + i + 1 %></strong></td>
                                                     <td><%= subcat.categoryId ? subcat.categoryId.name : '' %></td>
                                                     <td>
                                                         <img src="/assets/userImages/<%= subcat.image %>" alt="Image" class="rounded-circle" width="40" height="40">
@@ -64,9 +63,13 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         <%- include('../layout/footer.ejs') %> 

@@ -65,9 +65,14 @@ const viewPlan = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({ _id: req.session.user_id });
-            const allPlan = await Plan.find({}).populate('categoryGroup').sort({ updatedAt: -1 });
+            const page = parseInt(req.query.page) || 1;
+            const limit = 20;
+            const skip = (page - 1) * limit;
+            const totalItems = await Plan.countDocuments();
+            const totalPages = Math.ceil(totalItems / limit);
+            const allPlan = await Plan.find({}).populate('categoryGroup').sort({ updatedAt: -1 }).skip(skip).limit(limit);
             if (allPlan) {
-                res.render('viewPlan', { plan: allPlan, loginData: loginData });
+                res.render('viewPlan', { plan: allPlan, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
             }
             else {
                 console.log(error.message);
