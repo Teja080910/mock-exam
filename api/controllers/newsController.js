@@ -17,7 +17,9 @@ const addNews = async (req, res) => {
         if (loginData.is_admin == 1) {
             const newsData = new News({
                 title: req.body.title,
-                description: req.body.description,
+                post_type: req.body.post_type,
+                short_description: req.body.short_description,
+                description: req.body.short_description,
                 link: req.body.link,
                 is_active: req.body.is_active == "on" ? 1 : 0
             });
@@ -71,7 +73,9 @@ const updateNews = async (req, res) => {
             const id = req.body.id;
             const updateData = {
                 title: req.body.title,
-                description: req.body.description,
+                post_type: req.body.post_type,
+                short_description: req.body.short_description,
+                description: req.body.short_description,
                 link: req.body.link,
                 is_active: req.body.is_active == "on" ? 1 : 0
             };

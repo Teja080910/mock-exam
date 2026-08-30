@@ -29,6 +29,8 @@ export '/pages/category_flow/category_viewall/category_viewall_widget.dart'
     show CategoryViewallWidget;
 export '/pages/category_flow/category_detail_page/category_detail_page_widget.dart'
     show CategoryDetailPageWidget;
+export '/pages/category_flow/group_detail_page/group_detail_page_widget.dart'
+    show GroupDetailPageWidget;
 export '/pages/home_flow/quiz_questions_screen/quiz_questions_screen_widget.dart'
     show QuizQuestionsScreenWidget;
 export '/pages/home_flow/quiz_result/quiz_result_widget.dart'

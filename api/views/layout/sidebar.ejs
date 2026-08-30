@@ -73,6 +73,24 @@
 				</li>
 			</ul>
 		</li>
+		<li class="<%= parentClass(['/add-category-group', '/edit-category-group', '/view-category-groups']) %>">
+			<a href="javascript:void(0);" class="menu-link menu-toggle">
+				<i class="menu-icon tf-icons bx bx-category"></i>
+				<div>Category Groups</div>
+			</a>
+			<ul class="menu-sub">
+				<li class="<%= menuClass(['/add-category-group']) %>">
+					<a href="/add-category-group" class="<%= subMenuClass(['/add-category-group']) %>">
+						<div>Add New</div>
+					</a>
+				</li>
+				<li class="<%= menuClass(['/view-category-groups', '/edit-category-group']) %>">
+					<a href="/view-category-groups" class="<%= subMenuClass(['/view-category-groups', '/edit-category-group']) %>">
+						<div>View Groups</div>
+					</a>
+				</li>
+			</ul>
+		</li>
 		<li class="<%= parentClass(['/add-category', '/view-category', '/edit-category', '/view-featured-category']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<i class="menu-icon tf-icons bx bx-category-alt"></i>
@@ -247,12 +265,6 @@
 			<a href="/setting" class="menu-link">
 				<i class='menu-icon bx bx-cog'></i>
 				<div data-i18n="Analytics">Settings</div>
-			</a>
-		</li>
-		<li class="<%= parentClass(['/add-category-group', '/edit-category-group', '/view-category-groups']) %>">
-			<a href="/view-category-groups" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-category"></i>
-				<div>Category Groups</div>
 			</a>
 		</li>
 		<li class="menu-header small text-uppercase mt-2"><span class="menu-header-text">Account</span></li>

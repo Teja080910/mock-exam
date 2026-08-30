@@ -212,9 +212,9 @@ admin_route.post('/ebook-is-active/:id/toggle', EbookController.activeStatus);
 
 // Category Group
 admin_route.get('/add-category-group', categoryGroupController.loadAddGroup);
-admin_route.post('/add-category-group', categoryGroupController.addGroup);
+admin_route.post('/add-category-group', upload.single('image'), categoryGroupController.addGroup);
 admin_route.get('/edit-category-group', categoryGroupController.loadEditGroup);
-admin_route.post('/edit-category-group', categoryGroupController.updateGroup);
+admin_route.post('/edit-category-group', upload.single('image'), categoryGroupController.updateGroup);
 admin_route.get('/view-category-groups', categoryGroupController.viewGroups);
 admin_route.get('/delete-category-group', categoryGroupController.deleteGroup);
 

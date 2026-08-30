@@ -93,6 +93,7 @@ class QuizGroup {
   static GetQuizBySubcategoryCall getQuizBySubcategoryCall = GetQuizBySubcategoryCall();
   static VerifyPaymentCall verifyPaymentCall = VerifyPaymentCall();
   static FetchUserPlanCall fetchUserPlanCall = FetchUserPlanCall();
+  static GetAllNewsApiCall getAllNewsApiCall = GetAllNewsApiCall();
 }
 
 class CheckregistereduserApiCall {
@@ -2604,4 +2605,31 @@ class GetQuizBySubcategoryCall {
   }
 
   List? quizList(dynamic response) => response != null && response['quizzes'] is List ? response['quizzes'] as List : [];
+}
+
+class GetAllNewsApiCall {
+  Future<ApiCallResponse> call({
+    String? token = '',
+  }) async {
+    final baseUrl = QuizGroup.getBaseUrl(token: token);
+    return ApiManager.instance.makeApiCall(
+      callName: 'GetAllNews',
+      apiUrl: '${baseUrl}getallnews',
+      callType: ApiCallType.POST,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      params: {},
+      bodyType: BodyType.NONE,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  List? newsList(dynamic response) =>
+      response != null && response['news'] is List ? response['news'] as List : [];
 }

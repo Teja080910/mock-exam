@@ -11,7 +11,7 @@
                                         <span class="text-muted fw-light">News /</span> View News
                                     </h4>
                                     <div class="btnwrap mb-4">
-                                        <a href="/add-news" class="btn btn-primary"><i class='bx bx-plus'></i>Add New News</a>
+                                        <a href="/add-news" class="btn btn-primary"><i class='bx bx-plus'></i>Add New Post</a>
                                     </div>
                                 </div>
                             </div>
@@ -25,24 +25,34 @@
                                                 <thead>
                                                     <tr>
                                                         <th>Sr No</th>
+                                                        <th>Type</th>
                                                         <th>Title</th>
                                                         <th>Description</th>
                                                         <th>Link</th>
-                                                        <th>is_Enable</th>
+                                                        <th>Status</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                    <% const typeLabels={ result: 'Result' , admit_card: 'Admit Card' , answer_key: 'Answer Key' , notification: 'Notification' , other: 'Other' }; const typeBadgeColors={ result: 'bg-success' , admit_card: 'bg-warning text-dark' , answer_key: 'bg-info text-dark' , notification: 'bg-primary' , other: 'bg-secondary' }; %>
                                                     <% news.forEach(function(allNews, i){ %>
                                                         <tr>
                                                             <td class="align-center">
                                                                 <strong><%= (currentPage - 1) * limit + i + 1 %></strong>
                                                             </td>
                                                             <td>
+                                                                <% const pt = allNews.post_type || 'notification'; %>
+                                                                <span class="badge <%= typeBadgeColors[pt] || 'bg-secondary' %>">
+                                                                    <%= typeLabels[pt] || pt %>
+                                                                </span>
+                                                            </td>
+                                                            <td>
                                                                 <strong><%= allNews.title %></strong>
                                                             </td>
                                                             <td>
-                                                                <%- allNews.description %>
+                                                                <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 350px;">
+                                                                    <%= allNews.short_description || allNews.description %>
+                                                                </span>
                                                             </td>
                                                             <td>
                                                                 <% if (allNews.link) { %>

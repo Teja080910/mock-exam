@@ -13,6 +13,7 @@ import '/shimmer/shimmer_home_list/shimmer_home_list_widget.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/index.dart';
 import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -136,155 +137,166 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 18.0, right: 16.0, bottom: 6.0),
-          child: Row(
-            children: [
-              Container(
-                width: 4,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).primary,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black,
-                  fontFamily: 'Roboto',
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
+          padding: const EdgeInsets.only(left: 16.0, top: 18.0, right: 16.0, bottom: 10.0),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Colors.black,
+              fontFamily: 'Roboto',
+              letterSpacing: 0.2,
+            ),
           ),
         ),
-        ...groups.map((group) => _buildGroupCard(context, group)),
+        if (groups.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.school_outlined, size: 40, color: Colors.grey.shade400),
+                    const SizedBox(height: 10),
+                    Text(
+                      'No tests available currently',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade500, fontFamily: 'Roboto'),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Check back soon for new mock tests',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade400, fontFamily: 'Roboto'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          _buildGroupGrid(context, groups),
       ],
     );
   }
 
-  Widget _buildGroupCard(BuildContext context, CategoryGroup group) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 10.0, right: 16.0, bottom: 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  group.displayName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => CategoryViewallWidget(
-                      allowedCategoryIds: group.categories.map((c) => c.id).toSet(),
-                    ),
-                  ));
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: FlutterFlowTheme.of(context).alternate),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'View All',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: FlutterFlowTheme.of(context).primary,
-                          fontFamily: 'Roboto',
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF2563EB)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: GridView.builder(
+  // Map of group names to their icons
+  IconData _getGroupIcon(String groupName) {
+    final name = groupName.toLowerCase();
+    if (name.contains('railway') || name.contains('rrb')) return Icons.train;
+    if (name.contains('ssc')) return Icons.assignment;
+    if (name.contains('psu')) return Icons.business;
+    if (name.contains('defence') || name.contains('defense')) return Icons.shield;
+    if (name.contains('upsc')) return Icons.account_balance;
+    if (name.contains('state') || name.contains('psc')) return Icons.location_city;
+    if (name.contains('bank') || name.contains('ibps')) return Icons.account_balance_wallet;
+    if (name.contains('engineering')) return Icons.engineering;
+    return Icons.quiz;
+  }
+
+  Widget _buildGroupGrid(BuildContext context, List<CategoryGroup> groups) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        children: [
+          GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              crossAxisSpacing: 0,
-              mainAxisSpacing: 0,
-              childAspectRatio: 1.1,
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 10,
+              childAspectRatio: 0.82,
             ),
-            itemCount: group.categories.length,
+            itemCount: groups.length,
             itemBuilder: (context, index) {
-              final category = group.categories[index];
-              return InkWell(
-                onTap: () {
-                  if (functions.hasCategoryAccess(
-                    FFAppState().planStatus,
-                    FFAppState().subsIsSelectedAll,
-                    FFAppState().allowedCategoryIds,
-                    category.id,
-                    group.id,
-                  )) {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => CategoryDetailPageWidget(
-                        title: category.displayName.isNotEmpty ? category.displayName : category.name,
-                        catId: category.id,
-                        image: category.image,
-                      ),
-                    ));
-                  } else {
-                    showSubscriptionDialog(context);
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    category.image.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: category.image.startsWith('http') ? category.image : '${FFAppConstants.imageBaseURL}${category.image}',
-                          width: 44, height: 44,
-                          placeholder: (context, url) => const SizedBox(width: 44, height: 44, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                          errorWidget: (context, url, error) => const Icon(Icons.category, size: 44),
-                        )
-                      : const Icon(Icons.category, size: 44),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2, left: 1, right: 1),
-                      child: Text(
-                        category.displayName.isNotEmpty ? category.displayName : category.name,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              final group = groups[index];
+              return _buildGroupIconItem(context, group);
             },
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupIconItem(BuildContext context, CategoryGroup group) {
+    final hasImage = group.image.isNotEmpty;
+    final imgUrl = hasImage
+        ? (group.image.startsWith('http') ? group.image : '${FFAppConstants.imageBaseURL}${group.image}')
+        : '';
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) => GroupDetailPageWidget(
+            groupName: group.displayName,
+            groupId: group.id,
+            categoriesJson: group.categories.map((c) => {
+              '_id': c.id,
+              'name': c.name,
+              'displayName': c.displayName,
+              'image': c.image,
+            }).toList(),
+          ),
+        ));
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: hasImage ? Colors.transparent : const Color(0xFFEEF3FF),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFD6E4FF), width: 1.5),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasImage
+                ? CachedNetworkImage(
+                    imageUrl: imgUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    errorWidget: (context, url, error) => Icon(
+                      _getGroupIcon(group.displayName),
+                      color: const Color(0xFF2563EB),
+                      size: 28,
+                    ),
+                  )
+                : Icon(
+                    _getGroupIcon(group.displayName),
+                    color: const Color(0xFF2563EB),
+                    size: 28,
+                  ),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              group.code.isNotEmpty ? group.code : group.displayName.replaceAll(RegExp(r'\s*Mock\s*Test[s]?\s*', caseSensitive: false), '').trim(),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+                fontFamily: 'Roboto',
+                height: 1.2,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -480,8 +492,8 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (centralGroups.isNotEmpty) _buildScopeSection(context, 'Central wise', centralGroups),
-                            if (stateGroups.isNotEmpty) _buildScopeSection(context, 'State wise', stateGroups),
+                            _buildScopeSection(context, 'Central Government Exam Mock Test', centralGroups),
+                            _buildScopeSection(context, 'State Wise Government Exam Mock Test', stateGroups),
                             if (otherGroups.isNotEmpty) _buildScopeSection(context, 'Other', otherGroups),
                           ],
                         );
@@ -573,17 +585,23 @@ class Category {
 class CategoryGroup {
   final String id;
   final String displayName;
+  final String code;
+  final String image;
   final String scope;
   final List<Category> categories;
   CategoryGroup({
     required this.id,
     required this.displayName,
+    required this.code,
+    required this.image,
     required this.scope,
     required this.categories,
   });
   factory CategoryGroup.fromJson(Map<String, dynamic> json) => CategoryGroup(
         id: json['_id'] ?? '',
         displayName: json['displayName'] ?? '',
+        code: json['code'] ?? '',
+        image: json['image'] ?? '',
         scope: (json['scope'] is String) ? json['scope'] as String : 'none',
         categories: (json['categories'] as List?)?.map((e) => Category.fromJson(e as Map<String, dynamic>)).toList() ?? [],
       );
@@ -611,8 +629,7 @@ Future<List<CategoryGroup>> fetchCategoryGroups() async {
           );
         }
 
-        // Remove empty groups
-        groups.removeWhere((g) => g.categories.isEmpty);
+        // Keep empty groups so the home screen can show "No tests available"
 
         // Sort: central first, then state, then none. Inside each, priority by name
         int scopeRank(String s) {

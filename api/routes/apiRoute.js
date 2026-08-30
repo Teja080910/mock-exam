@@ -223,7 +223,9 @@ api_route.post("/getallnews", async (req, res) => {
     const newsData = news.map((item) => ({
       _id: item._id,
       title: item.title,
-      description: item.description,
+      post_type: item.post_type || 'notification',
+      short_description: item.short_description || item.description || '',
+      description: item.description || '',
       link: item.link || "",
       createdAt: item.createdAt,
     }));

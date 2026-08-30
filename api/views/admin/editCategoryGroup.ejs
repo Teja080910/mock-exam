@@ -10,13 +10,32 @@
                             <span class="text-muted fw-light">Category Group /</span> Edit Category Group
                         </h4>
                         <div class="card mb-4">
-                            <form action="/edit-category-group" method="post">
+                            <form action="/edit-category-group" method="post" enctype="multipart/form-data">
                                 <div class="card-body">
                                     <input type="hidden" name="id" value="<%= group._id %>" />
                                     <div class="row mb-3">
                                         <label class="col-sm-3 col-form-label" for="displayName">Display Name</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control" name="displayName" value="<%= group.displayName %>" placeholder="Enter Group Display Name" required />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="code">Short Code</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="code" value="<%= group.code || '' %>" placeholder="e.g. RRB, SSC, UPSC" />
+                                            <small class="form-text text-muted">Short label shown on the app home screen (e.g. RRB, SSC, IBPS).</small>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="image">Group Image</label>
+                                        <div class="col-sm-9">
+                                            <% if (group.image) { %>
+                                                <div class="mb-2">
+                                                    <img src="/assets/userImages/<%= group.image %>" alt="Current Image" style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 1px solid #ddd;" />
+                                                </div>
+                                            <% } %>
+                                            <input type="file" class="form-control" name="image" accept="image/*" />
+                                            <small class="form-text text-muted">Upload a new image to replace the current one.</small>
                                         </div>
                                     </div>
                                     <div class="row mb-3">

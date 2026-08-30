@@ -12,6 +12,7 @@ import '/index.dart';
 import '/pages/category_flow/category_viewall/current_affairs_widget.dart';
 import '/pages/profile_flow/books_screen/books_screen_widget.dart';
 import '/pages/category_flow/subcategory_detail_page/subcategory_detail_page_widget.dart';
+import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -197,6 +198,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'catId',
               ParamType.String,
             ),
+          ),
+        ),
+        FFRoute(
+          name: GroupDetailPageWidget.routeName,
+          path: GroupDetailPageWidget.routePath,
+          builder: (context, params) => GroupDetailPageWidget(
+            groupName: params.getParam('groupName', ParamType.String),
+            groupId: params.getParam('groupId', ParamType.String),
           ),
         ),
         FFRoute(
