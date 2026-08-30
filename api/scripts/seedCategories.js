@@ -1,8 +1,9 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const Category = require('../models/categoryModel');
 const CategoryGroup = require('../models/categoryGroupModel');
 
-mongoose.connect('mongodb://127.0.0.1:27017/quiz')
+mongoose.connect(process.env.DB_CONNECTION)
   .then(() => console.log('DB connected'))
   .catch(err => { console.error(err); process.exit(1); });
 
