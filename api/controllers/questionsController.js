@@ -91,6 +91,7 @@ const addQuestions = async (req, res) => {
                             categoryId: req.body.categoryId,
                             subcategoryId: req.body.subcategoryId,
                             quizId: req.body.quizId,
+                            subject: req.body.subject || '',
                             question_title: bilingual(req.body.question_title, req.body.question_title_hi),
                             image: optionType === "images" && req.files.image && req.files.image[0] ? req.files.image[0].filename : undefined,
                             audio: optionType === "audio" ? req.files.audio[0].filename : undefined,
@@ -636,6 +637,7 @@ const UpdateQuestions = async(req,res)=> {
             const updateFields = {
                 categoryId: req.body.categoryId,
                 quizId: req.body.quizId,
+                subject: req.body.subject || '',
                 question_title: bilingual(req.body.question_title, req.body.question_title_hi),
                 question_type : optionType,
                 option: optionData,

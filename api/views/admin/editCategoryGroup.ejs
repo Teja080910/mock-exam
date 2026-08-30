@@ -53,12 +53,19 @@
                                     <div class="row mb-3">
                                         <label class="col-sm-3 col-form-label" for="categories">Categories</label>
                                         <div class="col-sm-9">
-                                            <select class="form-select" name="categories" multiple required>
+                                            <div id="selectedChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:32px;"></div>
+                                            <div id="categoryList" style="border:1px solid #ddd;border-radius:8px;padding:8px;max-height:200px;overflow-y:auto;background:#fafafa;">
                                                 <% categories.forEach(function(cat) { %>
-                                                    <option value="<%= cat._id %>" <%= group.categories.some(function(gcat) { return gcat._id.toString() === cat._id.toString(); }) ? 'selected' : '' %>><%= cat.displayName || cat.name %></option>
+                                                    <div class="cat-item" data-id="<%= cat._id %>" data-name="<%= cat.displayName || cat.name %>" style="display:flex;align-items:center;padding:8px 12px;cursor:pointer;border-radius:6px;margin-bottom:4px;background:#fff;border:1px solid #e5e7eb;transition:all 0.15s;">
+                                                        <i class="bx bx-plus-circle" style="margin-right:8px;color:#2563EB;font-size:18px;"></i>
+                                                        <span><%= cat.displayName || cat.name %></span>
+                                                    </div>
                                                 <% }) %>
-                                            </select>
-                                            <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</small>
+                                            </div>
+                                            <input type="hidden" name="categories" id="categoriesHidden" value="<%= group.categories.map(function(c){ return c._id; }).join(',') %>">
+                                        </div>
+                                    </div>
+                                            <input type="hidden" name="categories" id="categoriesHidden" value="<%= group.categories.map(function(c){ return c._id; }).join(',') %>">
                                         </div>
                                     </div>
                                     <div class="row">
@@ -75,6 +82,52 @@
                 </div>
             </div>
             <%- include('../layout/footer.ejs') %>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chipsContainer = document.getElementById('selectedChips');
+    const categoryList = document.getElementById('categoryList');
+    const hiddenInput = document.getElementById('categoriesHidden');
+    let selectedIds = hiddenInput.value ? hiddenInput.value.split(',').filter(Boolean) : [];
+
+    function updateHidden() { hiddenInput.value = selectedIds.join(','); }
+
+    function renderChips() {
+        chipsContainer.innerHTML = '';
+        selectedIds.forEach(function(id) {
+            const item = categoryList.querySelector('[data-id="' + id + '"]');
+            if (!item) return;
+            const name = item.getAttribute('data-name');
+            const chip = document.createElement('span');
+            chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0e7ff;color:#1e40af;border-radius:16px;font-size:13px;font-weight:500;';
+            chip.innerHTML = name + ' <i class="bx bx-x" style="cursor:pointer;font-size:16px;"></i>';
+            chip.querySelector('i').addEventListener('click', function() {
+                selectedIds = selectedIds.filter(x => x !== id);
+                item.style.display = '';
+                item.querySelector('i').className = 'bx bx-plus-circle';
+                renderChips();
+                updateHidden();
+            });
+            chipsContainer.appendChild(chip);
+        });
+    }
+
+    categoryList.querySelectorAll('.cat-item').forEach(function(item) {
+        const id = item.getAttribute('data-id');
+        item.addEventListener('click', function() {
+            const cid = this.getAttribute('data-id');
+            if (selectedIds.includes(cid)) return;
+            selectedIds.push(cid);
+            this.style.display = 'none';
+            renderChips();
+            updateHidden();
+        });
+        if (selectedIds.includes(id)) item.style.display = 'none';
+    });
+
+    renderChips();
+    updateHidden();
+});
+</script>
         </div>
     </div>
 </div> 

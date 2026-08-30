@@ -18,12 +18,15 @@ exports.loadAddGroup = async (req, res) => {
 exports.addGroup = async (req, res) => {
   const { displayName, code, categories, scope } = req.body;
   const image = req.file ? req.file.filename : '';
+  const catIds = typeof categories === 'string' && categories.includes(',')
+    ? categories.split(',').filter(Boolean)
+    : (Array.isArray(categories) ? categories : (categories ? [categories] : []));
   const group = new CategoryGroup({
     displayName,
     code: code || '',
     image,
     scope: normalizeScope(scope),
-    categories: Array.isArray(categories) ? categories : (categories ? [categories] : [])
+    categories: catIds
   });
   await group.save();
   res.redirect('/view-category-groups');
@@ -39,11 +42,14 @@ exports.loadEditGroup = async (req, res) => {
 // Update group
 exports.updateGroup = async (req, res) => {
   const { id, displayName, code, categories, scope } = req.body;
+  const catIds = typeof categories === 'string' && categories.includes(',')
+    ? categories.split(',').filter(Boolean)
+    : (Array.isArray(categories) ? categories : (categories ? [categories] : []));
   const updateData = {
     displayName,
     code: code || '',
     scope: normalizeScope(scope),
-    categories: Array.isArray(categories) ? categories : (categories ? [categories] : [])
+    categories: catIds
   };
   if (req.file) {
     // Delete old image
