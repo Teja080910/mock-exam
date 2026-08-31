@@ -81,6 +81,10 @@ class SignupScreenModel extends FlutterFlowModel<SignupScreenWidget> {
     return null;
   }
 
+  // State field(s) for TextField widget (Referral Code).
+  FocusNode? textFieldFocusNode6;
+  TextEditingController? textController6;
+
   // Stores action output result for [Backend Call - API (UsersignupApi)] action in Button widget.
   ApiCallResponse? signupfunction;
 
@@ -110,5 +114,8 @@ class SignupScreenModel extends FlutterFlowModel<SignupScreenWidget> {
 
     textFieldFocusNode5?.dispose();
     textController5?.dispose();
+
+    textFieldFocusNode6?.dispose();
+    textController6?.dispose();
   }
 }

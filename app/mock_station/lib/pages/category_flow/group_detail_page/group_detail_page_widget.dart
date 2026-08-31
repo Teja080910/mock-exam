@@ -130,7 +130,6 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
             },
             borderRadius: BorderRadius.circular(14),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
@@ -142,67 +141,84 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F5FF),
-                      shape: BoxShape.circle,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 58,
+                      color: const Color(0xFF2563EB),
                     ),
-                    padding: const EdgeInsets.all(4),
-                    child: image.toString().isNotEmpty
-                        ? ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: image.toString().startsWith('http')
-                                  ? image.toString()
-                                  : '${FFAppConstants.imageBaseURL}$image',
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF0F5FF),
+                                shape: BoxShape.circle,
                               ),
-                              errorWidget: (context, url, error) => const Icon(
-                                Icons.category,
-                                size: 24,
-                                color: Color(0xFF2563EB),
+                              padding: const EdgeInsets.all(4),
+                              child: image.toString().isNotEmpty
+                                  ? ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: image.toString().startsWith('http')
+                                            ? image.toString()
+                                            : '${FFAppConstants.imageBaseURL}$image',
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => const Center(
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                        errorWidget: (context, url, error) => const Icon(
+                                          Icons.category,
+                                          size: 24,
+                                          color: Color(0xFF2563EB),
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.category, size: 24, color: Color(0xFF2563EB)),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    displayTitle,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF111827),
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Click to view quizzes',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500,
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        : const Icon(Icons.category, size: 24, color: Color(0xFF2563EB)),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayTitle,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF111827),
-                            fontFamily: 'Roboto',
-                          ),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: Color(0xFF9CA3AF),
+                              size: 24,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Click to view quizzes',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF9CA3AF),
-                    size: 24,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

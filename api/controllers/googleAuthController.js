@@ -2,6 +2,7 @@ const admin = require('../config/firebase');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationModel');
+const randomstring = require('randomstring');
 
 let firebaseApp = admin.apps.length > 0 ? admin.apps[0] : null;
 
@@ -41,6 +42,22 @@ const googleSignIn = async (req, res) => {
             
             if (!user) {
                 console.log('Creating new user for email:', email);
+                // Generate unique referral code
+                let referralCode = '';
+                let isUnique = false;
+                while (!isUnique) {
+                    referralCode = randomstring.generate({ length: 8, charset: 'alphanumeric', capitalization: 'uppercase' });
+                    const existingCode = await User.findOne({ referral_code: referralCode });
+                    if (!existingCode) isUnique = true;
+                }
+
+                // Handle referral code from signup flow
+                let referredBy = null;
+                if (req.body.referralCode) {
+                    const referrer = await User.findOne({ referral_code: req.body.referralCode });
+                    if (referrer) referredBy = referrer._id;
+                }
+
                 // Create new user
                 user = await User.create({
                     email,
@@ -50,7 +67,9 @@ const googleSignIn = async (req, res) => {
                     profile_pic: picture,
                     is_google_user: true,
                     is_verified: 1,
-                    points: 0
+                    points: 0,
+                    referral_code: referralCode,
+                    referred_by: referredBy
                 });
                 console.log('New user created:', user._id);
             } else {

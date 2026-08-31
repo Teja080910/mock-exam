@@ -33,6 +33,9 @@ api_route.post("/buyPlan", AuthMiddleware, apiController.buyPlan);
 api_route.post("/verifyPayment", AuthMiddleware, apiController.verifyPayment);
 api_route.get("/fetchUserPlan", AuthMiddleware, apiController.fetchUserPlan);
 api_route.get("/getReferralInfo", AuthMiddleware, apiController.getReferralInfo);
+api_route.post("/saveUpiId", AuthMiddleware, apiController.saveUpiId);
+api_route.get("/getReferralCashbacks", AuthMiddleware, apiController.getReferralCashbacks);
+api_route.post("/applyReferralCode", AuthMiddleware, apiController.applyReferralCode);
 
 // Signup
 api_route.post("/checkregistereduser", apiController.CheckRegisteredUser);

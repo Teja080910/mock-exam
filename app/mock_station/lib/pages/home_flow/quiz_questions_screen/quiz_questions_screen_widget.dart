@@ -1040,84 +1040,90 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     child: SizedBox(
                       width: double.infinity,
                       height: 54.0,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                FlutterFlowTheme.of(context).primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.0),
+                      child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
                             ),
-                            elevation: 0),
-                        onPressed: () {
-                            if (quizAutoSubmitted) return;
-                            setState(() {
-                              showBody = false;
-                              SchedulerBinding.instance
-                                  .addPostFrameCallback((_) async {
-                                  FFAppState().quesIndex =
-                                      _model.pageViewCurrentIndex + 1;
-                                  safeSetState(() {});
-                                  try {
-                                    _model.quizRes = await QuizGroup
-                                        .getquestionsbyquizidApiCall
-                                        .call(
-                                      quizId: widget.quizID,
-                                      token: FFAppState().loginToken,
-                                    );
-                                  } catch (e) {}
-                                  FFAppState().questionType = getJsonField(
-                                    (_model.quizRes?.jsonBody ?? ''),
-                                    r'''$.question_type''',
-                                  ).toString().toString();
-                                  safeSetState(() {});
-                                  _model.isLoading = false;
-                                  safeSetState(() {});
-
-                                  // Start the quiz timer immediately after quiz data is loaded
-                                  // Start timer right away to ensure it starts on first question
-                                  if (!timerStarted &&
-                                      _model.quizRes?.jsonBody != null) {
-                                    // Start timer synchronously
-                                    await startQuizTimer();
-                                    // Force state update to ensure timer widget rebuilds
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              elevation: 0),
+                          onPressed: () {
+                              if (quizAutoSubmitted) return;
+                              setState(() {
+                                showBody = false;
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((_) async {
+                                    FFAppState().quesIndex =
+                                        _model.pageViewCurrentIndex + 1;
                                     safeSetState(() {});
-                                  }
+                                    try {
+                                      _model.quizRes = await QuizGroup
+                                          .getquestionsbyquizidApiCall
+                                          .call(
+                                        quizId: widget.quizID,
+                                        token: FFAppState().loginToken,
+                                      );
+                                    } catch (e) {}
+                                    FFAppState().questionType = getJsonField(
+                                      (_model.quizRes?.jsonBody ?? ''),
+                                      r'''$.question_type''',
+                                    ).toString().toString();
+                                    safeSetState(() {});
+                                    _model.isLoading = false;
+                                    safeSetState(() {});
 
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 1000));
+                                    if (!timerStarted &&
+                                        _model.quizRes?.jsonBody != null) {
+                                      await startQuizTimer();
+                                      safeSetState(() {});
+                                    }
+
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 1000));
+                                  });
+
+                                  WidgetsBinding.instance.addPostFrameCallback(
+                                      (_) => safeSetState(() {}));
                                 });
-
-                                WidgetsBinding.instance.addPostFrameCallback(
-                                    (_) => safeSetState(() {}));
-                              });
-                            },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 32.0,
-                              height: 32.0,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
+                              },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 32.0,
+                                height: 32.0,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                  child: const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 18.0,
+                                    color: Color(0xFF2563EB),
+                                  ),
                               ),
-                              child: Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18.0,
-                                color: FlutterFlowTheme.of(context).primary,
+                              const SizedBox(width: 12.0),
+                              const Text(
+                                'Agree & Continue',
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12.0),
-                            const Text(
-                              'Agree & Continue',
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1131,73 +1137,66 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                               const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
                           child: Column(
                             children: [
-                              Row(
-                                children: [
-                                  Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(22.0),
-                                      onTap: () => context.safePop(),
-                                      child: Container(
-                                        width: 40.0,
-                                        height: 40.0,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFFF5F8FF),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.arrow_back_rounded,
-                                          color: Color(0xFF111827),
-                                          size: 22.0,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12.0),
-                                  Expanded(
-                                    child: Text(
-                                      widget.title ?? '',
-                                      style: const TextStyle(
-                                        color: Color(0xFF111827),
-                                        fontSize: 18.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                  if (widget.image != null &&
-                                      widget.image!.isNotEmpty)
-                                    const SizedBox(width: 12.0),
-                                  if (widget.image != null &&
-                                      widget.image!.isNotEmpty)
-                                    Container(
-                                      width: 40.0,
-                                      height: 40.0,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF5F8FF),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(6.0),
-                                        child: CachedNetworkImage(
-                                          imageUrl: widget.image!,
-                                          fit: BoxFit.cover,
-                                          errorWidget: (context, url, error) =>
-                                              Container(
-                                            color: const Color(0xFFF5F8FF),
-                                            alignment: Alignment.center,
-                                            child: const Icon(
-                                              Icons.image_outlined,
-                                              color: Color(0xFF94A3B8),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
+                               Row(
+                                 children: [
+                                   Material(
+                                     color: Colors.transparent,
+                                     child: InkWell(
+                                       borderRadius: BorderRadius.circular(22.0),
+                                       onTap: () => context.safePop(),
+                                       child: const Padding(
+                                         padding: EdgeInsets.all(8.0),
+                                         child: Icon(
+                                           Icons.arrow_back_rounded,
+                                           color: Color(0xFF111827),
+                                           size: 24.0,
+                                         ),
+                                       ),
+                                     ),
+                                   ),
+                                   const SizedBox(width: 8.0),
+                                   Expanded(
+                                     child: Text(
+                                       widget.title ?? '',
+                                       style: const TextStyle(
+                                         color: Color(0xFF111827),
+                                         fontSize: 20.0,
+                                         fontWeight: FontWeight.w800,
+                                       ),
+                                     ),
+                                   ),
+                                   if (widget.image != null &&
+                                       widget.image!.isNotEmpty)
+                                     const SizedBox(width: 12.0),
+                                   if (widget.image != null &&
+                                       widget.image!.isNotEmpty)
+                                     ClipOval(
+                                       child: Container(
+                                         width: 48.0,
+                                         height: 48.0,
+                                         decoration: const BoxDecoration(
+                                           shape: BoxShape.circle,
+                                         ),
+                                         padding: const EdgeInsets.all(2.0),
+                                         child: ClipOval(
+                                           child: CachedNetworkImage(
+                                             imageUrl: widget.image!,
+                                             fit: BoxFit.cover,
+                                             errorWidget: (context, url, error) =>
+                                                 Container(
+                                               color: const Color(0xFFF5F8FF),
+                                               alignment: Alignment.center,
+                                               child: const Icon(
+                                                 Icons.image_outlined,
+                                                 color: Color(0xFF94A3B8),
+                                               ),
+                                             ),
+                                           ),
+                                         ),
+                                       ),
+                                     ),
+                                 ],
+                               ),
                                const SizedBox(height: 16.0),
                                custom_widgets.HtmlConverterExp(
                                  width: double.infinity,
@@ -1228,16 +1227,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                            border: Border.all(
                                                color: const Color(0xFFD1D5DB)),
                                          ),
-                                         child: Row(
-                                           mainAxisSize: MainAxisSize.min,
-                                           children: [
-                                             const Icon(
-                                               Icons.translate_rounded,
-                                               size: 16.0,
-                                               color: Color(0xFF4338CA),
-                                             ),
-                                             const SizedBox(width: 8.0),
-                                             Text(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.g_translate_rounded,
+                                                size: 18.0,
+                                                color: Color(0xFF2563EB),
+                                              ),
+                                              const SizedBox(width: 6.0),
+                                              Text(
                                                _selectedLang == 'hi'
                                                    ? 'हिन्दी'
                                                    : 'English',

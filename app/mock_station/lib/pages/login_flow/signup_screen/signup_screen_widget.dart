@@ -56,6 +56,9 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
     _model.textController5 ??= TextEditingController();
     _model.textFieldFocusNode5 ??= FocusNode();
 
+    _model.textController6 ??= TextEditingController();
+    _model.textFieldFocusNode6 ??= FocusNode();
+
     animationsMap.addAll({
       'textOnPageLoadAnimation': AnimationInfo(
         trigger: AnimationTrigger.onPageLoad,
@@ -273,6 +276,28 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
                                     ),
                                   ),
                                   SizedBox(height: 8),
+                                  TextFormField(
+                                    controller: _model.textController6,
+                                    focusNode: _model.textFieldFocusNode6,
+                                    decoration: InputDecoration(
+                                      labelText: 'Referral Code (optional)',
+                                      hintText: 'Enter Referral Code',
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
+                                    ),
+                                    textCapitalization: TextCapitalization.characters,
+                                    style: const TextStyle(
+                                      letterSpacing: 1.2,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
                                   Row(
                                     children: [
                                       Checkbox(
@@ -300,6 +325,8 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
                                       email: _model.textController4.text,
                                       password: _model.textController5.text,
                                       lastname: _model.textController2.text,
+                                      referralCode:
+                                          _model.textController6.text.trim(),
                                       token: FFAppState().tokenFcm,
                                     );
 
@@ -357,6 +384,7 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
                                           _model.textController4?.clear();
                                           _model.textController3?.clear();
                                           _model.textController5?.clear();
+                                          _model.textController6?.clear();
                                         });
                                       } else {
                                         ScaffoldMessenger.of(context)

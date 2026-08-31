@@ -81,6 +81,12 @@
                                                     </div>
                                                 </div>
                                                 <div class="row mb-3">
+                                                    <label for="defaultFormControlInput" class="col-form-label col-sm-6">Referral Cashback Percent (Referrer)</label>
+                                                    <div class="col-sm-6">
+                                                        <input type="text" class="form-control" name="referral_cashback_percent" value="<%= settingData ? settingData.referral_cashback_percent :  ''  %>" required placeholder="Enter Referral Cashback Percent" id="defaultFormControlInput"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
                                                     <div class="col-md-6"></div>
                                                     <div class="col-md-6">
                                                         <button type="submit" class="btn btn-primary">Submit</button>

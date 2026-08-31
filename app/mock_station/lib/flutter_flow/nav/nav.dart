@@ -11,6 +11,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/pages/category_flow/category_viewall/current_affairs_widget.dart';
 import '/pages/profile_flow/books_screen/books_screen_widget.dart';
+import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
 import '/pages/category_flow/subcategory_detail_page/subcategory_detail_page_widget.dart';
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 
@@ -152,6 +153,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'books_screen',
           path: '/booksScreen',
           builder: (context, params) => BooksScreenWidget(),
+        ),
+        FFRoute(
+          name: NotesScreenWidget.routeName,
+          path: NotesScreenWidget.routePath,
+          builder: (context, params) => NotesScreenWidget(),
         ),
         FFRoute(
           name: SignupScreenWidget.routeName,

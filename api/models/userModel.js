@@ -65,6 +65,10 @@ const userSchema = new mongoose.Schema ({
     referred_reward_credited:{
         type:Boolean,
         default:false
+    },
+    upi_id:{
+        type:String,
+        default:''
     }
 },
 { timestamps: true });

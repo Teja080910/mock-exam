@@ -93,6 +93,10 @@ class QuizGroup {
   static GetQuizBySubcategoryCall getQuizBySubcategoryCall = GetQuizBySubcategoryCall();
   static VerifyPaymentCall verifyPaymentCall = VerifyPaymentCall();
   static FetchUserPlanCall fetchUserPlanCall = FetchUserPlanCall();
+  static SaveUpiIdCall saveUpiIdCall = SaveUpiIdCall();
+  static GetReferralInfoCall getReferralInfoCall = GetReferralInfoCall();
+  static GetReferralCashbacksCall getReferralCashbacksCall = GetReferralCashbacksCall();
+  static ApplyReferralCodeCall applyReferralCodeCall = ApplyReferralCodeCall();
   static GetAllNewsApiCall getAllNewsApiCall = GetAllNewsApiCall();
 }
 
@@ -205,6 +209,7 @@ class UsersignupApiCall {
     String? username = '',
     String? email = '',
     String? password = '',
+    String? referralCode = '',
     String? token = '',
   }) async {
     final baseUrl = QuizGroup.getBaseUrl(
@@ -218,7 +223,8 @@ class UsersignupApiCall {
   "username": "${username}",
   "phone": "<phone>",
   "email": "${email}",
-  "password": "${password}"
+  "password": "${password}",
+  "referralCode": "${referralCode}"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'UsersignupApi',
@@ -2012,12 +2018,192 @@ class FetchUserPlanCall {
       ));
 }
 
+class SaveUpiIdCall {
+  Future<ApiCallResponse> call({
+    String? upiId = '',
+    String? token = '',
+  }) async {
+    final baseUrl = QuizGroup.getBaseUrl(
+      token: token,
+    );
+
+    final ffApiRequestBody = '''
+{
+  "upiId": "${upiId}"
+}''';
+    return ApiManager.instance.makeApiCall(
+      callName: 'Save UPI ID',
+      apiUrl: '${baseUrl}saveUpiId',
+      callType: ApiCallType.POST,
+      headers: {
+        'Authorization': 'Bearer ${token}',
+      },
+      params: {},
+      body: ffApiRequestBody,
+      bodyType: BodyType.JSON,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  bool? success(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.success''',
+      ));
+  String? message(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.message''',
+      ));
+}
+
+class GetReferralInfoCall {
+  Future<ApiCallResponse> call({
+    String? token = '',
+  }) async {
+    final baseUrl = QuizGroup.getBaseUrl(
+      token: token,
+    );
+
+    return ApiManager.instance.makeApiCall(
+      callName: 'Get Referral Info',
+      apiUrl: '${baseUrl}getReferralInfo',
+      callType: ApiCallType.GET,
+      headers: {
+        'Authorization': 'Bearer ${token}',
+      },
+      params: {},
+      bodyType: BodyType.NONE,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  bool? success(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.success''',
+      ));
+  String? referralCode(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.referralCode''',
+      ));
+  int? cashbackPercent(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.cashbackPercent''',
+      ));
+  int? discountPercent(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.discountPercent''',
+      ));
+  String? upiId(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.upiId''',
+      ));
+  bool? hasReferrer(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.hasReferrer''',
+      ));
+}
+
+class GetReferralCashbacksCall {
+  Future<ApiCallResponse> call({
+    String? token = '',
+  }) async {
+    final baseUrl = QuizGroup.getBaseUrl(
+      token: token,
+    );
+
+    return ApiManager.instance.makeApiCall(
+      callName: 'Get Referral Cashbacks',
+      apiUrl: '${baseUrl}getReferralCashbacks',
+      callType: ApiCallType.GET,
+      headers: {
+        'Authorization': 'Bearer ${token}',
+      },
+      params: {},
+      bodyType: BodyType.NONE,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  bool? success(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.success''',
+      ));
+  double? totalEarned(dynamic response) => castToType<double>(getJsonField(
+        response,
+        r'''$.totalEarned''',
+      ));
+  double? totalPending(dynamic response) => castToType<double>(getJsonField(
+        response,
+        r'''$.totalPending''',
+      ));
+  List? cashbacks(dynamic response) => getJsonField(
+        response,
+        r'''$.cashbacks''',
+        true,
+      ) as List?;
+}
+
+class ApplyReferralCodeCall {
+  Future<ApiCallResponse> call({
+    String? token = '',
+    String? referralCode = '',
+  }) async {
+    final baseUrl = QuizGroup.getBaseUrl(
+      token: token,
+    );
+
+    final ffApiRequestBody = '''
+{
+  "referralCode": "${referralCode}"
+}''';
+    return ApiManager.instance.makeApiCall(
+      callName: 'Apply Referral Code',
+      apiUrl: '${baseUrl}applyReferralCode',
+      callType: ApiCallType.POST,
+      headers: {
+        'Authorization': 'Bearer ${token}',
+      },
+      params: {},
+      body: ffApiRequestBody,
+      bodyType: BodyType.JSON,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  bool? success(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.success''',
+      ));
+  String? message(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.message''',
+      ));
+}
+
 class IsVerifyAccountCall {
   Future<ApiCallResponse> call({
     String? email = '',
     String? token = '',
-  }) async {
-    final baseUrl = QuizGroup.getBaseUrl(
+  }) async {    final baseUrl = QuizGroup.getBaseUrl(
       token: token,
     );
 
@@ -2408,6 +2594,7 @@ class GoogleSigninCall {
   static Future<ApiCallResponse> call({
     required String token,
     required String deviceId,
+    String? referralCode = '',
   }) async {
     try {
       print('Starting GoogleSigninCall...');
@@ -2440,6 +2627,7 @@ class GoogleSigninCall {
       final requestBody = jsonEncode({
         'token': token,
         'deviceId': deviceId,
+        'referralCode': referralCode,
       });
       
       print('Request body length: ${requestBody.length}');

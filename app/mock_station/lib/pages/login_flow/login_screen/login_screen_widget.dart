@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '/backend/schema/user_record.dart';
 import '/backend/schema/util/firestore_util.dart';
 import '/custom_code/actions/index.dart' as actions;
+import '/componants/referral_prompt/referral_prompt.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -116,6 +117,8 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
           FFAppState().userId = getJsonField(userDetails, r'''$.id''').toString();
           
           print('DEBUG: App State updated with backend JWT token');
+
+          await _maybeShowReferralPrompt();
         } else {
           print('WARNING: Backend Login Failed: ${apiResponse.jsonBody}');
           // Fallback to Firebase token (might fail on some routes but keeps user logged in)
@@ -153,6 +156,10 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _maybeShowReferralPrompt() async {
+    await showReferralPromptOnce(context);
   }
 
   void _showTestLoginDialog() {

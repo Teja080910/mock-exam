@@ -6,7 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'profile_screen_model.dart';
 export 'profile_screen_model.dart';
 
@@ -368,14 +367,18 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     icon: Icons.menu_book_outlined,
                     label: 'eBook',
                     color: const Color(0xFF6366F1),
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(BooksScreenWidget.routeName);
+                    },
                   ),
                 if (FFAppState().isLogin == true)
                   _buildMenuTile(
                     icon: Icons.sticky_note_2_outlined,
                     label: 'Notes',
                     color: const Color(0xFF06B6D4),
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(NotesScreenWidget.routeName);
+                    },
                   ),
                 if (FFAppState().isLogin == true)
                   _buildMenuTile(
@@ -412,17 +415,6 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     context.pushNamed(ReferAndEarnScreenWidget.routeName);
                   },
                 ),
-                  _buildMenuTile(
-                    icon: Icons.share_outlined,
-                    label: 'Share App',
-                    color: const Color(0xFF7C3AED),
-                    onTap: () {
-                      Share.share(
-                        'Check out Mock Station app for your preparation! Download here: https://play.google.com/store/apps/details?id=com.mock.exam.app',
-                        subject: 'Mock Station App',
-                      );
-                    },
-                  ),
                 _buildMenuTile(
                   icon: Icons.settings_outlined,
                   label: 'Settings',

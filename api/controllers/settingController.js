@@ -27,7 +27,8 @@ const addSetting = async (req, res) => {
                     self_challenge_correct_ans_reward_per_question: req.body.self_challenge_correct_ans_reward_per_question,
                     self_challenge_penalty_per_question: req.body.self_challenge_penalty_per_question,
                     referral_reward_points: req.body.referral_reward_points,
-                    referral_discount_percent: req.body.referral_discount_percent
+                    referral_discount_percent: req.body.referral_discount_percent,
+                    referral_cashback_percent: req.body.referral_cashback_percent
                 });
                 const saveSetting = await settingData.save();
                 if (saveSetting) {
@@ -47,7 +48,8 @@ const addSetting = async (req, res) => {
                             self_challenge_correct_ans_reward_per_question: req.body.self_challenge_correct_ans_reward_per_question,
                             self_challenge_penalty_per_question: req.body.self_challenge_penalty_per_question,
                             referral_reward_points: req.body.referral_reward_points,
-                            referral_discount_percent: req.body.referral_discount_percent
+                            referral_discount_percent: req.body.referral_discount_percent,
+                            referral_cashback_percent: req.body.referral_cashback_percent
                         }
                     },
                     { new: true }

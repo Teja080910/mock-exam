@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/email_verification_dialog/email_verification_dialog_widget.dart';
+import '/componants/referral_prompt/referral_prompt.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -57,6 +58,11 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (FFAppState().isLogin &&
+          FFAppState().loginToken.isNotEmpty &&
+          FFAppState().userId.isNotEmpty) {
+        showReferralPromptOnce(context);
+      }
       if (FFAppState().isLogin) {
         _model.apiResultaov = await QuizGroup.isVerifyAccountCall.call(
           email: getJsonField(

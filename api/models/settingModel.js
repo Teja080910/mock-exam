@@ -44,7 +44,11 @@ const SettingSchema = mongoose.Schema({
     },
     referral_discount_percent: {
         type: Number,
-        default: 0
+        default: 12
+    },
+    referral_cashback_percent: {
+        type: Number,
+        default: 20
     }
 },
     {

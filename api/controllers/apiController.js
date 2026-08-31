@@ -28,6 +28,7 @@ const Intro = require("../models/introModel");
 const Plan = require("../models/planModel");
 const UserPlan = require("../models/userPlanModel");
 const Page = require("../models/pagesModel");
+const ReferralCashback = require("../models/referralCashbackModel");
 const admin = require("../config/firebase");
 const SMTP = require("../models/smtpModel");
 const CategoryGroup = require("../models/categoryGroupModel");
@@ -2482,6 +2483,16 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// Referral settings with schema defaults (used when no Setting doc exists)
+async function getReferralSettings() {
+  const setting = await Setting.findOne();
+  return {
+    rewardPoints: setting ? setting.referral_reward_points || 0 : 0,
+    discountPercent: setting ? setting.referral_discount_percent || 0 : 12,
+    cashbackPercent: setting ? setting.referral_cashback_percent || 0 : 20,
+  };
+}
+
 const buyPlan = async (req, res) => {
   try {
     const { planId } = req.body;
@@ -2535,10 +2546,9 @@ const buyPlan = async (req, res) => {
     let finalAmount = amount;
     const user = await User.findById(userId);
     if (user && user.referred_by) {
-      const setting = await Setting.findOne();
-      const discountPercent = setting ? setting.referral_discount_percent || 0 : 0;
-      if (discountPercent > 0) {
-        finalAmount = Math.round(amount * (100 - discountPercent)) / 100;
+      const settings = await getReferralSettings();
+      if (settings.discountPercent > 0) {
+        finalAmount = Math.round((amount * (100 - settings.discountPercent)) / 100);
       }
     }
 
@@ -2658,11 +2668,11 @@ const verifyPayment = async (req, res) => {
     // ===============================
     const user = await User.findById(userId);
     if (user && user.referred_by && !user.referred_reward_credited) {
-      const setting = await Setting.findOne();
+      const settings = await getReferralSettings();
       const referrer = await User.findById(user.referred_by);
 
-      if (referrer && setting) {
-        const rewardPoints = setting.referral_reward_points || 0;
+      if (referrer) {
+        const rewardPoints = settings.rewardPoints;
 
         if (rewardPoints > 0) {
           referrer.points = (referrer.points || 0) + rewardPoints;
@@ -2678,6 +2688,46 @@ const verifyPayment = async (req, res) => {
         // Mark referred reward as credited (one-time)
         user.referred_reward_credited = true;
         await user.save();
+      }
+    }
+
+    // ===============================
+    // 💸 REFERRAL CASHBACK (UPI)
+    // ===============================
+    if (user && user.referred_by && user.upi_id) {
+      const settings = await getReferralSettings();
+      const cashbackPercent = settings.cashbackPercent;
+
+      if (cashbackPercent > 0) {
+        const paidAmount = (order.amount || 0) / 100; // paise -> rupees
+        const cashbackAmount = Math.round(paidAmount * cashbackPercent) / 100;
+        const discountAmount = plan.price - paidAmount;
+
+        // 🔁 Guard: only credit one cashback flow per referred purchase
+        const existingCashback = await ReferralCashback.findOne({
+          referrerId: user.referred_by,
+          referredUserId: user._id,
+          status: { $in: ['pending', 'paid'] },
+        });
+
+        if (!existingCashback) {
+          await ReferralCashback.create({
+            referrerId: user.referred_by,
+            referredUserId: user._id,
+            planId: plan._id,
+            planName: plan.planName || 'Plan',
+            planAmount: plan.price,
+            discountAmount: Math.max(discountAmount, 0),
+            paidAmount: paidAmount,
+            cashbackPercent: cashbackPercent,
+            cashbackAmount: cashbackAmount,
+            status: 'pending',
+          });
+
+          console.log(
+            `Referral cashback credited: referrer=${user.referred_by}, amount=₹${cashbackAmount}`
+          );
+        }
       }
     }
 
@@ -2730,11 +2780,70 @@ const fetchUserPlan = async (req, res) => {
   }
 };
 
+const applyReferralCode = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { referralCode } = req.body;
+
+    if (!referralCode || !referralCode.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Referral code is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.referred_by) {
+      return res.json({
+        success: 0,
+        message: "Referral code already applied",
+      });
+    }
+
+    const code = referralCode.trim().toUpperCase();
+    if (user.referral_code && user.referral_code.toUpperCase() === code) {
+      return res.json({
+        success: 0,
+        message: "You cannot use your own referral code",
+      });
+    }
+
+    const referrer = await User.findOne({ referral_code: code });
+    if (!referrer) {
+      return res.json({
+        success: 0,
+        message: "Invalid referral code",
+      });
+    }
+
+    user.referred_by = referrer._id;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Referral code applied successfully",
+    });
+  } catch (error) {
+    console.error("Apply Referral Code Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to apply referral code",
+    });
+  }
+};
+
 const getReferralInfo = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const user = await User.findById(userId);
-    const setting = await Setting.findOne();
+    const settings = await getReferralSettings();
 
     if (!user) {
       return res.status(404).json({
@@ -2746,14 +2855,95 @@ const getReferralInfo = async (req, res) => {
     res.json({
       success: true,
       referralCode: user.referral_code || "",
-      rewardPoints: setting ? setting.referral_reward_points || 0 : 0,
-      discountPercent: setting ? setting.referral_discount_percent || 0 : 0,
+      rewardPoints: settings.rewardPoints,
+      discountPercent: settings.discountPercent,
+      cashbackPercent: settings.cashbackPercent,
+      upiId: user.upi_id || "",
+      hasReferrer: Boolean(user.referred_by),
     });
   } catch (error) {
     console.error("Get Referral Info Error:", error);
     res.status(500).json({
       success: false,
       message: "Unable to fetch referral info",
+    });
+  }
+};
+
+const saveUpiId = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { upiId } = req.body;
+
+    if (!upiId || !upiId.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "UPI ID is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.upi_id = upiId.trim();
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "UPI ID saved successfully",
+      upiId: user.upi_id,
+    });
+  } catch (error) {
+    console.error("Save UPI ID Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to save UPI ID",
+    });
+  }
+};
+
+const getReferralCashbacks = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const cashbacks = await ReferralCashback.find({ referrerId: userId })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    const totalEarned = cashbacks
+      .filter((c) => c.status === 'paid')
+      .reduce((sum, c) => sum + (c.cashbackAmount || 0), 0);
+    const totalPending = cashbacks
+      .filter((c) => c.status === 'pending')
+      .reduce((sum, c) => sum + (c.cashbackAmount || 0), 0);
+
+    res.json({
+      success: true,
+      totalEarned: Math.round(totalEarned * 100) / 100,
+      totalPending: Math.round(totalPending * 100) / 100,
+      cashbacks: cashbacks.map((c) => ({
+        _id: c._id,
+        referredUserId: c.referredUserId,
+        planName: c.planName,
+        planAmount: c.planAmount,
+        discountAmount: c.discountAmount,
+        paidAmount: c.paidAmount,
+        cashbackPercent: c.cashbackPercent,
+        cashbackAmount: c.cashbackAmount,
+        status: c.status,
+        createdAt: c.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Get Referral Cashbacks Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch referral cashbacks",
     });
   }
 };
@@ -2806,4 +2996,7 @@ module.exports = {
   verifyPayment,
   fetchUserPlan,
   getReferralInfo,
+  saveUpiId,
+  getReferralCashbacks,
+  applyReferralCode,
 };
