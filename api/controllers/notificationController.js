@@ -55,7 +55,7 @@ const addNotification = async (req, res) => {
                 const serverKey = process.env.SERVER_KEY; // Replace with your FCM server key
                 const deviceTokens = registrationTokens;
                 const title = nottificationData.title;
-                const body = nottificationData.description;
+                const body = nottificationData.description.replace(/<[^>]*>/g, '').trim();
     
                 //sendPushNotifications(serverKey, deviceTokens, title, body);
                 sendPushNotification(registrationTokens, title, body);
