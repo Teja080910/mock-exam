@@ -77,8 +77,17 @@ Future<void> notificationInit() async {
       badge: true,
       sound: true,
     );
-    
-    debugPrint('Notification permissions granted');
+
+    // Initialize local notifications plugin
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    await flutterLocalNotificationsPlugin.initialize(
+      settings: initializationSettings,
+    );
+
+    debugPrint('Notification permissions granted & local plugin initialized');
   } catch (e) {
     debugPrint('Error initializing notifications: $e');
   }

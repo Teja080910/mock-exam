@@ -43,8 +43,8 @@ const addNotification = async (req, res) => {
             const findAllToken = await Notification.find();
             const registrationTokensSet = new Set();
                 findAllToken.forEach((user) => {
-                    if (user.registrationToken) {
-                        registrationTokensSet.add(user.registrationToken);
+                    if (user.registration_token) {
+                        registrationTokensSet.add(user.registration_token);
                     }
                 });
             const registrationTokens = Array.from(registrationTokensSet);

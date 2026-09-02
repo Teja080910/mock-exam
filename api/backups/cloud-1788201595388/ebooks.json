@@ -1,0 +1,68 @@
+[
+  {
+    "_id": "6a8f078687375e0af2bd25c3",
+    "name": "1000 GK Questions & Answers in Hindi | Most Repeated GK Questions",
+    "language": "Hindi",
+    "link": "https://sarkaritantra.in/wp-content/uploads/2026/08/GK_10000_Hindi_Ebook.pdf",
+    "image": "1787758470319-1000116416.png",
+    "is_active": 1,
+    "createdAt": "2026-08-26T15:34:30.346Z",
+    "updatedAt": "2026-08-26T15:34:30.346Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a93e4b0313e37c9d5a28539",
+    "name": "RRB Group D Complete Guide",
+    "language": "English",
+    "link": "https://example.com/ebooks/sample.pdf",
+    "image": "ebook-1788077232614-0.svg",
+    "is_active": 1,
+    "createdAt": "2026-08-30T08:07:12.622Z",
+    "updatedAt": "2026-08-30T08:07:12.622Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a93e4b0313e37c9d5a2853c",
+    "name": "RRB NTPC Practice Set",
+    "language": "English",
+    "link": "https://example.com/ebooks/sample.pdf",
+    "image": "ebook-1788077232641-1.svg",
+    "is_active": 1,
+    "createdAt": "2026-08-30T08:07:12.642Z",
+    "updatedAt": "2026-08-30T08:07:12.642Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a93e4b0313e37c9d5a2853f",
+    "name": "SSC GD Constable Study Material",
+    "language": "English",
+    "link": "https://example.com/ebooks/sample.pdf",
+    "image": "ebook-1788077232654-2.svg",
+    "is_active": 1,
+    "createdAt": "2026-08-30T08:07:12.655Z",
+    "updatedAt": "2026-08-30T08:07:12.655Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a93e4b0313e37c9d5a28542",
+    "name": "रेलवे सामान्य विज्ञान (हिंदी)",
+    "language": "Hindi",
+    "link": "https://example.com/ebooks/sample.pdf",
+    "image": "ebook-1788077232670-3.svg",
+    "is_active": 1,
+    "createdAt": "2026-08-30T08:07:12.671Z",
+    "updatedAt": "2026-08-30T08:07:12.671Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a93e4b0313e37c9d5a28545",
+    "name": "गणित शॉर्टकट ट्रिक्स (हिंदी)",
+    "language": "Hindi",
+    "link": "https://example.com/ebooks/sample.pdf",
+    "image": "ebook-1788077232682-4.svg",
+    "is_active": 1,
+    "createdAt": "2026-08-30T08:07:12.683Z",
+    "updatedAt": "2026-08-30T08:07:12.683Z",
+    "__v": 0
+  }
+]

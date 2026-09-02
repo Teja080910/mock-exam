@@ -418,20 +418,18 @@ const UserVerification = async (req, res) => {
     const body = "You are SignIn Successfully...!!";
 
     let findUserDevice = await Notification.findOne({
-      userId: userEmail._id,
-      deviceId: deviceId,
+      user_id: userEmail._id,
+      device_id: deviceId,
     });
 
     if (findUserDevice) {
       findUserDevice.registration_token = registrationToken;
-      findUserDevice.is_active = 1;
       await findUserDevice.save();
     } else {
       await Notification.create({
-        userId: userEmail._id,
-        registrationToken: registrationToken,
-        deviceId: deviceId,
-        is_active: 1,
+        user_id: userEmail._id,
+        registration_token: registrationToken,
+        device_id: deviceId,
       });
     }
 
@@ -506,24 +504,21 @@ const SignIn = async (req, res) => {
       });
     }
 
-    let userDevice = await Notification.findOne({ userId: user._id, deviceId });
+    let userDevice = await Notification.findOne({ user_id: user._id, device_id: deviceId });
 
     if (userDevice) {
       userDevice.registration_token = registrationToken;
-      userDevice.is_active = 1;
       await userDevice.save();
     } else {
       console.log("Device and user not matched or no device found");
-      userDevice = new Notification({
-        userId: user._id,
-        registrationToken,
-        deviceId,
-        is_active: 1,
+      await Notification.create({
+        user_id: user._id,
+        registration_token: registrationToken,
+        device_id: deviceId,
       });
-      await userDevice.save();
     }
 
-    const username = user.name;
+    const username = user.firstname || user.username || 'User';
     const title = `Hey, ${username}`;
     const body = "You are SignIn Successfully...!!";
     sendPushNotification(registrationToken, title, body);

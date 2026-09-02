@@ -2595,6 +2595,7 @@ class GoogleSigninCall {
     required String token,
     required String deviceId,
     String? referralCode = '',
+    String? registrationToken = '',
   }) async {
     try {
       print('Starting GoogleSigninCall...');
@@ -2628,6 +2629,7 @@ class GoogleSigninCall {
         'token': token,
         'deviceId': deviceId,
         'referralCode': referralCode,
+        'registrationToken': registrationToken,
       });
       
       print('Request body length: ${requestBody.length}');

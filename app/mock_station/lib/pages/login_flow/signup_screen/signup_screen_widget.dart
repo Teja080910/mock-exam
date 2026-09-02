@@ -107,7 +107,8 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'token': idToken,
-          'deviceId': 'flutter-app', // Replace with real deviceId if available
+          'deviceId': FFAppState().deviceId,
+          'registrationToken': FFAppState().tokenFcm,
         }),
       );
       print('Backend response: \\${response.body}');

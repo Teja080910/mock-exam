@@ -105,6 +105,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
         final apiResponse = await GoogleSigninCall.call(
           token: firebaseToken ?? '',
           deviceId: deviceId,
+          registrationToken: FFAppState().tokenFcm,
         );
         
         if (apiResponse.statusCode == 200 && getJsonField(apiResponse.jsonBody, r'''$.success''') == 1) {
@@ -362,6 +363,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
         final apiResponse = await GoogleSigninCall.call(
           token: firebaseToken ?? '',
           deviceId: deviceId,
+          registrationToken: FFAppState().tokenFcm,
         );
         
         if (apiResponse.statusCode == 200 && getJsonField(apiResponse.jsonBody, r'''$.success''') == 1) {

@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "6a93e4f8afe3e41c8bb9f317",
+    "planName": "Railway Pack",
+    "planValidity": "1 Year",
+    "price": 499,
+    "planId": "PLAN-RAIL01",
+    "categoryGroup": "6a93e4982356f02070670fbb"
+  },
+  {
+    "_id": "6a93e4f8afe3e41c8bb9f318",
+    "planName": "SSC Pack",
+    "planValidity": "1 Year",
+    "price": 499,
+    "planId": "PLAN-SSC01",
+    "categoryGroup": "6a93e4982356f02070670fbc"
+  },
+  {
+    "_id": "6a93e4f8afe3e41c8bb9f319",
+    "planName": "Engineering Pack",
+    "planValidity": "1 Year",
+    "price": 499,
+    "planId": "PLAN-ENGG01",
+    "categoryGroup": "6a93e4982356f02070670fbd"
+  },
+  {
+    "_id": "6a93e4f8afe3e41c8bb9f31a",
+    "planName": "Defence Pack",
+    "planValidity": "1 Year",
+    "price": 499,
+    "planId": "PLAN-DEF01",
+    "categoryGroup": "6a93e4982356f02070670fbe"
+  },
+  {
+    "_id": "6a93e4f8afe3e41c8bb9f31b",
+    "planName": "All Access Pack",
+    "planValidity": "1 Year",
+    "price": 1499,
+    "planId": "PLAN-ALL01",
+    "categoryGroup": null
+  }
+]

@@ -25,8 +25,7 @@ import 'package:intl/intl.dart';
 
 import 'dart:io' show Platform;
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+import 'package:intl/intl.dart';
 
 Future<void> firebaseInit() async {
   try {
@@ -53,6 +52,7 @@ Future<void> firebaseInit() async {
       debugPrint('Message data: ${event.data}');
       if (event.notification != null) {
         debugPrint('Message also contained a notification: ${event.notification}');
+        _showNotification(event);
       }
   });
 
