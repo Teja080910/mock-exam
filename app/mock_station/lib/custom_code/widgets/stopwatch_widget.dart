@@ -47,7 +47,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     return Countdown(
       build: (BuildContext context, double time) => Text(
         time.toString(),
-        style: TextStyle(fontSize: 18),
+        style: TextStyle(fontSize: FFFont.f18),
       ),
       interval: Duration(seconds: 1),
       onFinished: () {

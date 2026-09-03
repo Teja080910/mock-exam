@@ -98,7 +98,7 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'Roboto',
                               color: const Color(0xFF111827),
-                              fontSize: 24.0,
+                              fontSize: FFFont.f24,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.bold,
                               useGoogleFonts: false,
@@ -132,7 +132,7 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
                                   .override(
                                     fontFamily: 'Roboto',
                                     color: Colors.white,
-                                    fontSize: 16.0,
+                                    fontSize: FFFont.f16,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
                                     useGoogleFonts: false,

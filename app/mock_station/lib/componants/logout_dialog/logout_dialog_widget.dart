@@ -90,7 +90,7 @@ class _LogoutDialogWidgetState extends State<LogoutDialogWidget> {
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
                           color: const Color(0xFF111827),
-                          fontSize: 22.0,
+                          fontSize: FFFont.f22,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           lineHeight: 1.3,
@@ -124,7 +124,7 @@ class _LogoutDialogWidgetState extends State<LogoutDialogWidget> {
                                   .override(
                                     fontFamily: 'Roboto',
                                     color: Colors.white,
-                                    fontSize: 16.0,
+                                    fontSize: FFFont.f16,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
                                     useGoogleFonts: false,
@@ -160,7 +160,7 @@ class _LogoutDialogWidgetState extends State<LogoutDialogWidget> {
                                   .override(
                                     fontFamily: 'Roboto',
                                     color: const Color(0xFF111827),
-                                    fontSize: 16.0,
+                                    fontSize: FFFont.f16,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
                                     useGoogleFonts: false,

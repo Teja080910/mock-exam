@@ -144,7 +144,7 @@ class _CategoryViewallWidgetState extends State<CategoryViewallWidget>
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 18.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
                                             useGoogleFonts: false,

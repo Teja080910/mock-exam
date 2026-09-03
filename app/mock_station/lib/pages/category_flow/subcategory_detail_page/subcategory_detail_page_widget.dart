@@ -60,7 +60,7 @@ class _SubcategoryDetailPageWidgetState
                   title,
                   style: const TextStyle(
                     color: Color(0xFF111827),
-                    fontSize: 18.0,
+                    fontSize: FFFont.f18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -99,7 +99,7 @@ class _SubcategoryDetailPageWidgetState
           text,
           style: const TextStyle(
             color: Color(0xFF374151),
-            fontSize: 14.0,
+            fontSize: FFFont.f14,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -218,7 +218,7 @@ class _SubcategoryDetailPageWidgetState
                                   quiz['name'] ?? '',
                                   style: const TextStyle(
                                     color: Color(0xFF111827),
-                                    fontSize: 17.0,
+                                    fontSize: FFFont.f18,
                                     fontWeight: FontWeight.w800,
                                     height: 1.28,
                                   ),
@@ -280,7 +280,7 @@ class _SubcategoryDetailPageWidgetState
                             'हिंदी',
                             style: TextStyle(
                               color: Color(0xFF111827),
-                              fontSize: 16.0,
+                              fontSize: FFFont.f16,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -302,7 +302,7 @@ class _SubcategoryDetailPageWidgetState
                             child: const Text(
                               'Start Test',
                               style: TextStyle(
-                                fontSize: 15.0,
+                                fontSize: FFFont.f16,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

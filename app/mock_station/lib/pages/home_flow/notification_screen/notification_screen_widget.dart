@@ -131,7 +131,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'Roboto',
-                                              fontSize: 18.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w600,
                                               useGoogleFonts: false,
@@ -280,8 +280,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        16.0,
+                                                                    fontSize: FFFont.f16,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     fontWeight:
@@ -330,8 +329,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              16.0,
+                                                                          fontSize: FFFont.f16,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
@@ -349,8 +347,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                                     .override(
                                                                       fontFamily:
                                                                           'Roboto',
-                                                                      fontSize:
-                                                                          15.0,
+                                                                      fontSize: FFFont.f16,
                                                                       letterSpacing:
                                                                           0.0,
                                                                       fontWeight:

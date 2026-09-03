@@ -136,7 +136,7 @@ class _BuyPointsScreenWidgetState extends State<BuyPointsScreenWidget>
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 18.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
                                             useGoogleFonts: false,
@@ -278,7 +278,7 @@ class _BuyPointsScreenWidgetState extends State<BuyPointsScreenWidget>
                                                           .override(
                                                             fontFamily:
                                                                 'Roboto',
-                                                            fontSize: 18.0,
+                                                            fontSize: FFFont.f18,
                                                             letterSpacing: 0.0,
                                                             fontWeight:
                                                                 FontWeight.w600,
@@ -326,7 +326,7 @@ class _BuyPointsScreenWidgetState extends State<BuyPointsScreenWidget>
                                                               .override(
                                                                 fontFamily:
                                                                     'Roboto',
-                                                                fontSize: 18.0,
+                                                                fontSize: FFFont.f18,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight:

@@ -81,7 +81,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
           children: [
             const Text(
               'Enter your UPI ID to receive direct cashback into your bank account.',
-              style: TextStyle(fontSize: 13.0, color: Color(0xFF64748B)),
+              style: TextStyle(fontSize: FFFont.f14, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 16.0),
             TextField(
@@ -202,7 +202,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                       style: TextStyle(
                                         color: Color(0xFF059669),
                                         fontWeight: FontWeight.w800,
-                                        fontSize: 12.0,
+                                        fontSize: FFFont.f12,
                                       ),
                                     ),
                                   ],
@@ -212,7 +212,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                               RichText(
                                 text: const TextSpan(
                                   style: TextStyle(
-                                    fontSize: 28.0,
+                                    fontSize: FFFont.f28,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF1E293B),
                                     height: 1.15,
@@ -230,7 +230,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                               RichText(
                                 text: const TextSpan(
                                   style: TextStyle(
-                                    fontSize: 13.5,
+                                    fontSize: FFFont.f14,
                                     color: Color(0xFF64748B),
                                     height: 1.4,
                                   ),
@@ -359,7 +359,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                       : 'Add Your UPI ID',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 15.0,
+                                    fontSize: FFFont.f16,
                                     color: Color(0xFF1E293B),
                                   ),
                                 ),
@@ -369,7 +369,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                       ? 'Tap to edit your payout UPI'
                                       : 'Add your UPI ID to get cashback directly into your bank account!',
                                   style: const TextStyle(
-                                    fontSize: 11.5,
+                                    fontSize: FFFont.f12,
                                     color: Color(0xFF64748B),
                                   ),
                                 ),
@@ -394,7 +394,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 12.0)),
+                                        fontSize: FFFont.f12)),
                                 SizedBox(width: 4.0),
                                 Icon(Icons.chevron_right,
                                     color: Colors.white, size: 16.0),
@@ -436,7 +436,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                               const Text(
                                 'Your Referral Code',
                                 style: TextStyle(
-                                    fontSize: 10.0,
+                                    fontSize: FFFont.f10,
                                     color: Color(0xFF64748B),
                                     fontWeight: FontWeight.w600),
                               ),
@@ -446,7 +446,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                   Text(
                                     referralCode,
                                     style: const TextStyle(
-                                      fontSize: 16.0,
+                                      fontSize: FFFont.f16,
                                       fontWeight: FontWeight.w900,
                                       color: Color(0xFF059669),
                                       letterSpacing: 1.2,
@@ -516,7 +516,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 13.0,
+                                          fontSize: FFFont.f14,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -524,7 +524,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                         'Share Now & Start Earning',
                                         style: TextStyle(
                                           color: Colors.white70,
-                                          fontSize: 9.5,
+                                          fontSize: FFFont.f10,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -552,7 +552,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                             style: TextStyle(
                               color: Color(0xFF64748B),
                               fontWeight: FontWeight.w600,
-                              fontSize: 12.0,
+                              fontSize: FFFont.f12,
                             ),
                           ),
                         ],
@@ -599,7 +599,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 Text(
                   'Your referral is active!',
                   style: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: FFFont.f14,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF065F46),
                     fontFamily: 'Roboto',
@@ -609,7 +609,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 Text(
                   'You get $discountPercent% off on all plan purchases.',
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: FFFont.f12,
                     color: Color(0xFF047857),
                     fontFamily: 'Roboto',
                   ),
@@ -654,7 +654,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14.0,
+                  fontSize: FFFont.f14,
                 ),
               ),
             ],
@@ -671,12 +671,12 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 22.0,
+                        fontSize: FFFont.f22,
                       ),
                     ),
                     const Text(
                       'Credited',
-                      style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                      style: TextStyle(color: Colors.white70, fontSize: FFFont.f11),
                     ),
                   ],
                 ),
@@ -690,12 +690,12 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 22.0,
+                        fontSize: FFFont.f22,
                       ),
                     ),
                     const Text(
                       'Pending',
-                      style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                      style: TextStyle(color: Colors.white70, fontSize: FFFont.f11),
                     ),
                   ],
                 ),
@@ -724,14 +724,14 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       child: Text(
                         rec['planName'] ?? 'Plan purchase',
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 12.0),
+                            color: Colors.white, fontSize: FFFont.f12),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text('₹$amount',
                         style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12.0,
+                            fontSize: FFFont.f12,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(width: 10.0),
                     Text(status,
@@ -739,7 +739,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                             color: rec['status'] == 'paid'
                                 ? Colors.white70
                                 : Colors.amberAccent,
-                            fontSize: 10.5,
+                            fontSize: FFFont.f11,
                             fontWeight: FontWeight.w600)),
                   ],
                 ),
@@ -794,7 +794,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15.0,
+                    fontSize: FFFont.f16,
                     color: Color(0xFF1E293B),
                   ),
                 ),
@@ -802,7 +802,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 Text(
                   subtitle,
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: FFFont.f12,
                     color: Color(0xFF64748B),
                     height: 1.3,
                   ),
@@ -824,7 +824,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 style: TextStyle(
                   color: stepColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 13.0,
+                  fontSize: FFFont.f14,
                 ),
               ),
             ),

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/app_constants.dart';
 
 abstract class FlutterFlowTheme {
   static FlutterFlowTheme of(BuildContext context) {
@@ -182,105 +183,105 @@ class ThemeTypography extends Typography {
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 64.0,
+        fontSize: FFFont.f64,
       );
   String get displayMediumFamily => 'Roboto';
   TextStyle get displayMedium => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 44.0,
+        fontSize: FFFont.f44,
       );
   String get displaySmallFamily => 'Roboto';
   TextStyle get displaySmall => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w600,
-        fontSize: 36.0,
+        fontSize: FFFont.f36,
       );
   String get headlineLargeFamily => 'Roboto';
   TextStyle get headlineLarge => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w600,
-        fontSize: 32.0,
+        fontSize: FFFont.f32,
       );
   String get headlineMediumFamily => 'Roboto';
   TextStyle get headlineMedium => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 24.0,
+        fontSize: FFFont.f24,
       );
   String get headlineSmallFamily => 'Roboto';
   TextStyle get headlineSmall => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w500,
-        fontSize: 24.0,
+        fontSize: FFFont.f24,
       );
   String get titleLargeFamily => 'Roboto';
   TextStyle get titleLarge => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w500,
-        fontSize: 22.0,
+        fontSize: FFFont.f22,
       );
   String get titleMediumFamily => 'Roboto';
   TextStyle get titleMedium => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w600,
-        fontSize: 18.0,
+        fontSize: FFFont.f18,
       );
   String get titleSmallFamily => 'Roboto';
   TextStyle get titleSmall => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w700,
-        fontSize: 16.0,
+        fontSize: FFFont.f16,
       );
   String get labelLargeFamily => 'Roboto';
   TextStyle get labelLarge => TextStyle(
         fontFamily: 'Roboto',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 16.0,
+        fontSize: FFFont.f16,
       );
   String get labelMediumFamily => 'Roboto';
   TextStyle get labelMedium => TextStyle(
         fontFamily: 'Roboto',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 14.0,
+        fontSize: FFFont.f14,
       );
   String get labelSmallFamily => 'Roboto';
   TextStyle get labelSmall => TextStyle(
         fontFamily: 'Roboto',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 12.0,
+        fontSize: FFFont.f12,
       );
   String get bodyLargeFamily => 'Roboto';
   TextStyle get bodyLarge => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 16.0,
+        fontSize: FFFont.f16,
       );
   String get bodyMediumFamily => 'Roboto';
   TextStyle get bodyMedium => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 14.0,
+        fontSize: FFFont.f14,
       );
   String get bodySmallFamily => 'Roboto';
   TextStyle get bodySmall => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 12.0,
+        fontSize: FFFont.f12,
       );
 }
 

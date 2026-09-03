@@ -155,7 +155,7 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                                             getJsonField(quiz, r'$.name').toString(),
                                             style: FlutterFlowTheme.of(context).titleLarge.copyWith(
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 20.0,
+                                              fontSize: FFFont.f20,
                                             ),
                                           ),
                                           SizedBox(height: 4.0),

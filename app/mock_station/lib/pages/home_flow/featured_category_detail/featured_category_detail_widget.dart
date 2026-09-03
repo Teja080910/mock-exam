@@ -1,5 +1,4 @@
 import '/backend/api_requests/api_calls.dart';
-import '/app_constants.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -118,7 +117,7 @@ class _FeaturedCategoryDetailWidgetState
           style: TextStyle(
             fontFamily: 'Roboto',
             color: FlutterFlowTheme.of(context).primaryText,
-            fontSize: 16.0,
+            fontSize: FFFont.f16,
           ),
         ),
         duration: const Duration(milliseconds: 2000),
@@ -172,7 +171,7 @@ class _FeaturedCategoryDetailWidgetState
                   widget.title ?? '',
                   style: const TextStyle(
                     color: Color(0xFF111827),
-                    fontSize: 18.0,
+                    fontSize: FFFont.f18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -211,7 +210,7 @@ class _FeaturedCategoryDetailWidgetState
           text,
           style: const TextStyle(
             color: Color(0xFF374151),
-            fontSize: 14.0,
+            fontSize: FFFont.f14,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -315,7 +314,7 @@ class _FeaturedCategoryDetailWidgetState
                               name,
                               style: const TextStyle(
                                 color: Color(0xFF111827),
-                                fontSize: 17.0,
+                                fontSize: FFFont.f18,
                                 fontWeight: FontWeight.w800,
                                 height: 1.28,
                               ),
@@ -374,7 +373,7 @@ class _FeaturedCategoryDetailWidgetState
                             'हिंदी',
                             style: TextStyle(
                               color: Color(0xFF111827),
-                              fontSize: 16.0,
+                              fontSize: FFFont.f16,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -396,7 +395,7 @@ class _FeaturedCategoryDetailWidgetState
                             child: const Text(
                               'Start Test',
                               style: TextStyle(
-                                fontSize: 15.0,
+                                fontSize: FFFont.f16,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -522,7 +521,7 @@ class _FeaturedCategoryDetailWidgetState
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 18.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
                                             useGoogleFonts: false,

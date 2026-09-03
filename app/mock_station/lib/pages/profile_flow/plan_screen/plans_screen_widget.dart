@@ -259,7 +259,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                   'Subscription Plans',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 18.0,
+                    fontSize: FFFont.f18,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF111827),
                   ),
@@ -363,7 +363,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
             text,
             style: TextStyle(
               color: accent,
-              fontSize: 11.0,
+              fontSize: FFFont.f11,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -434,7 +434,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       Text(
                         categoryName,
                         style: const TextStyle(
-                          fontSize: 16.0,
+                          fontSize: FFFont.f16,
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF111827),
                         ),
@@ -443,7 +443,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       Text(
                         planName,
                         style: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: FFFont.f12,
                           fontWeight: FontWeight.w600,
                           color: accent,
                         ),
@@ -465,7 +465,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                     Text(
                       '₹$price',
                       style: TextStyle(
-                        fontSize: 20.0,
+                        fontSize: FFFont.f20,
                         fontWeight: FontWeight.w900,
                         color: accent,
                       ),
@@ -480,7 +480,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       child: Text(
                         isAlreadyActive ? 'Active' : 'Inactive',
                         style: TextStyle(
-                          fontSize: 11.0,
+                          fontSize: FFFont.f11,
                           fontWeight: FontWeight.w700,
                           color: isAlreadyActive ? accent : const Color(0xFF4B5568),
                         ),
@@ -528,7 +528,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                             child: Text(
                               feature,
                               style: const TextStyle(
-                                fontSize: 12.0,
+                                fontSize: FFFont.f12,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF374151),
                               ),
@@ -559,7 +559,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                     child: Text(
                       isAlreadyActive ? 'Active' : 'Buy Now',
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: FFFont.f12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -599,7 +599,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 11.0,
+              fontSize: FFFont.f11,
               fontWeight: FontWeight.w800,
               color: Color(0xFF1E3A8A),
               height: 1.2,
@@ -610,7 +610,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
             subtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 9.0,
+              fontSize: FFFont.f9,
               fontWeight: FontWeight.w500,
               color: FlutterFlowTheme.of(context).secondaryText,
               height: 1.1,

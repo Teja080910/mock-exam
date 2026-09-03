@@ -69,7 +69,7 @@ class _CompletedquizzesWidgetState extends State<CompletedquizzesWidget> {
                     'No completed Tests yet',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: 24.0,
+                          fontSize: FFFont.f24,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           useGoogleFonts: false,
@@ -84,7 +84,7 @@ class _CompletedquizzesWidgetState extends State<CompletedquizzesWidget> {
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: 17.0,
+                          fontSize: FFFont.f18,
                           letterSpacing: 0.0,
                           useGoogleFonts: false,
                           lineHeight: 1.5,
@@ -119,7 +119,7 @@ class _CompletedquizzesWidgetState extends State<CompletedquizzesWidget> {
                           FlutterFlowTheme.of(context).titleSmall.override(
                                 fontFamily: 'Roboto',
                                 color: FlutterFlowTheme.of(context).black,
-                                fontSize: 18.0,
+                                fontSize: FFFont.f18,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.w600,
                                 useGoogleFonts: false,

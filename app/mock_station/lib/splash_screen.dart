@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/app_constants.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -44,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Mock Station',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: FFFont.f24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),

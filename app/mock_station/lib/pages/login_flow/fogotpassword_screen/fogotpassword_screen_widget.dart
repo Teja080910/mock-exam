@@ -100,7 +100,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'Roboto',
-                                    fontSize: 17.0,
+                                    fontSize: FFFont.f18,
                                     letterSpacing: 0.0,
                                     useGoogleFonts: false,
                                     lineHeight: 1.2,
@@ -123,7 +123,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).black,
-                                        fontSize: 15.0,
+                                        fontSize: FFFont.f16,
                                         letterSpacing: 0.0,
                                         useGoogleFonts: false,
                                       ),
@@ -134,7 +134,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color: FlutterFlowTheme.of(context)
                                             .black40,
-                                        fontSize: 17.0,
+                                        fontSize: FFFont.f18,
                                         letterSpacing: 0.0,
                                         useGoogleFonts: false,
                                       ),
@@ -144,7 +144,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).error,
-                                        fontSize: 15.0,
+                                        fontSize: FFFont.f16,
                                         letterSpacing: 0.0,
                                         useGoogleFonts: false,
                                       ),
@@ -186,7 +186,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                     .override(
                                       fontFamily: 'Roboto',
                                       color: FlutterFlowTheme.of(context).black,
-                                      fontSize: 17.0,
+                                      fontSize: FFFont.f18,
                                       letterSpacing: 0.0,
                                       useGoogleFonts: false,
                                     ),
@@ -216,7 +216,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).white,
-                                        fontSize: 18.0,
+                                        fontSize: FFFont.f18,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.w600,
                                         useGoogleFonts: false,
@@ -281,7 +281,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'Roboto',
-                                    fontSize: 17.0,
+                                    fontSize: FFFont.f18,
                                     letterSpacing: 0.0,
                                     useGoogleFonts: false,
                                     lineHeight: 1.2,
@@ -304,7 +304,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).black,
-                                        fontSize: 15.0,
+                                        fontSize: FFFont.f16,
                                         letterSpacing: 0.0,
                                         useGoogleFonts: false,
                                       ),
@@ -315,7 +315,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color: FlutterFlowTheme.of(context)
                                             .black40,
-                                        fontSize: 17.0,
+                                        fontSize: FFFont.f18,
                                         letterSpacing: 0.0,
                                         useGoogleFonts: false,
                                       ),
@@ -325,7 +325,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).error,
-                                        fontSize: 15.0,
+                                        fontSize: FFFont.f16,
                                         letterSpacing: 0.0,
                                         useGoogleFonts: false,
                                       ),
@@ -367,7 +367,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                     .override(
                                       fontFamily: 'Roboto',
                                       color: FlutterFlowTheme.of(context).black,
-                                      fontSize: 17.0,
+                                      fontSize: FFFont.f18,
                                       letterSpacing: 0.0,
                                       useGoogleFonts: false,
                                     ),
@@ -555,7 +555,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).white,
-                                        fontSize: 18.0,
+                                        fontSize: FFFont.f18,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.w600,
                                         useGoogleFonts: false,

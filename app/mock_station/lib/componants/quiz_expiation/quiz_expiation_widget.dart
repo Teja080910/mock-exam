@@ -84,7 +84,7 @@ class _QuizExpiationWidgetState extends State<QuizExpiationWidget> {
                     'Expiation',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: 24.0,
+                          fontSize: FFFont.f24,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           useGoogleFonts: false,
@@ -149,7 +149,7 @@ class _QuizExpiationWidgetState extends State<QuizExpiationWidget> {
                       'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the1500s when an unknown printer took a galley of type and scrambled it to make a type specimenbook.',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Roboto',
-                            fontSize: 17.0,
+                            fontSize: FFFont.f18,
                             letterSpacing: 0.0,
                             useGoogleFonts: false,
                             lineHeight: 1.2,

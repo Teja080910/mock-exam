@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import '/app_constants.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/custom_code/utils/html_stripper.dart';
 import '/flutter_flow/flutter_flow_audio_player.dart';
@@ -129,7 +128,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   Map<String, Style> _questionHtmlStyle(BuildContext context) {
     final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
           fontFamily: 'Roboto',
-          fontSize: 15.0,
+          fontSize: FFFont.f16,
           letterSpacing: 0.0,
           fontWeight: FontWeight.bold,
           useGoogleFonts: false,
@@ -263,7 +262,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             title,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 10.0,
+              fontSize: FFFont.f10,
               fontWeight: FontWeight.w700,
               height: 1.1,
             ),
@@ -273,7 +272,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             value,
             style: TextStyle(
               color: accentColor,
-              fontSize: 16.0,
+              fontSize: FFFont.f16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -290,7 +289,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 badge,
                 style: TextStyle(
                   color: accentColor,
-                  fontSize: 9.0,
+                  fontSize: FFFont.f9,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -346,7 +345,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       value,
                       style: const TextStyle(
                         color: Color(0xFF111827),
-                        fontSize: 18.0,
+                        fontSize: FFFont.f18,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -362,7 +361,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         trailing,
                         style: const TextStyle(
                           color: Color(0xFF9CA3AF),
-                          fontSize: 18.0,
+                          fontSize: FFFont.f18,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -374,7 +373,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   title,
                   style: const TextStyle(
                     color: Color(0xFF64748B),
-                    fontSize: 11.0,
+                    fontSize: FFFont.f11,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -393,7 +392,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 helper,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10.0,
+                  fontSize: FFFont.f10,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -448,7 +447,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               'Sectional Summary',
               style: TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 16.0,
+                fontSize: FFFont.f16,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -463,7 +462,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     'Subject',
                     style: TextStyle(
                       color: Color(0xFF64748B),
-                      fontSize: 11.0,
+                      fontSize: FFFont.f11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -475,7 +474,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFF16A34A),
-                      fontSize: 11.0,
+                      fontSize: FFFont.f11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -487,7 +486,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFFEF4444),
-                      fontSize: 11.0,
+                      fontSize: FFFont.f11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -499,7 +498,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFF7C3AED),
-                      fontSize: 11.0,
+                      fontSize: FFFont.f11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -511,7 +510,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFFD97706),
-                      fontSize: 11.0,
+                      fontSize: FFFont.f11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -539,7 +538,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           section['label'] ?? '',
                           style: const TextStyle(
                             color: Color(0xFF111827),
-                            fontSize: 13.0,
+                            fontSize: FFFont.f14,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -551,7 +550,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Color(0xFF16A34A),
-                            fontSize: 13.0,
+                            fontSize: FFFont.f14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -563,7 +562,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Color(0xFFEF4444),
-                            fontSize: 13.0,
+                            fontSize: FFFont.f14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -575,7 +574,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Color(0xFF7C3AED),
-                            fontSize: 13.0,
+                            fontSize: FFFont.f14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -587,7 +586,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Color(0xFFD97706),
-                            fontSize: 13.0,
+                            fontSize: FFFont.f14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -726,7 +725,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               text,
               style: TextStyle(
                 color: selected ? const Color(0xFF1D4ED8) : const Color(0xFF6B7280),
-                fontSize: 13.0,
+                fontSize: FFFont.f14,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
@@ -798,9 +797,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text('Great Job! 🎉', style: TextStyle(color: Color(0xFF18C66A), fontSize: 24.0, fontWeight: FontWeight.w900)),
+                            Text('Great Job! 🎉', style: TextStyle(color: Color(0xFF18C66A), fontSize: FFFont.f24, fontWeight: FontWeight.w900)),
                             SizedBox(height: 8.0),
-                            Text('You have completed the test successfully.', style: TextStyle(color: Color(0xFF64748B), fontSize: 13.0, height: 1.35, fontWeight: FontWeight.w500)),
+                            Text('You have completed the test successfully.', style: TextStyle(color: Color(0xFF64748B), fontSize: FFFont.f14, height: 1.35, fontWeight: FontWeight.w500)),
                           ],
                         ),
                       ),
@@ -815,9 +814,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         center: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('$correct/$total', style: const TextStyle(color: Color(0xFF111827), fontSize: 26.0, fontWeight: FontWeight.w900)),
+                            Text('$correct/$total', style: const TextStyle(color: Color(0xFF111827), fontSize: FFFont.f28, fontWeight: FontWeight.w900)),
                             const SizedBox(height: 4.0),
-                            const Text('Score', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.0, fontWeight: FontWeight.w600)),
+                            const Text('Score', style: TextStyle(color: Color(0xFF64748B), fontSize: FFFont.f11, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -835,7 +834,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     children: const [
                       Icon(Icons.bar_chart_rounded, color: Color(0xFF22C55E), size: 22.0),
                       SizedBox(width: 8.0),
-                      Text('Performance Summary', style: TextStyle(color: Color(0xFF111827), fontSize: 16.0, fontWeight: FontWeight.w800)),
+                      Text('Performance Summary', style: TextStyle(color: Color(0xFF111827), fontSize: FFFont.f16, fontWeight: FontWeight.w800)),
                     ],
                   ),
                   const SizedBox(height: 16.0),
@@ -871,9 +870,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Total Time Taken', style: TextStyle(color: Color(0xFF111827), fontSize: 12.0, fontWeight: FontWeight.w700)),
+                            const Text('Total Time Taken', style: TextStyle(color: Color(0xFF111827), fontSize: FFFont.f12, fontWeight: FontWeight.w700)),
                             const SizedBox(height: 6.0),
-                            Text(timeLabel, style: const TextStyle(color: Color(0xFF111827), fontSize: 20.0, fontWeight: FontWeight.w900)),
+                            Text(timeLabel, style: const TextStyle(color: Color(0xFF111827), fontSize: FFFont.f20, fontWeight: FontWeight.w900)),
                           ],
                         ),
                       ],
@@ -1030,7 +1029,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         'Q${quesIndex + 1}',
                         style: const TextStyle(
                           color: Color(0xFF7C3AED),
-                          fontSize: 13.0,
+                          fontSize: FFFont.f14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1167,7 +1166,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                               '${optionIndex + 1}',
                               style: const TextStyle(
                                 color: Color(0xFF111827),
-                                fontSize: 12.0,
+                                fontSize: FFFont.f12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1207,7 +1206,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                         text: extractOptionText(option),
                                         style: const TextStyle(
                                           color: Color(0xFF111827),
-                                          fontSize: 14.0,
+                                          fontSize: FFFont.f14,
                                           fontWeight: FontWeight.w600,
                                           height: 1.4,
                                         ),
@@ -1218,7 +1217,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                               ' (Correct Answer & Your Answer)',
                                           style: TextStyle(
                                             color: Color(0xFF16A34A),
-                                            fontSize: 13.0,
+                                            fontSize: FFFont.f14,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         )
@@ -1227,7 +1226,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                           text: ' (Correct Answer)',
                                           style: TextStyle(
                                             color: Color(0xFF16A34A),
-                                            fontSize: 13.0,
+                                            fontSize: FFFont.f14,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         )
@@ -1236,7 +1235,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                           text: ' (Your Answer)',
                                           style: TextStyle(
                                             color: Color(0xFFEF4444),
-                                            fontSize: 13.0,
+                                            fontSize: FFFont.f14,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -1284,7 +1283,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       color: const Color(0xFFF1F6FF),
                       textStyle: const TextStyle(
                         color: Color(0xFF1D66E5),
-                        fontSize: 14.0,
+                        fontSize: FFFont.f14,
                         fontWeight: FontWeight.w700,
                       ),
                       elevation: 0.0,
@@ -1347,7 +1346,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         'Q${questionIndex + 1}',
                         style: const TextStyle(
                           color: Color(0xFF7C3AED),
-                          fontSize: 13.0,
+                          fontSize: FFFont.f14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1514,7 +1513,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                               '${optionIndex + 1}',
                               style: const TextStyle(
                                 color: Color(0xFF111827),
-                                fontSize: 12.0,
+                                fontSize: FFFont.f12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1554,7 +1553,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                         text: extractOptionText(option),
                                         style: const TextStyle(
                                           color: Color(0xFF111827),
-                                          fontSize: 14.0,
+                                          fontSize: FFFont.f14,
                                           fontWeight: FontWeight.w600,
                                           height: 1.4,
                                         ),
@@ -1564,7 +1563,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                           text: ' (Correct Answer)',
                                           style: TextStyle(
                                             color: Color(0xFF16A34A),
-                                            fontSize: 13.0,
+                                            fontSize: FFFont.f14,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -1612,7 +1611,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       color: const Color(0xFFF1F6FF),
                       textStyle: const TextStyle(
                         color: Color(0xFF1D66E5),
-                        fontSize: 14.0,
+                        fontSize: FFFont.f14,
                         fontWeight: FontWeight.w700,
                       ),
                       elevation: 0.0,
@@ -1697,7 +1696,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                             style: TextStyle(
                               color: Color(0xFF6B7280),
                               fontFamily: 'Roboto',
-                              fontSize: 12.0,
+                              fontSize: FFFont.f12,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1975,7 +1974,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     style: const TextStyle(
                       color: Colors.white,
                       fontFamily: 'Roboto',
-                      fontSize: 10.0,
+                      fontSize: FFFont.f10,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1998,7 +1997,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             style: const TextStyle(
               color: Color(0xFF111827),
               fontFamily: 'Roboto',
-              fontSize: 12.0,
+              fontSize: FFFont.f12,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2024,7 +2023,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             style: TextStyle(
               color: scoreColor,
               fontFamily: 'Roboto',
-              fontSize: 12.0,
+              fontSize: FFFont.f12,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2056,7 +2055,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               style: TextStyle(
                 color: accent,
                 fontFamily: 'Roboto',
-                fontSize: 12.0,
+                fontSize: FFFont.f12,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -2079,7 +2078,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               style: TextStyle(
                 color: const Color(0xFF111827),
                 fontFamily: 'Roboto',
-                fontSize: 12.0,
+                fontSize: FFFont.f12,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -2092,7 +2091,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               style: const TextStyle(
                 color: Color(0xFF111827),
                 fontFamily: 'Roboto',
-                fontSize: 11.0,
+                fontSize: FFFont.f11,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -2140,7 +2139,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 22.0),
                   ),
                   const Expanded(
-                    child: Text('Test Result', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF111827), fontSize: 18.0, fontWeight: FontWeight.w800)),
+                    child: Text('Test Result', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF111827), fontSize: FFFont.f18, fontWeight: FontWeight.w800)),
                   ),
                   const SizedBox(width: 48.0),
                 ],

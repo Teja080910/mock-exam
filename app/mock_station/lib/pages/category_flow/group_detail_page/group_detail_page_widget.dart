@@ -42,7 +42,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
           widget.groupName ?? '',
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 18.0,
+            fontSize: FFFont.f18,
             fontWeight: FontWeight.w800,
             fontFamily: 'Roboto',
           ),
@@ -66,7 +66,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                             Text(
                               'No exams available',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: FFFont.f16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade600,
                                 fontFamily: 'Roboto',
@@ -76,7 +76,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                             Text(
                               'Check back soon for new mock tests',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: FFFont.f14,
                                 color: Colors.grey.shade400,
                                 fontFamily: 'Roboto',
                               ),
@@ -147,7 +147,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                   children: [
                     Container(
                       width: 4,
-                      height: 58,
+                      height: 30,
                       color: const Color(0xFF2563EB),
                     ),
                     Expanded(
@@ -190,7 +190,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                                   Text(
                                     displayTitle,
                                     style: const TextStyle(
-                                      fontSize: 15,
+                                      fontSize: FFFont.f16,
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF111827),
                                       fontFamily: 'Roboto',
@@ -200,7 +200,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                                   Text(
                                     'Click to view quizzes',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: FFFont.f12,
                                       color: Colors.grey.shade500,
                                       fontFamily: 'Roboto',
                                     ),
@@ -253,7 +253,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
             child: Text(
               'Disclaimer: Mock Station is not affiliated with any government entity. These mock tests are for practice purposes only.',
               style: TextStyle(
-                fontSize: 10.0,
+                fontSize: FFFont.f10,
                 height: 1.35,
                 color: FlutterFlowTheme.of(context).secondaryText,
                 fontStyle: FontStyle.italic,

@@ -90,7 +90,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   Map<String, Style> _questionHtmlStyle(BuildContext context) {
     final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
           fontFamily: 'Roboto',
-          fontSize: 15.0,
+          fontSize: FFFont.f16,
           letterSpacing: 0.0,
           fontWeight: FontWeight.bold,
           useGoogleFonts: false,
@@ -187,7 +187,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
             label,
             style: const TextStyle(
               color: Color(0xFF374151),
-              fontSize: 11.0,
+              fontSize: FFFont.f11,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -227,7 +227,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
           number.toString(),
           style: TextStyle(
             color: filled ? Colors.white : const Color(0xFF374151),
-            fontSize: 12.0,
+            fontSize: FFFont.f12,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -254,7 +254,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   color: selected
                       ? const Color(0xFFF43F5E)
                       : const Color(0xFF4B5563),
-                  fontSize: 11.0,
+                  fontSize: FFFont.f11,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -304,7 +304,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   title,
                   style: const TextStyle(
                     color: Color(0xFF1F2937),
-                    fontSize: 18.0,
+                    fontSize: FFFont.f18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -380,7 +380,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   label: const Text(
                     'SUBMIT TEST',
                     style: TextStyle(
-                      fontSize: 12.0,
+                      fontSize: FFFont.f12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.2,
                     ),
@@ -458,7 +458,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
               subject,
               style: const TextStyle(
                 color: Color(0xFF1F2937),
-                fontSize: 16.0,
+                fontSize: FFFont.f16,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -531,7 +531,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   'Questions:',
                   style: TextStyle(
                     color: Color(0xFF1F2937),
-                    fontSize: 12.0,
+                    fontSize: FFFont.f12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -540,7 +540,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   displayQuestions.length.toString(),
                   style: const TextStyle(
                     color: Color(0xFF1F2937),
-                    fontSize: 12.0,
+                    fontSize: FFFont.f12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -636,7 +636,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                       child: const Text(
                         'Submit Section',
                         style: TextStyle(
-                          fontSize: 12.0,
+                          fontSize: FFFont.f12,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -660,7 +660,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                       child: const Text(
                         'Submit Test',
                         style: TextStyle(
-                          fontSize: 12.0,
+                          fontSize: FFFont.f12,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -797,7 +797,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                   label: const Text(
                     'SUBMIT TEST',
                     style: TextStyle(
-                      fontSize: 12.0,
+                      fontSize: FFFont.f12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.2,
                     ),
@@ -900,7 +900,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                               'Grid View',
                               style: TextStyle(
                                 color: Color(0xFF1F2937),
-                                fontSize: 20.0,
+                                fontSize: FFFont.f20,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -933,7 +933,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                                 'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
                                 style: const TextStyle(
                                   color: Color(0xFF64748B),
-                                  fontSize: 11.0,
+                                  fontSize: FFFont.f11,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -948,7 +948,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                                 'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
                                 style: const TextStyle(
                                   color: Color(0xFF64748B),
-                                  fontSize: 11.0,
+                                  fontSize: FFFont.f11,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

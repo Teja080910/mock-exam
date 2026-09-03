@@ -135,7 +135,7 @@ class _OnBordingScreenWidgetState extends State<OnBordingScreenWidget> {
                                           .override(
                                             fontFamily: 'Roboto',
                                             color: Color(0xFF1C1B1B),
-                                            fontSize: 28.0,
+                                            fontSize: FFFont.f28,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.bold,
                                             useGoogleFonts: false,
@@ -235,7 +235,7 @@ class _OnBordingScreenWidgetState extends State<OnBordingScreenWidget> {
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'Roboto',
                         color: Colors.white,
-                        fontSize: 18.0,
+                        fontSize: FFFont.f18,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.w600,
                         useGoogleFonts: false,
@@ -274,7 +274,7 @@ class _OnBordingScreenWidgetState extends State<OnBordingScreenWidget> {
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
                           color: Color(0xFF1C1B1B),
-                          fontSize: 17.0,
+                          fontSize: FFFont.f18,
                           letterSpacing: 0.0,
                           useGoogleFonts: false,
                           lineHeight: 1.5,

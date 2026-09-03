@@ -65,7 +65,7 @@ class _CodeVerificationDialogWidgetState
                   'Enter your verification code',
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'Roboto',
-                        fontSize: 20.0,
+                        fontSize: FFFont.f20,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.bold,
                         useGoogleFonts: false,
@@ -79,7 +79,7 @@ class _CodeVerificationDialogWidgetState
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: 17.0,
+                          fontSize: FFFont.f18,
                           letterSpacing: 0.0,
                           useGoogleFonts: false,
                           lineHeight: 1.5,
@@ -102,7 +102,7 @@ class _CodeVerificationDialogWidgetState
                                 .override(
                                   fontFamily: 'Roboto',
                                   color: FlutterFlowTheme.of(context).black,
-                                  fontSize: 17.0,
+                                  fontSize: FFFont.f18,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.normal,
                                   useGoogleFonts: false,
@@ -115,7 +115,7 @@ class _CodeVerificationDialogWidgetState
                             ).toString(),
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 17.0,
+                              fontSize: FFFont.f18,
                             ),
                           )
                         ],
@@ -272,7 +272,7 @@ class _CodeVerificationDialogWidgetState
                           FlutterFlowTheme.of(context).titleSmall.override(
                                 fontFamily: 'Roboto',
                                 color: FlutterFlowTheme.of(context).white,
-                                fontSize: 18.0,
+                                fontSize: FFFont.f18,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.w600,
                                 useGoogleFonts: false,

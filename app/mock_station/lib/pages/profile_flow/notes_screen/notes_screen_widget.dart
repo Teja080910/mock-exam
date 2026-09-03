@@ -60,7 +60,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
                           'Study Notes',
                           style: const TextStyle(
                             color: Color(0xFF10213F),
-                            fontSize: 22.0,
+                            fontSize: FFFont.f22,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -112,7 +112,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
                   'Coming Soon',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16.0,
+                    fontSize: FFFont.f16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -132,7 +132,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
           '$number. ',
           style: const TextStyle(
             color: Color(0xFF10213F),
-            fontSize: 15.5,
+            fontSize: FFFont.f16,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -141,7 +141,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
             text,
             style: const TextStyle(
               color: Color(0xFF10213F),
-              fontSize: 15.5,
+              fontSize: FFFont.f16,
               fontWeight: FontWeight.w500,
               height: 1.4,
             ),

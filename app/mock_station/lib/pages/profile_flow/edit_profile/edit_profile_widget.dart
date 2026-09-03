@@ -367,7 +367,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -379,7 +379,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black40,
-                                              fontSize: 17.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -390,7 +390,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .error,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -440,7 +440,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             fontFamily: 'Roboto',
                                             color: FlutterFlowTheme.of(context)
                                                 .black,
-                                            fontSize: 17.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             useGoogleFonts: false,
                                           ),
@@ -467,7 +467,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -479,7 +479,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black40,
-                                              fontSize: 17.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -490,7 +490,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .error,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -540,7 +540,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             fontFamily: 'Roboto',
                                             color: FlutterFlowTheme.of(context)
                                                 .black,
-                                            fontSize: 17.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             useGoogleFonts: false,
                                           ),
@@ -569,7 +569,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -581,7 +581,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black40,
-                                              fontSize: 17.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -630,7 +630,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             fontFamily: 'Roboto',
                                             color: FlutterFlowTheme.of(context)
                                                 .black,
-                                            fontSize: 17.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             useGoogleFonts: false,
                                           ),
@@ -657,7 +657,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -669,7 +669,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black40,
-                                              fontSize: 17.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -680,7 +680,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .error,
-                                              fontSize: 15.0,
+                                              fontSize: FFFont.f16,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -729,7 +729,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             fontFamily: 'Roboto',
                                             color: FlutterFlowTheme.of(context)
                                                 .black,
-                                            fontSize: 17.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             useGoogleFonts: false,
                                           ),
@@ -906,7 +906,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   .override(
                                     fontFamily: 'Roboto',
                                     color: FlutterFlowTheme.of(context).white,
-                                    fontSize: 18.0,
+                                    fontSize: FFFont.f18,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     useGoogleFonts: false,

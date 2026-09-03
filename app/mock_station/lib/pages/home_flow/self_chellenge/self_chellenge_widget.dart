@@ -140,7 +140,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily: 'Roboto',
-                                                        fontSize: 18.0,
+                                                        fontSize: FFFont.f18,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -224,7 +224,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily: 'Roboto',
-                                                        fontSize: 18.0,
+                                                        fontSize: FFFont.f18,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -308,7 +308,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily: 'Roboto',
-                                                        fontSize: 18.0,
+                                                        fontSize: FFFont.f18,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -371,7 +371,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                                 style: TextStyle(
                                   color:
                                       FlutterFlowTheme.of(context).primaryText,
-                                  fontSize: 18.0,
+                                  fontSize: FFFont.f18,
                                 ),
                               ),
                               duration: Duration(milliseconds: 2000),
@@ -398,7 +398,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                                   style: TextStyle(
                                     color: FlutterFlowTheme.of(context)
                                         .primaryText,
-                                    fontSize: 18.0,
+                                    fontSize: FFFont.f18,
                                   ),
                                 ),
                                 duration: Duration(milliseconds: 2000),
@@ -482,7 +482,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                             FlutterFlowTheme.of(context).titleSmall.override(
                                   fontFamily: 'Roboto',
                                   color: FlutterFlowTheme.of(context).black,
-                                  fontSize: 18.0,
+                                  fontSize: FFFont.f18,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w600,
                                   useGoogleFonts: false,

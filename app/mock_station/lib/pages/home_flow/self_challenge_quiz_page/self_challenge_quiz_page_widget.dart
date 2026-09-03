@@ -150,7 +150,7 @@ class _SelfChallengeQuizPageWidgetState
                         textAlign: TextAlign.center,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'Roboto',
-                              fontSize: 18.0,
+                              fontSize: FFFont.f18,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.w600,
                               useGoogleFonts: false,
@@ -273,7 +273,7 @@ class _SelfChallengeQuizPageWidgetState
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily: 'Roboto',
-                                                        fontSize: 22.0,
+                                                        fontSize: FFFont.f22,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -545,7 +545,7 @@ class _SelfChallengeQuizPageWidgetState
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'Roboto',
-                                                          fontSize: 18.0,
+                                                          fontSize: FFFont.f18,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w500,
@@ -588,7 +588,7 @@ class _SelfChallengeQuizPageWidgetState
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'Roboto',
-                                                          fontSize: 20.0,
+                                                          fontSize: FFFont.f20,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -625,7 +625,7 @@ class _SelfChallengeQuizPageWidgetState
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'Roboto',
-                                                          fontSize: 20.0,
+                                                          fontSize: FFFont.f20,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -746,7 +746,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'Roboto',
-                                                                                      fontSize: 18.0,
+                                                                                      fontSize: FFFont.f18,
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w600,
                                                                                       useGoogleFonts: false,
@@ -788,7 +788,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.a''')),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -833,7 +833,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.b''')),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -878,7 +878,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.c''')),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -922,7 +922,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                     biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.d''')),
                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                           fontFamily: 'Roboto',
-                                                                                          fontSize: 18.0,
+                                                                                          fontSize: FFFont.f18,
                                                                                           letterSpacing: 0.0,
                                                                                           fontWeight: FontWeight.normal,
                                                                                           useGoogleFonts: false,
@@ -991,7 +991,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'Roboto',
-                                                                                      fontSize: 18.0,
+                                                                                      fontSize: FFFont.f18,
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w600,
                                                                                       useGoogleFonts: false,
@@ -1034,7 +1034,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       'True',
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -1079,7 +1079,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       'False',
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -1176,7 +1176,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'Roboto',
-                                                                                      fontSize: 18.0,
+                                                                                      fontSize: FFFont.f18,
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w600,
                                                                                       useGoogleFonts: false,
@@ -1219,7 +1219,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                           biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.a''')),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'Roboto',
-                                                                                                fontSize: 18.0,
+                                                                                                fontSize: FFFont.f18,
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.normal,
                                                                                                 useGoogleFonts: false,
@@ -1257,7 +1257,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                           biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.b''')),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'Roboto',
-                                                                                                fontSize: 18.0,
+                                                                                                fontSize: FFFont.f18,
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.normal,
                                                                                                 useGoogleFonts: false,
@@ -1309,7 +1309,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                             biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.c''')),
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                   fontFamily: 'Roboto',
-                                                                                                  fontSize: 18.0,
+                                                                                                  fontSize: FFFont.f18,
                                                                                                   letterSpacing: 0.0,
                                                                                                   fontWeight: FontWeight.normal,
                                                                                                   useGoogleFonts: false,
@@ -1347,7 +1347,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                             biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.d''')),
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                   fontFamily: 'Roboto',
-                                                                                                  fontSize: 18.0,
+                                                                                                  fontSize: FFFont.f18,
                                                                                                   letterSpacing: 0.0,
                                                                                                   fontWeight: FontWeight.normal,
                                                                                                   useGoogleFonts: false,
@@ -1420,7 +1420,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'Roboto',
-                                                                                      fontSize: 18.0,
+                                                                                      fontSize: FFFont.f18,
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w600,
                                                                                       useGoogleFonts: false,
@@ -1496,7 +1496,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.a''')),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -1541,7 +1541,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.b''')),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -1586,7 +1586,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                       biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.c''')),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             fontFamily: 'Roboto',
-                                                                                            fontSize: 18.0,
+                                                                                            fontSize: FFFont.f18,
                                                                                             letterSpacing: 0.0,
                                                                                             fontWeight: FontWeight.normal,
                                                                                             useGoogleFonts: false,
@@ -1630,7 +1630,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                                     biOptionText(getJsonField(selfchallengeQuizItem, r'''$.option.d''')),
                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                           fontFamily: 'Roboto',
-                                                                                          fontSize: 18.0,
+                                                                                          fontSize: FFFont.f18,
                                                                                           letterSpacing: 0.0,
                                                                                           fontWeight: FontWeight.normal,
                                                                                           useGoogleFonts: false,
@@ -2715,8 +2715,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                       color: FlutterFlowTheme.of(
                                                                               context)
                                                                           .black,
-                                                                      fontSize:
-                                                                          18.0,
+                                                                      fontSize: FFFont.f18,
                                                                       letterSpacing:
                                                                           0.0,
                                                                       fontWeight:
@@ -2833,7 +2832,7 @@ class _SelfChallengeQuizPageWidgetState
                                                       .override(
                                                         fontFamily: 'Roboto',
                                                         color: Colors.white,
-                                                        fontSize: 16.0,
+                                                        fontSize: FFFont.f16,
                                                         useGoogleFonts: false,
                                                       ),
                                                 ),

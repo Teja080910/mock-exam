@@ -63,7 +63,7 @@ class _EmailVerificationDialogWidgetState
                   'Verify your email',
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'Roboto',
-                        fontSize: 20.0,
+                        fontSize: FFFont.f20,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.bold,
                         useGoogleFonts: false,
@@ -81,7 +81,7 @@ class _EmailVerificationDialogWidgetState
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'Roboto',
-                                    fontSize: 17.0,
+                                    fontSize: FFFont.f18,
                                     letterSpacing: 0.0,
                                     useGoogleFonts: false,
                                     lineHeight: 1.5,
@@ -104,7 +104,7 @@ class _EmailVerificationDialogWidgetState
                       ],
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Roboto',
-                            fontSize: 17.0,
+                            fontSize: FFFont.f18,
                             letterSpacing: 0.0,
                             useGoogleFonts: false,
                             lineHeight: 1.5,
@@ -194,7 +194,7 @@ class _EmailVerificationDialogWidgetState
                             FlutterFlowTheme.of(context).titleSmall.override(
                                   fontFamily: 'Roboto',
                                   color: FlutterFlowTheme.of(context).black,
-                                  fontSize: 18.0,
+                                  fontSize: FFFont.f18,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w600,
                                   useGoogleFonts: false,

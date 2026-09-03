@@ -229,7 +229,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'Roboto',
-                                    fontSize: 18.0,
+                                    fontSize: FFFont.f18,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     useGoogleFonts: false,
@@ -284,7 +284,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                                                 .bodyMedium
                                                 .override(
                                                   fontFamily: 'Roboto',
-                                                  fontSize: 17.0,
+                                                  fontSize: FFFont.f18,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
                                                   useGoogleFonts: false,
@@ -373,7 +373,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                                                 .bodyMedium
                                                 .override(
                                                   fontFamily: 'Roboto',
-                                                  fontSize: 17.0,
+                                                  fontSize: FFFont.f18,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
                                                   useGoogleFonts: false,
@@ -432,7 +432,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'Roboto',
-                                    fontSize: 24.0,
+                                    fontSize: FFFont.f24,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
                                     useGoogleFonts: false,
@@ -626,8 +626,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                                                                               TextStyle(
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).info,
-                                                                            fontSize:
-                                                                                15.0,
+                                                                            fontSize: FFFont.f16,
                                                                           ),
                                                                         ),
                                                                         duration:
@@ -683,7 +682,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                                                             FlutterFlowTheme.of(
                                                                     context)
                                                                 .info,
-                                                        fontSize: 15.0,
+                                                        fontSize: FFFont.f16,
                                                       ),
                                                     ),
                                                     duration: Duration(
@@ -720,7 +719,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black,
-                                              fontSize: 18.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w600,
                                               useGoogleFonts: false,

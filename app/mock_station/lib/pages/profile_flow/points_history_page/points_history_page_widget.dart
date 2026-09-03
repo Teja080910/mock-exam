@@ -123,7 +123,7 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 18.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
                                             useGoogleFonts: false,
@@ -235,8 +235,7 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                                                                       .override(
                                                                         fontFamily:
                                                                             'Roboto',
-                                                                        fontSize:
-                                                                            20.0,
+                                                                        fontSize: FFFont.f20,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
@@ -255,8 +254,7 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w600,
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                   ),
                                                                 )
                                                               ],
@@ -266,8 +264,7 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        20.0,
+                                                                    fontSize: FFFont.f20,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     fontWeight:
@@ -300,8 +297,7 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        15.0,
+                                                                    fontSize: FFFont.f16,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     fontWeight:

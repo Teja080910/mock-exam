@@ -124,7 +124,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
             'Profile',
             style: TextStyle(
               color: Color(0xFF10213F),
-              fontSize: 18.0,
+              fontSize: FFFont.f18,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -179,7 +179,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   _displayName,
                   style: const TextStyle(
                     color: Color(0xFF10213F),
-                    fontSize: 21.0,
+                    fontSize: FFFont.f22,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -199,7 +199,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     'PRO',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10.0,
+                      fontSize: FFFont.f10,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -286,7 +286,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     label,
                     style: const TextStyle(
                       color: Color(0xFF1F2A44),
-                      fontSize: 15.0,
+                      fontSize: FFFont.f16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

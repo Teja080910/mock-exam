@@ -130,7 +130,7 @@ class _AppBarWidgetState extends State<AppBarWidget>
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: 20.0,
+                          fontSize: FFFont.f20,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           useGoogleFonts: false,

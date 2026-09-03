@@ -35,7 +35,7 @@ Future<void> showReferralPromptOnce(BuildContext context) async {
             Icon(Icons.card_giftcard, color: Color(0xFF10B981), size: 26),
             SizedBox(width: 10),
             Text('Got a referral code?',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: FFFont.f18)),
           ],
         ),
         content: Column(
@@ -44,7 +44,7 @@ Future<void> showReferralPromptOnce(BuildContext context) async {
           children: [
             const Text(
               'If your friend invited you, enter their code & get up to 12% discount on any plan purchase.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+              style: TextStyle(fontSize: FFFont.f14, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 14),
             TextField(

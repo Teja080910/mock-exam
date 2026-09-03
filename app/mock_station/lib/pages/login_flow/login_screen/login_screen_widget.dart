@@ -119,7 +119,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
           
           print('DEBUG: App State updated with backend JWT token');
 
-          await _maybeShowReferralPrompt();
+          // await _maybeShowReferralPrompt();
         } else {
           print('WARNING: Backend Login Failed: ${apiResponse.jsonBody}');
           // Fallback to Firebase token (might fail on some routes but keeps user logged in)
@@ -204,7 +204,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                             Text(
                               "Account Login",
                               style: TextStyle(
-                                fontSize: 22,
+                                fontSize: FFFont.f22,
                                 fontWeight: FontWeight.w900,
                                 color: isDark ? Colors.white : Colors.black87,
                               ),
@@ -253,7 +253,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                                 "Sign In",
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: FFFont.f18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -420,7 +420,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
-                    fontSize: 22,
+                    fontSize: FFFont.f22,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
@@ -430,7 +430,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
               "Your account credentials mismatched. Kindly login through 'Sign in with Google' for a seamless experience.",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: FFFont.f16,
                 height: 1.5,
                 color: isDark ? Colors.white70 : Colors.black54,
               ),
@@ -449,7 +449,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
                     "Try Again",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: FFFont.f16),
                   ),
                 ),
               ),
@@ -598,7 +598,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
         Text(
           'Practice. Improve. Succeed.',
           style: GoogleFonts.roboto(
-            fontSize: 11,
+            fontSize: FFFont.f11,
             color: const Color(0xFF5A6475),
             fontWeight: FontWeight.w500,
           ),
@@ -636,7 +636,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
       textAlign: TextAlign.center,
       text: TextSpan(
         style: GoogleFonts.roboto(
-          fontSize: 16.5,
+          fontSize: FFFont.f16,
           fontWeight: FontWeight.w700,
           color: const Color(0xFF1B1F2A),
         ),
@@ -703,7 +703,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                       Text(
                         'Continue with Google',
                         style: GoogleFonts.roboto(
-                          fontSize: 14,
+                          fontSize: FFFont.f14,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF24306B),
                         ),
@@ -726,7 +726,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
   Widget _buildFeatureCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -777,7 +777,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
         Text(
           'Secure login with your Google account',
           style: GoogleFonts.roboto(
-            fontSize: 12,
+            fontSize: FFFont.f12,
             color: const Color(0xFF4B5568),
             fontWeight: FontWeight.w500,
           ),
@@ -1076,20 +1076,20 @@ class _FeatureItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 26,
+            height: 26,
             decoration: BoxDecoration(
               color: color.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 16, color: color),
+            child: Icon(icon, size: 13, color: color),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             title,
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
-              fontSize: compact ? 8.8 : 9.5,
+              fontSize: compact ? 7.8 : 8.5,
               color: const Color(0xFF26324B),
               fontWeight: FontWeight.w600,
               height: 1.1,
@@ -1099,14 +1099,14 @@ class _FeatureItem extends StatelessWidget {
             subtitle,
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
-              fontSize: compact ? 8.8 : 9.5,
+              fontSize: compact ? 7.8 : 8.5,
               color: const Color(0xFF26324B),
               fontWeight: FontWeight.w600,
               height: 1.1,
             ),
           ),
           const SizedBox(height: 3),
-          Container(width: 16, height: 2, decoration: BoxDecoration(color: underline, borderRadius: BorderRadius.circular(99))),
+          Container(width: 14, height: 2, decoration: BoxDecoration(color: underline, borderRadius: BorderRadius.circular(99))),
         ],
       ),
     );
@@ -1118,7 +1118,7 @@ class _FeatureDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 42, color: const Color(0xFFE7ECF8));
+    return Container(width: 1, height: 34, color: const Color(0xFFE7ECF8));
   }
 }
 

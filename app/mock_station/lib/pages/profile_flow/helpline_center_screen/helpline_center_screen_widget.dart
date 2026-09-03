@@ -133,7 +133,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 18.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
                                             useGoogleFonts: false,
@@ -191,7 +191,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                               const Text(
                                                 'Contact Support',
                                                 style: TextStyle(
-                                                  fontSize: 16.0,
+                                                  fontSize: FFFont.f16,
                                                   fontWeight: FontWeight.w700,
                                                   color: Color(0xFF111827),
                                                 ),
@@ -200,7 +200,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                               const Text(
                                                 'If you have any questions, feedback, or need assistance, please feel free to contact us at:',
                                                 style: TextStyle(
-                                                  fontSize: 14.0,
+                                                  fontSize: FFFont.f14,
                                                   color: Colors.black54,
                                                   height: 1.4,
                                                 ),
@@ -231,7 +231,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                                         'freshersfind@gmail.com',
                                                         style: TextStyle(
                                                           color: Color(0xFF2563EB),
-                                                          fontSize: 14.0,
+                                                          fontSize: FFFont.f14,
                                                           fontWeight: FontWeight.w600,
                                                         ),
                                                       ),

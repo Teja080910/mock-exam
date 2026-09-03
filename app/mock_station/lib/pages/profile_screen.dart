@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quiz_zee/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/app_constants.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -32,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     'My Account',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: FFFont.f28,
                       fontWeight: FontWeight.bold,
                       color: FlutterFlowTheme.of(context).primaryText,
                     ),
@@ -84,7 +85,7 @@ class _ProfileMenuItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: FFFont.f18,
                 color: FlutterFlowTheme.of(context).primaryText,
                 fontWeight: FontWeight.w400,
               ),

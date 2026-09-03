@@ -158,7 +158,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 18.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
                                             useGoogleFonts: false,
@@ -261,8 +261,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                     .override(
                                                                       fontFamily:
                                                                           'Roboto',
-                                                                      fontSize:
-                                                                          20.0,
+                                                                      fontSize: FFFont.f20,
                                                                       letterSpacing:
                                                                           0.0,
                                                                       fontWeight:
@@ -310,8 +309,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              20.0,
+                                                                          fontSize: FFFont.f20,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
@@ -548,7 +546,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                                 biOptionText(getJsonField(quesItem, r'''$.option.a''')).toString(),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 17.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   useGoogleFonts: false,
                                                                                   lineHeight: 1.5,
@@ -581,7 +579,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'Roboto',
-                                                                              fontSize: 17.0,
+                                                                              fontSize: FFFont.f18,
                                                                               letterSpacing: 0.0,
                                                                               useGoogleFonts: false,
                                                                               lineHeight: 1.5,
@@ -688,7 +686,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                                 'True',
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 17.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   useGoogleFonts: false,
                                                                                   lineHeight: 1.5,
@@ -729,7 +727,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'Roboto',
-                                                                              fontSize: 17.0,
+                                                                              fontSize: FFFont.f18,
                                                                               letterSpacing: 0.0,
                                                                               useGoogleFonts: false,
                                                                               lineHeight: 1.5,
@@ -837,7 +835,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                                 biOptionText(getJsonField(quesItem, r'''$.option.b''')).toString(),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 17.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   useGoogleFonts: false,
                                                                                   lineHeight: 1.5,
@@ -870,7 +868,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'Roboto',
-                                                                              fontSize: 17.0,
+                                                                              fontSize: FFFont.f18,
                                                                               letterSpacing: 0.0,
                                                                               useGoogleFonts: false,
                                                                               lineHeight: 1.5,
@@ -977,7 +975,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                                 'False',
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 17.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   useGoogleFonts: false,
                                                                                   lineHeight: 1.5,
@@ -1018,7 +1016,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'Roboto',
-                                                                              fontSize: 17.0,
+                                                                              fontSize: FFFont.f18,
                                                                               letterSpacing: 0.0,
                                                                               useGoogleFonts: false,
                                                                               lineHeight: 1.5,
@@ -1128,7 +1126,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'Roboto',
-                                                                              fontSize: 17.0,
+                                                                              fontSize: FFFont.f18,
                                                                               letterSpacing: 0.0,
                                                                               useGoogleFonts: false,
                                                                               lineHeight: 1.5,
@@ -1164,8 +1162,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              17.0,
+                                                                          fontSize: FFFont.f18,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           useGoogleFonts:
@@ -1274,7 +1271,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'Roboto',
-                                                                              fontSize: 17.0,
+                                                                              fontSize: FFFont.f18,
                                                                               letterSpacing: 0.0,
                                                                               useGoogleFonts: false,
                                                                               lineHeight: 1.5,
@@ -1310,8 +1307,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              17.0,
+                                                                          fontSize: FFFont.f18,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           useGoogleFonts:
@@ -1391,8 +1387,7 @@ class _CompletedquizzesScreenDetailWidgetState
                                                                             'Roboto',
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .white,
-                                                                        fontSize:
-                                                                            18.0,
+                                                                        fontSize: FFFont.f18,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:

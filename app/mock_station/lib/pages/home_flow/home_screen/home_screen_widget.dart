@@ -15,6 +15,7 @@ import '/custom_code/actions/index.dart' as actions;
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
+import '/pages/home_flow/all_group_list_page/all_group_list_page_widget.dart';
 import '/index.dart';
 import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -51,6 +52,9 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   int _bannerCurrentIndex = 0;
   bool _showDisclaimerBanner = true;
 
+  // Max groups shown per scope section before a "View All" button appears
+  static const int _maxGroupsPerSection = 15;
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +65,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
       if (FFAppState().isLogin &&
           FFAppState().loginToken.isNotEmpty &&
           FFAppState().userId.isNotEmpty) {
-        showReferralPromptOnce(context);
+        // showReferralPromptOnce(context);
       }
       if (FFAppState().isLogin) {
         _model.apiResultaov = await QuizGroup.isVerifyAccountCall.call(
@@ -147,7 +151,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
           child: Text(
             title,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: FFFont.f16,
               fontWeight: FontWeight.w800,
               color: Colors.black,
               fontFamily: 'Roboto',
@@ -173,12 +177,12 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                     const SizedBox(height: 10),
                     Text(
                       'No tests available currently',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade500, fontFamily: 'Roboto'),
+                      style: TextStyle(fontSize: FFFont.f14, fontWeight: FontWeight.w500, color: Colors.grey.shade500, fontFamily: 'Roboto'),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Check back soon for new mock tests',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade400, fontFamily: 'Roboto'),
+                      style: TextStyle(fontSize: FFFont.f12, color: Colors.grey.shade400, fontFamily: 'Roboto'),
                     ),
                   ],
                 ),
@@ -186,7 +190,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
             ),
           )
         else
-          _buildGroupGrid(context, groups),
+          _buildGroupGrid(context, title, groups),
       ],
     );
   }
@@ -205,7 +209,16 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
     return Icons.quiz;
   }
 
-  Widget _buildGroupGrid(BuildContext context, List<CategoryGroup> groups) {
+  Widget _buildGroupGrid(BuildContext context, String title, List<CategoryGroup> groups) {
+    // Show up to 15 groups; a "View All" cell appears if there are more
+    final hasMore = groups.length > _maxGroupsPerSection;
+    final visibleGroups = hasMore
+        ? groups.take(_maxGroupsPerSection).toList()
+        : groups;
+
+    // Add one slot for the "View All" button when there are more groups
+    final itemCount = hasMore ? visibleGroups.length + 1 : visibleGroups.length;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(
@@ -216,16 +229,70 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
               crossAxisSpacing: 6,
-              mainAxisSpacing: 10,
-              childAspectRatio: 0.82,
+              mainAxisSpacing: 0,
+              childAspectRatio: 1.2,
             ),
-            itemCount: groups.length,
+            itemCount: itemCount,
             itemBuilder: (context, index) {
-              final group = groups[index];
+              // Last slot is the View All button (when more groups exist)
+              if (hasMore && index == visibleGroups.length) {
+                return _buildViewAllItem(context, title, groups);
+              }
+              final group = visibleGroups[index];
               return _buildGroupIconItem(context, group);
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildViewAllItem(
+      BuildContext context, String title, List<CategoryGroup> groups) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) => AllGroupListPageWidget(
+            sectionTitle: title,
+            groups: groups,
+          ),
+        ));
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Center(
+        child: Container(
+          alignment: Alignment.center,
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                'View All',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+              SizedBox(width: 2),
+              Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.white,
+                size: 13,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -251,57 +318,60 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
           ),
         ));
       },
-      borderRadius: BorderRadius.circular(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: hasImage ? Colors.transparent : const Color(0xFFEEF3FF),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFD6E4FF), width: 1.5),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: hasImage
-                ? CachedNetworkImage(
-                    imageUrl: imgUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    errorWidget: (context, url, error) => Icon(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: hasImage ? Colors.transparent : const Color(0xFFEEF3FF),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFD6E4FF), width: 1.5),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: hasImage
+                  ? CachedNetworkImage(
+                      imageUrl: imgUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      errorWidget: (context, url, error) => Icon(
+                        _getGroupIcon(group.displayName),
+                        color: const Color(0xFF2563EB),
+                        size: 22,
+                      ),
+                    )
+                  : Icon(
                       _getGroupIcon(group.displayName),
                       color: const Color(0xFF2563EB),
-                      size: 28,
+                      size: 22,
                     ),
-                  )
-                : Icon(
-                    _getGroupIcon(group.displayName),
-                    color: const Color(0xFF2563EB),
-                    size: 28,
-                  ),
-          ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(
-              group.code.isNotEmpty ? group.code : group.displayName.replaceAll(RegExp(r'\s*Mock\s*Test[s]?\s*', caseSensitive: false), '').trim(),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
-                fontFamily: 'Roboto',
-                height: 1.2,
+            ),
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                group.code.isNotEmpty ? group.code : group.displayName.replaceAll(RegExp(r'\s*Mock\s*Test[s]?\s*', caseSensitive: false), '').trim(),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: FFFont.f10,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E293B),
+                  fontFamily: 'Roboto',
+                  height: 1.2,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -529,7 +599,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                   "Disclaimer: This app is not affiliated with or represents any government entity.",
                                   style: TextStyle(
                                     color: Color(0xFF664D03),
-                                    fontSize: 12,
+                                    fontSize: FFFont.f12,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

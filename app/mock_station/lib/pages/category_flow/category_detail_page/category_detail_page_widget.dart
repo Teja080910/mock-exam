@@ -76,7 +76,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF111827),
-                    fontSize: 18.0,
+                    fontSize: FFFont.f18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -119,7 +119,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
             child: Text(
               'Disclaimer: Mock Station is not affiliated with any government entity. These mock tests are for practice purposes only.',
               style: TextStyle(
-                fontSize: 10.0,
+                fontSize: FFFont.f10,
                 height: 1.35,
                 color: FlutterFlowTheme.of(context).secondaryText,
                 fontStyle: FontStyle.italic,
@@ -214,7 +214,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                     getJsonField(subcategory, r'$.name').toString(),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 16.0,
+                      fontSize: FFFont.f16,
                       color: Color(0xFF111827),
                     ),
                   ),
@@ -223,7 +223,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                     'Click to view quizzes',
                     style: TextStyle(
                       color: FlutterFlowTheme.of(context).secondaryText,
-                      fontSize: 14.0,
+                      fontSize: FFFont.f14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

@@ -54,7 +54,7 @@ class _LabelCountryCodeWidgetState extends State<LabelCountryCodeWidget> {
         style: FlutterFlowTheme.of(context).bodyMedium.override(
               fontFamily: 'SF Pro Display',
               color: FlutterFlowTheme.of(context).primaryText,
-              fontSize: 17,
+              fontSize: FFFont.f18,
               fontWeight: FontWeight.normal,
               useGoogleFonts: false,
               lineHeight: 1.5,
@@ -63,7 +63,7 @@ class _LabelCountryCodeWidgetState extends State<LabelCountryCodeWidget> {
         dropdownTextStyle: FlutterFlowTheme.of(context).bodyMedium.override(
               fontFamily: 'SF Pro Display',
               color: FlutterFlowTheme.of(context).primaryText,
-              fontSize: 17,
+              fontSize: FFFont.f18,
               fontWeight: FontWeight.w400,
               useGoogleFonts: false,
               lineHeight: 1.5,
@@ -80,7 +80,7 @@ class _LabelCountryCodeWidgetState extends State<LabelCountryCodeWidget> {
           // labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
           //       fontFamily: 'SF Pro Display',
           //       color: FlutterFlowTheme.of(context).grey400,
-          //       fontSize: 13,
+          //       fontSize: FFFont.f14,
           //       useGoogleFonts: false,
           //     ),
           alignLabelWithHint: false,
@@ -89,7 +89,7 @@ class _LabelCountryCodeWidgetState extends State<LabelCountryCodeWidget> {
             style: FlutterFlowTheme.of(context).labelMedium.override(
                   fontFamily: 'SF Pro Display',
                   color: FlutterFlowTheme.of(context).primaryText,
-                  fontSize: 15,
+                  fontSize: FFFont.f16,
                   useGoogleFonts: false,
                   lineHeight: 1.2,
                 ),
@@ -98,7 +98,7 @@ class _LabelCountryCodeWidgetState extends State<LabelCountryCodeWidget> {
           hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                 fontFamily: 'SF Pro Display',
                 color: FlutterFlowTheme.of(context).black40,
-                fontSize: 16,
+                fontSize: FFFont.f16,
                 fontWeight: FontWeight.normal,
                 useGoogleFonts: false,
                 lineHeight: 1.5,
@@ -107,7 +107,7 @@ class _LabelCountryCodeWidgetState extends State<LabelCountryCodeWidget> {
           errorStyle: FlutterFlowTheme.of(context).bodyMedium.override(
                 fontFamily: 'Roboto',
                 color: FlutterFlowTheme.of(context).error,
-                fontSize: 15.0,
+                fontSize: FFFont.f16,
                 letterSpacing: 0.0,
                 useGoogleFonts: false,
               ),

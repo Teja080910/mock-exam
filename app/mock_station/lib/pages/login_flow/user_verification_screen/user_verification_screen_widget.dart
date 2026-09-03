@@ -116,7 +116,7 @@ class _UserVerificationScreenWidgetState
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Roboto',
-                                      fontSize: 17.0,
+                                      fontSize: FFFont.f18,
                                       letterSpacing: 0.0,
                                       useGoogleFonts: false,
                                       lineHeight: 1.2,
@@ -141,7 +141,7 @@ class _UserVerificationScreenWidgetState
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .black,
-                                              fontSize: 17.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.normal,
                                               useGoogleFonts: false,
@@ -151,7 +151,7 @@ class _UserVerificationScreenWidgetState
                                         text: widget.useremail!,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 17.0,
+                                          fontSize: FFFont.f18,
                                         ),
                                       )
                                     ],
@@ -483,7 +483,7 @@ class _UserVerificationScreenWidgetState
                                         fontFamily: 'Roboto',
                                         color:
                                             FlutterFlowTheme.of(context).white,
-                                        fontSize: 18.0,
+                                        fontSize: FFFont.f18,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.w600,
                                         useGoogleFonts: false,
@@ -599,7 +599,7 @@ class _UserVerificationScreenWidgetState
                                                     : FlutterFlowTheme.of(
                                                             context)
                                                         .black10,
-                                                fontSize: 17.0,
+                                                fontSize: FFFont.f18,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.normal,
                                                 useGoogleFonts: false,
@@ -614,7 +614,7 @@ class _UserVerificationScreenWidgetState
                                                 : FlutterFlowTheme.of(context)
                                                     .black10,
                                             fontWeight: FontWeight.w600,
-                                            fontSize: 17.0,
+                                            fontSize: FFFont.f18,
                                           ),
                                         )
                                       ],
@@ -622,7 +622,7 @@ class _UserVerificationScreenWidgetState
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'Roboto',
-                                            fontSize: 17.0,
+                                            fontSize: FFFont.f18,
                                             letterSpacing: 0.0,
                                             useGoogleFonts: false,
                                           ),
@@ -661,7 +661,7 @@ class _UserVerificationScreenWidgetState
                                       fontFamily: 'Roboto',
                                       color:
                                           FlutterFlowTheme.of(context).warning,
-                                      fontSize: 20.0,
+                                      fontSize: FFFont.f20,
                                       letterSpacing: 0.0,
                                       useGoogleFonts: false,
                                     ),

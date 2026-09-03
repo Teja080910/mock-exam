@@ -216,7 +216,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                       .bodyMedium
                                       .override(
                                         fontFamily: 'Roboto',
-                                        fontSize: 22.0,
+                                        fontSize: FFFont.f22,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
                                         useGoogleFonts: false,
@@ -407,7 +407,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'Roboto',
-                                          fontSize: 18.0,
+                                          fontSize: FFFont.f18,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w500,
                                           useGoogleFonts: false,
@@ -443,7 +443,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'Roboto',
-                                              fontSize: 20.0,
+                                              fontSize: FFFont.f20,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.bold,
                                               useGoogleFonts: false,
@@ -472,7 +472,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'Roboto',
-                                          fontSize: 20.0,
+                                          fontSize: FFFont.f20,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.bold,
                                           useGoogleFonts: false,
@@ -588,8 +588,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        18.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     fontWeight:
@@ -673,8 +672,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              18.0,
+                                                                          fontSize: FFFont.f18,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
@@ -760,8 +758,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              18.0,
+                                                                          fontSize: FFFont.f18,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
@@ -847,8 +844,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                         .override(
                                                                           fontFamily:
                                                                               'Roboto',
-                                                                          fontSize:
-                                                                              18.0,
+                                                                          fontSize: FFFont.f18,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
@@ -922,8 +918,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                       .override(
                                                                         fontFamily:
                                                                             'Roboto',
-                                                                        fontSize:
-                                                                            18.0,
+                                                                        fontSize: FFFont.f18,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
@@ -1257,7 +1252,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                           color: FlutterFlowTheme
                                                                   .of(context)
                                                               .black,
-                                                          fontSize: 18.0,
+                                                          fontSize: FFFont.f18,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w600,
@@ -1351,7 +1346,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                           .override(
                                             fontFamily: 'Roboto',
                                             color: Colors.white,
-                                            fontSize: 16.0,
+                                            fontSize: FFFont.f16,
                                             useGoogleFonts: false,
                                           ),
                                     ),

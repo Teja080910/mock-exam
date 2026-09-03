@@ -116,7 +116,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                       .bodyMedium
                                       .override(
                                         fontFamily: 'Roboto',
-                                        fontSize: 22.0,
+                                        fontSize: FFFont.f22,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
                                         useGoogleFonts: false,
@@ -270,7 +270,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .black40,
-                                                fontSize: 15.0,
+                                                fontSize: FFFont.f16,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.normal,
                                                 useGoogleFonts: false,
@@ -290,7 +290,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                               .bodyMedium
                                               .override(
                                                 fontFamily: 'Roboto',
-                                                fontSize: 17.0,
+                                                fontSize: FFFont.f18,
                                                 letterSpacing: 0.0,
                                                 useGoogleFonts: false,
                                                 lineHeight: 1.5,
@@ -327,7 +327,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .black40,
-                                                fontSize: 15.0,
+                                                fontSize: FFFont.f16,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.normal,
                                                 useGoogleFonts: false,
@@ -344,7 +344,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                                               .bodyMedium
                                               .override(
                                                 fontFamily: 'Roboto',
-                                                fontSize: 17.0,
+                                                fontSize: FFFont.f18,
                                                 letterSpacing: 0.0,
                                                 useGoogleFonts: false,
                                                 lineHeight: 1.5,

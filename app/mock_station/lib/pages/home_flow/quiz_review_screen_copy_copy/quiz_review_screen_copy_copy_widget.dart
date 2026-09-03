@@ -214,7 +214,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           .override(
                                                             fontFamily:
                                                                 'Roboto',
-                                                            fontSize: 20.0,
+                                                            fontSize: FFFont.f20,
                                                             letterSpacing: 0.0,
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -259,7 +259,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               .override(
                                                                 fontFamily:
                                                                     'Roboto',
-                                                                fontSize: 20.0,
+                                                                fontSize: FFFont.f20,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight:
@@ -451,8 +451,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       .override(
                                                                         fontFamily:
                                                                             'Roboto',
-                                                                        fontSize:
-                                                                            17.0,
+                                                                        fontSize: FFFont.f18,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         useGoogleFonts:
@@ -484,8 +483,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     useGoogleFonts:
@@ -592,8 +590,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       .override(
                                                                         fontFamily:
                                                                             'Roboto',
-                                                                        fontSize:
-                                                                            17.0,
+                                                                        fontSize: FFFont.f18,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         useGoogleFonts:
@@ -629,8 +626,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     useGoogleFonts:
@@ -739,8 +735,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       .override(
                                                                         fontFamily:
                                                                             'Roboto',
-                                                                        fontSize:
-                                                                            17.0,
+                                                                        fontSize: FFFont.f18,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         useGoogleFonts:
@@ -772,8 +767,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     useGoogleFonts:
@@ -880,8 +874,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                       .override(
                                                                         fontFamily:
                                                                             'Roboto',
-                                                                        fontSize:
-                                                                            17.0,
+                                                                        fontSize: FFFont.f18,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         useGoogleFonts:
@@ -917,8 +910,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     useGoogleFonts:
@@ -1020,8 +1012,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     useGoogleFonts:
@@ -1052,7 +1043,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               .override(
                                                                 fontFamily:
                                                                     'Roboto',
-                                                                fontSize: 17.0,
+                                                                fontSize: FFFont.f18,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 useGoogleFonts:
@@ -1150,8 +1141,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                   .override(
                                                                     fontFamily:
                                                                         'Roboto',
-                                                                    fontSize:
-                                                                        17.0,
+                                                                    fontSize: FFFont.f18,
                                                                     letterSpacing:
                                                                         0.0,
                                                                     useGoogleFonts:
@@ -1182,7 +1172,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               .override(
                                                                 fontFamily:
                                                                     'Roboto',
-                                                                fontSize: 17.0,
+                                                                fontSize: FFFont.f18,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 useGoogleFonts:
@@ -1238,7 +1228,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           color: FlutterFlowTheme
                                                                   .of(context)
                                                               .white,
-                                                          fontSize: 18.0,
+                                                          fontSize: FFFont.f18,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w600,
@@ -1352,7 +1342,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                           .override(
                                                             fontFamily:
                                                                 'Roboto',
-                                                            fontSize: 20.0,
+                                                            fontSize: FFFont.f20,
                                                             letterSpacing: 0.0,
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -1397,7 +1387,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                               .override(
                                                                 fontFamily:
                                                                     'Roboto',
-                                                                fontSize: 20.0,
+                                                                fontSize: FFFont.f20,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight:
@@ -1476,8 +1466,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                 .override(
                                                                   fontFamily:
                                                                       'Roboto',
-                                                                  fontSize:
-                                                                      17.0,
+                                                                  fontSize: FFFont.f18,
                                                                   letterSpacing:
                                                                       0.0,
                                                                   useGoogleFonts:
@@ -1507,7 +1496,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             .override(
                                                               fontFamily:
                                                                   'Roboto',
-                                                              fontSize: 17.0,
+                                                              fontSize: FFFont.f18,
                                                               letterSpacing:
                                                                   0.0,
                                                               useGoogleFonts:
@@ -1579,8 +1568,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                 .override(
                                                                   fontFamily:
                                                                       'Roboto',
-                                                                  fontSize:
-                                                                      17.0,
+                                                                  fontSize: FFFont.f18,
                                                                   letterSpacing:
                                                                       0.0,
                                                                   useGoogleFonts:
@@ -1610,7 +1598,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             .override(
                                                               fontFamily:
                                                                   'Roboto',
-                                                              fontSize: 17.0,
+                                                              fontSize: FFFont.f18,
                                                               letterSpacing:
                                                                   0.0,
                                                               useGoogleFonts:
@@ -1682,8 +1670,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                 .override(
                                                                   fontFamily:
                                                                       'Roboto',
-                                                                  fontSize:
-                                                                      17.0,
+                                                                  fontSize: FFFont.f18,
                                                                   letterSpacing:
                                                                       0.0,
                                                                   useGoogleFonts:
@@ -1713,7 +1700,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             .override(
                                                               fontFamily:
                                                                   'Roboto',
-                                                              fontSize: 17.0,
+                                                              fontSize: FFFont.f18,
                                                               letterSpacing:
                                                                   0.0,
                                                               useGoogleFonts:
@@ -1785,8 +1772,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                                 .override(
                                                                   fontFamily:
                                                                       'Roboto',
-                                                                  fontSize:
-                                                                      17.0,
+                                                                  fontSize: FFFont.f18,
                                                                   letterSpacing:
                                                                       0.0,
                                                                   useGoogleFonts:
@@ -1816,7 +1802,7 @@ class _QuizReviewScreenCopyCopyWidgetState
                                                             .override(
                                                               fontFamily:
                                                                   'Roboto',
-                                                              fontSize: 17.0,
+                                                              fontSize: FFFont.f18,
                                                               letterSpacing:
                                                                   0.0,
                                                               useGoogleFonts:

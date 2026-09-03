@@ -212,7 +212,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                                           .copyWith(
                                                             color: _getTypeColor(postType),
                                                             fontWeight: FontWeight.w600,
-                                                            fontSize: 11.0,
+                                                            fontSize: FFFont.f11,
                                                           ),
                                                     ),
                                                   ],
@@ -224,7 +224,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                                   dateTimeFormat('relative',DateTime.parse(createdAt)),
                                                   style: FlutterFlowTheme.of(context)
                                                       .bodySmall
-                                                      .copyWith(fontSize: 11.0),
+                                                      .copyWith(fontSize: FFFont.f11),
                                                 ),
                                             ],
                                           ),
@@ -235,7 +235,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                                 .titleLarge
                                                 .copyWith(
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 16.0,
+                                                  fontSize: FFFont.f16,
                                                   height: 1.3,
                                                 ),
                                           ),
@@ -251,7 +251,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                                     color: FlutterFlowTheme.of(context)
                                                         .primaryText
                                                         .withOpacity(0.7),
-                                                    fontSize: 13.5,
+                                                    fontSize: FFFont.f14,
                                                     height: 1.5,
                                                   ),
                                             ),

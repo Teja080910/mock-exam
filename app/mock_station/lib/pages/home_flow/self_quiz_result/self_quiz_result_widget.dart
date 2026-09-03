@@ -257,7 +257,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             textAlign: TextAlign.center,
             style: TextStyle(
               color: selected ? const Color(0xFF1D4ED8) : const Color(0xFF6B7280),
-              fontSize: 14.0,
+              fontSize: FFFont.f14,
               fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
             ),
           ),
@@ -294,7 +294,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 text: text,
                 style: TextStyle(
                   color: const Color(0xFF111827),
-                  fontSize: 14.0,
+                  fontSize: FFFont.f14,
                   fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
                 ),
                 children: [
@@ -359,7 +359,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             'Q${index + 1}. $questionText',
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 15.0,
+              fontSize: FFFont.f16,
               fontWeight: FontWeight.w800,
               height: 1.35,
             ),
@@ -416,7 +416,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               isAnswered ? 'Answer recorded' : 'Skipped',
               style: TextStyle(
                 color: isAnswered ? const Color(0xFF1D4ED8) : const Color(0xFF6B7280),
-                fontSize: 13.0,
+                fontSize: FFFont.f14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -436,7 +436,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               style: TextStyle(
                 color:
                     selected ? const Color(0xFF1D4ED8) : const Color(0xFF6B7280),
-                fontSize: 13.0,
+                fontSize: FFFont.f14,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
@@ -469,7 +469,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             title,
             style: const TextStyle(
               color: Color(0xFF6B7280),
-              fontSize: 11.0,
+              fontSize: FFFont.f11,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -478,7 +478,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             value,
             style: TextStyle(
               color: fg,
-              fontSize: 22.0,
+              fontSize: FFFont.f22,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -506,7 +506,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                   color: selected
                       ? const Color(0xFFF43F5E)
                       : const Color(0xFF6B7280),
-                  fontSize: 11.0,
+                  fontSize: FFFont.f11,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -563,7 +563,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                   title,
                   style: const TextStyle(
                     color: Color(0xFF111827),
-                    fontSize: 11.0,
+                    fontSize: FFFont.f11,
                     fontWeight: FontWeight.w500,
                     height: 1.1,
                   ),
@@ -573,7 +573,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                   value,
                   style: TextStyle(
                     color: color,
-                    fontSize: 22.0,
+                    fontSize: FFFont.f22,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -592,7 +592,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                       badge,
                       style: TextStyle(
                         color: color,
-                        fontSize: 10.0,
+                        fontSize: FFFont.f10,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -637,7 +637,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 'Total Time Taken',
                 style: TextStyle(
                   color: Color(0xFF111827),
-                  fontSize: 11.0,
+                  fontSize: FFFont.f11,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -646,7 +646,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 timeText,
                 style: const TextStyle(
                   color: Color(0xFF111827),
-                  fontSize: 19.0,
+                  fontSize: FFFont.f20,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -687,7 +687,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                         : rank == 3
                             ? const Color(0xFFF97316)
                             : const Color(0xFF64748B),
-                fontSize: 18.0,
+                fontSize: FFFont.f18,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -716,7 +716,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
               isCurrentUser ? 'You' : name,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 16.0,
+                fontSize: FFFont.f16,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -726,7 +726,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             points,
             style: const TextStyle(
               color: Color(0xFF172554),
-              fontSize: 16.0,
+              fontSize: FFFont.f16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -793,7 +793,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                   rank,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11.0,
+                    fontSize: FFFont.f11,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -821,7 +821,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             name,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 14.0,
+              fontSize: FFFont.f14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -835,7 +835,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 : rank == '2'
                     ? const Color(0xFF1D4ED8)
                     : const Color(0xFFF97316),
-            fontSize: 15.0,
+            fontSize: FFFont.f16,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -910,7 +910,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                             'Great Job! 🎉',
                             style: TextStyle(
                               color: Color(0xFF16A34A),
-                              fontSize: 26.0,
+                              fontSize: FFFont.f28,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -919,7 +919,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                             'You have completed the test successfully.',
                             style: TextStyle(
                               color: Color(0xFF64748B),
-                              fontSize: 13.0,
+                              fontSize: FFFont.f14,
                               height: 1.35,
                               fontWeight: FontWeight.w500,
                             ),
@@ -960,7 +960,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                 '$correct/$total',
                                 style: const TextStyle(
                                   color: Color(0xFF111827),
-                                  fontSize: 28.0,
+                                  fontSize: FFFont.f28,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -969,7 +969,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                 'Score',
                                 style: TextStyle(
                                   color: Color(0xFF64748B),
-                                  fontSize: 11.0,
+                                  fontSize: FFFont.f11,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -996,7 +996,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                       'Performance Summary',
                       style: TextStyle(
                         color: Color(0xFF111827),
-                        fontSize: 16.0,
+                        fontSize: FFFont.f16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1078,7 +1078,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                         'Sectional Summary',
                         style: TextStyle(
                           color: Color(0xFF111827),
-                          fontSize: 16.0,
+                          fontSize: FFFont.f16,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -1124,7 +1124,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                   'Your Score',
                                   style: TextStyle(
                                     color: Color(0xFF6B7280),
-                                    fontSize: 11.0,
+                                    fontSize: FFFont.f11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -1133,7 +1133,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                   '${(totalMarks - wrong).toStringAsFixed(1)}   |   $total',
                                   style: const TextStyle(
                                     color: Color(0xFF111827),
-                                    fontSize: 18.0,
+                                    fontSize: FFFont.f18,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -1150,7 +1150,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                               'Neg. Marks : -${(wrong * 0.5).toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 10.0,
+                                fontSize: FFFont.f10,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -1188,7 +1188,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                 'Time Spent',
                                 style: TextStyle(
                                   color: Color(0xFF6B7280),
-                                  fontSize: 11.0,
+                                  fontSize: FFFont.f11,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1197,7 +1197,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                 timeText,
                                 style: const TextStyle(
                                   color: Color(0xFF111827),
-                                  fontSize: 18.0,
+                                  fontSize: FFFont.f18,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -1275,7 +1275,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                         : 'No skipped questions found.',
                     style: const TextStyle(
                       color: Color(0xFF6B7280),
-                      fontSize: 14.0,
+                      fontSize: FFFont.f14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

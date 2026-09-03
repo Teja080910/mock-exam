@@ -32,24 +32,24 @@ class _SubscriptionRequiredDialogWidgetState
       elevation: 8,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width * 0.88,
+          maxWidth: MediaQuery.sizeOf(context).width * 0.82,
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24.0, 28.0, 24.0, 24.0),
+          padding: const EdgeInsets.fromLTRB(18.0, 16.0, 18.0, 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Top graphic with lock and wider spaced confetti dots
               SizedBox(
-                width: 140,
-                height: 130,
+                width: 84,
+                height: 78,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     // Outer faint ring 1
                     Container(
-                      width: 130,
-                      height: 130,
+                      width: 78,
+                      height: 78,
                       decoration: BoxDecoration(
                         color: const Color(0xFF2563EB).withOpacity(0.03),
                         shape: BoxShape.circle,
@@ -57,8 +57,8 @@ class _SubscriptionRequiredDialogWidgetState
                     ),
                     // Outer faint ring 2
                     Container(
-                      width: 106,
-                      height: 106,
+                      width: 64,
+                      height: 64,
                       decoration: BoxDecoration(
                         color: const Color(0xFF2563EB).withOpacity(0.06),
                         shape: BoxShape.circle,
@@ -66,36 +66,36 @@ class _SubscriptionRequiredDialogWidgetState
                     ),
                     // Inner lock circle
                     Container(
-                      width: 72,
-                      height: 72,
+                      width: 45,
+                      height: 45,
                       decoration: BoxDecoration(
                         color: const Color(0xFF2563EB),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF2563EB).withOpacity(0.35),
-                            blurRadius: 16.0,
-                            offset: const Offset(0, 6),
+                            blurRadius: 10.0,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                       child: const Icon(
                         Icons.lock_rounded,
                         color: Colors.white,
-                        size: 34.0,
+                        size: 21.0,
                       ),
                     ),
                     // Confetti dots positioned wider out
-                    Positioned(top: 12, left: 16, child: _buildConfettiDot(const Color(0xFF7C3AED), 8)), // purple top-left
-                    Positioned(top: 24, right: 12, child: _buildConfettiDot(const Color(0xFF10B981), 7)), // green top-right
-                    Positioned(bottom: 16, left: 20, child: _buildConfettiDot(const Color(0xFF3B82F6), 6)), // blue bottom-left
-                    Positioned(bottom: 20, right: 18, child: _buildConfettiDot(const Color(0xFFEC4899), 7)), // pink bottom-right
-                    Positioned(top: 50, right: 4, child: _buildConfettiDot(const Color(0xFFF59E0B), 8)), // orange right
-                    Positioned(top: 8, left: 62, child: _buildConfettiDot(const Color(0xFF06B6D4), 6)), // cyan top
+                    Positioned(top: 7, left: 9, child: _buildConfettiDot(const Color(0xFF7C3AED), 5)), // purple top-left
+                    Positioned(top: 14, right: 7, child: _buildConfettiDot(const Color(0xFF10B981), 4)), // green top-right
+                    Positioned(bottom: 9, left: 12, child: _buildConfettiDot(const Color(0xFF3B82F6), 3.5)), // blue bottom-left
+                    Positioned(bottom: 12, right: 10, child: _buildConfettiDot(const Color(0xFFEC4899), 4)), // pink bottom-right
+                    Positioned(top: 30, right: 2, child: _buildConfettiDot(const Color(0xFFF59E0B), 5)), // orange right
+                    Positioned(top: 4, left: 38, child: _buildConfettiDot(const Color(0xFF06B6D4), 3.5)), // cyan top
                   ],
                 ),
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 6.0),
 
               // Title with lock emoji
               Row(
@@ -103,16 +103,16 @@ class _SubscriptionRequiredDialogWidgetState
                 children: [
                   const Text(
                     '🔓',
-                    style: TextStyle(fontSize: 20.0),
+                    style: TextStyle(fontSize: FFFont.f14),
                   ),
-                  const SizedBox(width: 8.0),
+                  const SizedBox(width: 5.0),
                   Text(
                     'Subscription Required',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).headlineSmall.override(
                           fontFamily: 'Roboto',
                           color: const Color(0xFF111827),
-                          fontSize: 20.0,
+                          fontSize: FFFont.f16,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           useGoogleFonts: false,
@@ -120,12 +120,12 @@ class _SubscriptionRequiredDialogWidgetState
                   ),
                 ],
               ),
-              const SizedBox(height: 8.0),
+              const SizedBox(height: 5.0),
 
               // Small gradient bar separator
               Container(
-                width: 48.0,
-                height: 3.0,
+                width: 32.0,
+                height: 2.0,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
@@ -133,7 +133,7 @@ class _SubscriptionRequiredDialogWidgetState
                   borderRadius: BorderRadius.circular(1.5),
                 ),
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 8.0),
 
               // Subtitle description with highlighted links
               RichText(
@@ -142,7 +142,7 @@ class _SubscriptionRequiredDialogWidgetState
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'Roboto',
                         color: const Color(0xFF6B7280),
-                        fontSize: 14.0,
+                        fontSize: FFFont.f12,
                         letterSpacing: 0.0,
                         lineHeight: 1.4,
                         useGoogleFonts: false,
@@ -176,26 +176,26 @@ class _SubscriptionRequiredDialogWidgetState
                   ],
                 ),
               ),
-              const SizedBox(height: 28.0),
+              const SizedBox(height: 14.0),
 
               // Action Buttons
               Row(
                 children: [
                   Expanded(
                     child: Container(
-                      height: 52.0,
+                      height: 39.0,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         ),
-                        borderRadius: BorderRadius.circular(14.0),
+                        borderRadius: BorderRadius.circular(11.0),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF2563EB).withOpacity(0.3),
-                            blurRadius: 10.0,
-                            offset: const Offset(0, 4),
+                            blurRadius: 7.0,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
@@ -208,7 +208,7 @@ class _SubscriptionRequiredDialogWidgetState
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14.0),
+                            borderRadius: BorderRadius.circular(11.0),
                           ),
                         ),
                         child: Row(
@@ -216,14 +216,14 @@ class _SubscriptionRequiredDialogWidgetState
                           children: const [
                             Text(
                               '👑',
-                              style: TextStyle(fontSize: 18.0),
+                              style: TextStyle(fontSize: FFFont.f14),
                             ),
-                            SizedBox(width: 8.0),
+                            SizedBox(width: 5.0),
                             Text(
                               'View Plans',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 15.0,
+                                fontSize: FFFont.f12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -232,13 +232,13 @@ class _SubscriptionRequiredDialogWidgetState
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12.0),
+                  const SizedBox(width: 9.0),
                   Expanded(
                     child: Container(
-                      height: 52.0,
+                      height: 39.0,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14.0),
+                        borderRadius: BorderRadius.circular(11.0),
                         border: Border.all(
                           color: const Color(0xFFE5E7EB),
                           width: 1.5,
@@ -250,14 +250,14 @@ class _SubscriptionRequiredDialogWidgetState
                         },
                         style: TextButton.styleFrom(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14.0),
+                            borderRadius: BorderRadius.circular(11.0),
                           ),
                         ),
                         child: const Text(
                           'Cancel',
                           style: TextStyle(
                             color: Color(0xFF374151),
-                            fontSize: 15.0,
+                            fontSize: FFFont.f12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

@@ -121,7 +121,7 @@ class _QuitQuizWidgetState extends State<QuitQuizWidget> {
                     text: TextSpan(
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Roboto',
-                            fontSize: 18.0,
+                            fontSize: FFFont.f18,
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.bold,
                             color: FlutterFlowTheme.of(context).primaryText,
@@ -194,7 +194,7 @@ class _QuitQuizWidgetState extends State<QuitQuizWidget> {
                                             .override(
                                               fontFamily: 'Roboto',
                                               color: Colors.white,
-                                              fontSize: 14.0,
+                                              fontSize: FFFont.f14,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w600,
                                               useGoogleFonts: false,
@@ -249,7 +249,7 @@ class _QuitQuizWidgetState extends State<QuitQuizWidget> {
                                             .override(
                                               fontFamily: 'Roboto',
                                               color: primary,
-                                              fontSize: 14.0,
+                                              fontSize: FFFont.f14,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w600,
                                               useGoogleFonts: false,

@@ -334,7 +334,7 @@ class _QuizquestionsScreenCopyWidgetState
                                       .bodyMedium
                                       .override(
                                         fontFamily: 'Roboto',
-                                        fontSize: 22.0,
+                                        fontSize: FFFont.f22,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
                                         useGoogleFonts: false,
@@ -532,7 +532,7 @@ class _QuizquestionsScreenCopyWidgetState
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'Roboto',
-                                          fontSize: 18.0,
+                                          fontSize: FFFont.f18,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w500,
                                           useGoogleFonts: false,
@@ -601,7 +601,7 @@ class _QuizquestionsScreenCopyWidgetState
                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                       fontFamily: 'Roboto',
                                       color: Colors.white,
-                                      fontSize: 16.0,
+                                      fontSize: FFFont.f16,
                                       useGoogleFonts: false,
                                     ),
                                     onEnded: () async {
@@ -675,7 +675,7 @@ class _QuizquestionsScreenCopyWidgetState
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'Roboto',
-                                              fontSize: 20.0,
+                                              fontSize: FFFont.f20,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.bold,
                                               useGoogleFonts: false,
@@ -706,7 +706,7 @@ class _QuizquestionsScreenCopyWidgetState
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'Roboto',
-                                          fontSize: 20.0,
+                                          fontSize: FFFont.f20,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.bold,
                                           useGoogleFonts: false,
@@ -825,7 +825,7 @@ class _QuizquestionsScreenCopyWidgetState
                                             .headlineSmall
                                             .override(
                                               fontFamily: 'Roboto',
-                                              fontSize: 18.0,
+                                              fontSize: FFFont.f18,
                                               letterSpacing: 0.0,
                                               useGoogleFonts: false,
                                             ),
@@ -905,7 +905,7 @@ class _QuizquestionsScreenCopyWidgetState
                                                                           textAlign: TextAlign.start,
                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                             fontFamily: 'Roboto',
-                                                                            fontSize: 18.0,
+                                                                            fontSize: FFFont.f18,
                                                                             letterSpacing: 0.0,
                                                                             fontWeight: FontWeight.w600,
                                                                             useGoogleFonts: false,
@@ -1000,7 +1000,7 @@ class _QuizquestionsScreenCopyWidgetState
                                                                             biOptionText(getJsonField(categorywisequizItem, r'''$.option.a''')),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 18.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.normal,
                                                                                   useGoogleFonts: false,
@@ -1094,7 +1094,7 @@ class _QuizquestionsScreenCopyWidgetState
                                                                             biOptionText(getJsonField(categorywisequizItem, r'''$.option.b''')),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 18.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.normal,
                                                                                   useGoogleFonts: false,
@@ -1188,7 +1188,7 @@ class _QuizquestionsScreenCopyWidgetState
                                                                             biOptionText(getJsonField(categorywisequizItem, r'''$.option.c''')),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'Roboto',
-                                                                                  fontSize: 18.0,
+                                                                                  fontSize: FFFont.f18,
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.normal,
                                                                                   useGoogleFonts: false,
@@ -1276,7 +1276,7 @@ class _QuizquestionsScreenCopyWidgetState
                                                                               .bodyMedium
                                                                               .override(
                                                                                 fontFamily: 'Roboto',
-                                                                                fontSize: 18.0,
+                                                                                fontSize: FFFont.f18,
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.normal,
                                                                                 useGoogleFonts: false,
@@ -2508,7 +2508,7 @@ class _QuizquestionsScreenCopyWidgetState
                                                           color: FlutterFlowTheme
                                                                   .of(context)
                                                               .black,
-                                                          fontSize: 18.0,
+                                                          fontSize: FFFont.f18,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w600,

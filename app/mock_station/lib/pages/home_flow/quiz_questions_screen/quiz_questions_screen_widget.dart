@@ -198,7 +198,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   Map<String, Style> _questionHtmlStyle(BuildContext context) {
     final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
           fontFamily: 'Roboto',
-          fontSize: 16.0,
+          fontSize: FFFont.f16,
           letterSpacing: 0.0,
           fontWeight: FontWeight.w400,
           useGoogleFonts: false,
@@ -291,7 +291,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
         label,
         style: TextStyle(
           color: textColor,
-          fontSize: 13.0,
+          fontSize: FFFont.f14,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -319,7 +319,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             _model.timerValue.isNotEmpty ? _model.timerValue : '00:00',
             style: const TextStyle(
               color: Color(0xFF1E3A8A),
-              fontSize: 13.0,
+              fontSize: FFFont.f14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -347,7 +347,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   color: selected
                       ? const Color(0xFFF43F5E)
                       : const Color(0xFF4B5563),
-                  fontSize: 11.0,
+                  fontSize: FFFont.f11,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -483,7 +483,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF111827),
-                        fontSize: 16.0,
+                        fontSize: FFFont.f16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -722,7 +722,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     style: TextStyle(
                       color:
                           isSelected ? Colors.white : const Color(0xFF111827),
-                      fontSize: 15.0,
+                      fontSize: FFFont.f16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -739,7 +739,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     text,
                     style: const TextStyle(
                       color: Color(0xFF111827),
-                      fontSize: 14.0,
+                      fontSize: FFFont.f14,
                       fontWeight: FontWeight.w500,
                       height: 1.35,
                     ),
@@ -775,7 +775,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             overflow: TextOverflow.visible,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 12.0,
+              fontSize: FFFont.f12,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1117,7 +1117,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                               const Text(
                                 'Agree & Continue',
                                 style: TextStyle(
-                                  fontSize: 16.0,
+                                  fontSize: FFFont.f16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
@@ -1160,7 +1160,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                        widget.title ?? '',
                                        style: const TextStyle(
                                          color: Color(0xFF111827),
-                                         fontSize: 20.0,
+                                         fontSize: FFFont.f20,
                                          fontWeight: FontWeight.w800,
                                        ),
                                      ),
@@ -1241,7 +1241,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                    ? 'हिन्दी'
                                                    : 'English',
                                                style: const TextStyle(
-                                                 fontSize: 14.0,
+                                                 fontSize: FFFont.f14,
                                                  fontWeight: FontWeight.w500,
                                                  color: Color(0xFF374151),
                                                ),
@@ -1289,7 +1289,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                 .bodyMedium
                                 .override(
                                   fontFamily: 'Roboto',
-                                  fontSize: 18.0,
+                                  fontSize: FFFont.f18,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w400,
                                   useGoogleFonts: false,
@@ -1575,7 +1575,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                               fontFamily: 'Roboto',
                                                                                                               color: Colors.transparent,
-                                                                                                              fontSize: 16.0,
+                                                                                                              fontSize: FFFont.f16,
                                                                                                               useGoogleFonts: false,
                                                                                                             ),
                                                                                                         onEnded: () async {
@@ -1802,7 +1802,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   'True',
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
-                                                                                                        fontSize: 16.0,
+                                                                                                        fontSize: FFFont.f16,
                                                                                                         letterSpacing: 0.0,
                                                                                                         fontWeight: FontWeight.normal,
                                                                                                         useGoogleFonts: false,
@@ -1852,7 +1852,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   'False',
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
-                                                                                                        fontSize: 16.0,
+                                                                                                        fontSize: FFFont.f16,
                                                                                                         letterSpacing: 0.0,
                                                                                                         fontWeight: FontWeight.normal,
                                                                                                         useGoogleFonts: false,
@@ -1932,7 +1932,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                     fontFamily: 'Roboto',
                                                                                                     color: Colors.white,
-                                                                                                    fontSize: 16.0,
+                                                                                                    fontSize: FFFont.f16,
                                                                                                     useGoogleFonts: false,
                                                                                                   ),
                                                                                               onEnded: () async {
@@ -2318,7 +2318,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   optionAText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
-                                                                                                        fontSize: 16.0,
+                                                                                                        fontSize: FFFont.f16,
                                                                                                         letterSpacing: 0.0,
                                                                                                         fontWeight: FontWeight.normal,
                                                                                                         useGoogleFonts: false,
@@ -2371,7 +2371,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   optionBText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
-                                                                                                        fontSize: 16.0,
+                                                                                                        fontSize: FFFont.f16,
                                                                                                         letterSpacing: 0.0,
                                                                                                         fontWeight: FontWeight.normal,
                                                                                                         useGoogleFonts: false,
@@ -2424,7 +2424,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   optionCText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
-                                                                                                        fontSize: 16.0,
+                                                                                                        fontSize: FFFont.f16,
                                                                                                         letterSpacing: 0.0,
                                                                                                         fontWeight: FontWeight.normal,
                                                                                                         useGoogleFonts: false,
@@ -2475,7 +2475,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                 optionDText,
                                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                       fontFamily: 'Roboto',
-                                                                                                      fontSize: 16.0,
+                                                                                                      fontSize: FFFont.f16,
                                                                                                       letterSpacing: 0.0,
                                                                                                       fontWeight: FontWeight.normal,
                                                                                                       useGoogleFonts: false,
