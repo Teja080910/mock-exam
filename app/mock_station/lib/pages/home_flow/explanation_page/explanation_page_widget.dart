@@ -64,7 +64,7 @@ class _ExplanationPageWidgetState extends State<ExplanationPageWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Explanation',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

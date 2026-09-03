@@ -6,6 +6,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'code_verification_dialog_model.dart';
+import '/componants/app_dialog_shell/app_dialog_shell.dart';
 export 'code_verification_dialog_model.dart';
 
 class CodeVerificationDialogWidget extends StatefulWidget {
@@ -45,19 +46,8 @@ class _CodeVerificationDialogWidgetState
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
-    return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
-      child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(24.0, 30.0, 24.0, 30.0),
-            child: Column(
+    return AppDialogShell(
+    child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -289,9 +279,6 @@ class _CodeVerificationDialogWidgetState
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }

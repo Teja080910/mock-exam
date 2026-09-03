@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 
 class GroupDetailPageWidget extends StatefulWidget {
@@ -110,23 +108,13 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
           padding: const EdgeInsets.only(bottom: 10),
           child: InkWell(
             onTap: () {
-              if (functions.hasCategoryAccess(
-                FFAppState().planStatus,
-                FFAppState().subsIsSelectedAll,
-                FFAppState().allowedCategoryIds,
-                catId.toString(),
-                widget.groupId ?? '',
-              )) {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => CategoryDetailPageWidget(
-                    title: displayTitle,
-                    catId: catId.toString(),
-                    image: image.toString(),
-                  ),
-                ));
-              } else {
-                showSubscriptionDialog(context);
-              }
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => CategoryDetailPageWidget(
+                  title: displayTitle,
+                  catId: catId.toString(),
+                  image: image.toString(),
+                ),
+              ));
             },
             borderRadius: BorderRadius.circular(14),
             child: Container(

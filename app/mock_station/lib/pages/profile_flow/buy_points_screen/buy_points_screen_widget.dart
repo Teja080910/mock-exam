@@ -83,7 +83,7 @@ class _BuyPointsScreenWidgetState extends State<BuyPointsScreenWidget>
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Buy points',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

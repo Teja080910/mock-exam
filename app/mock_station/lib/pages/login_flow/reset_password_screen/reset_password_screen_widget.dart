@@ -74,7 +74,7 @@ class _ResetPasswordScreenWidgetState extends State<ResetPasswordScreenWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Forgot password',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Flexible(

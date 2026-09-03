@@ -64,7 +64,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Notifications',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

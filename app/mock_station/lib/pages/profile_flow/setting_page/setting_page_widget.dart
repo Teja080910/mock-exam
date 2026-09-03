@@ -116,7 +116,7 @@ class _SettingPageWidgetState extends State<SettingPageWidget>
               updateCallback: () => safeSetState(() {}),
               child: AppBarWidget(
                 title: 'Settings',
-                backIcon: false,
+                backIcon: true,
               ),
             ),
             Expanded(
@@ -581,7 +581,6 @@ class _SettingPageWidgetState extends State<SettingPageWidget>
                                                               ?.unfocus();
                                                         },
                                                         child: Container(
-                                                          height: 400.0,
                                                           child:
                                                               LogoutDialogWidget(
                                                             onTapYes: () async {

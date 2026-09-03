@@ -2,6 +2,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'quit_quiz_model.dart';
+import '/componants/app_dialog_shell/app_dialog_shell.dart';
 export 'quit_quiz_model.dart';
 
 class QuitQuizWidget extends StatefulWidget {
@@ -37,19 +38,8 @@ class _QuitQuizWidgetState extends State<QuitQuizWidget> {
   Widget build(BuildContext context) {
     final primary = FlutterFlowTheme.of(context).primary;
 
-    return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
-      child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(14.0, 24.0, 14.0, 12.0),
-            child: Column(
+    return AppDialogShell(
+    child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
@@ -268,9 +258,6 @@ class _QuitQuizWidgetState extends State<QuitQuizWidget> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'complete_quiz_model.dart';
+import '/componants/app_dialog_shell/app_dialog_shell.dart';
 export 'complete_quiz_model.dart';
 
 class CompleteQuizWidget extends StatefulWidget {
@@ -41,19 +42,8 @@ class _CompleteQuizWidgetState extends State<CompleteQuizWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
-      child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(16.0, 32.0, 16.0, 32.0),
-            child: Column(
+    return AppDialogShell(
+    child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -144,9 +134,6 @@ class _CompleteQuizWidgetState extends State<CompleteQuizWidget> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }

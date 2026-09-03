@@ -40,6 +40,7 @@ const addPlan = async (req, res) => {
                 planValidity: req.body.planValidity,
                 price: req.body.price,
                 planId: randomPlanId,
+                planType: req.body.planType || '',
                 categoryGroup: categoryGroupVal
             });
             const savePlan = await planData.save();
@@ -119,6 +120,7 @@ const updatePlan = async (req, res) => {
                         planName: req.body.planName,
                         planValidity: req.body.planValidity,
                         price: req.body.price,
+                        planType: req.body.planType || '',
                         categoryGroup: categoryGroupVal
                     }
                 });

@@ -47,7 +47,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
       body: Column(
         children: [
           AppBarWidget(
-            title: 'Books',
+            title: 'Ebook',
             backIcon: true,
           ),
           Expanded(
@@ -69,7 +69,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                     snapshot.data?.jsonBody == null) {
                   return Center(
                     child:
-                        Text('Could not load books. Please try again later.'),
+                        Text('Could not load ebooks. Please try again later.'),
                   );
                 }
 
@@ -82,22 +82,20 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                 if (ebooks.isEmpty) {
                   return Center(
                     child: Text(
-                      'No books available at the moment.',
+                      'No ebooks available at the moment.',
                       style: FlutterFlowTheme.of(context).bodyMedium,
                     ),
                   );
                 }
 
-                return GridView.builder(
-                  padding: EdgeInsets.all(16.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:
-                        MediaQuery.of(context).size.width > 600 ? 4 : 2,
-                    crossAxisSpacing: 16.0,
-                    mainAxisSpacing: 16.0,
-                    childAspectRatio: 0.7,
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 16.0,
                   ),
                   itemCount: ebooks.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16.0),
                   itemBuilder: (context, index) {
                     final ebook = ebooks[index];
                     final ebookName =
@@ -109,13 +107,11 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                     final imageUrl =
                         '${FFAppConstants.baseURL}/assets/userImages/$ebookImage';
 
-                    return Card(
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                    return Material(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      elevation: 2,
+                      borderRadius: BorderRadius.circular(12.0),
+                      clipBehavior: Clip.antiAlias,
                       child: InkWell(
                         onTap: () async {
                           if (ebookLink.isNotEmpty) {
@@ -132,34 +128,117 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                             }
                           }
                         },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                        child: Stack(
                           children: [
-                            Expanded(
-                              flex: 3,
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  width: 4.0,
+                                  height: 72.0,
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .primary,
+                                    borderRadius: BorderRadius.circular(2.0),
+                                  ),
+                                ),
                               ),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  ebookName,
-                                  textAlign: TextAlign.center,
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyLarge
-                                      .override(
-                                        fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.w500,
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  16.0, 16.0, 14.0, 16.0),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl: imageUrl,
+                                      width: 100.0,
+                                      height: 118.0,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        width: 100.0,
+                                        height: 118.0,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 22.0,
+                                            height: 22.0,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.0,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                FlutterFlowTheme.of(context)
+                                                    .primary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                ),
+                                      errorWidget: (context, url, error) =>
+                                          Container(
+                                        width: 100.0,
+                                        height: 118.0,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                        child: Icon(
+                                          Icons.error_outline,
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryText,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          ebookName,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyLarge
+                                              .override(
+                                                fontFamily: 'Roboto',
+                                                fontSize: FFFont.f16,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF10213F),
+                                                lineHeight: 1.3,
+                                                useGoogleFonts: false,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 6.0),
+                                        Text(
+                                          'Click to view ebooks',
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'Roboto',
+                                                fontSize: FFFont.f14,
+                                                color: FlutterFlowTheme.of(
+                                                        context)
+                                                    .secondaryText,
+                                                useGoogleFonts: false,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8.0),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    size: 28.0,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -175,4 +254,4 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
       ),
     );
   }
-} 
+}

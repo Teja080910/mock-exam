@@ -81,7 +81,7 @@ class _AppBarWidgetState extends State<AppBarWidget>
               children: [
                 Builder(
                   builder: (context) {
-                    if (widget.backIcon == false) {
+                    if (widget.backIcon == true) {
                       return InkWell(
                         splashColor: Colors.transparent,
                         focusColor: Colors.transparent,

@@ -61,7 +61,7 @@ class _PointsHistoryPageWidgetState extends State<PointsHistoryPageWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Points history',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

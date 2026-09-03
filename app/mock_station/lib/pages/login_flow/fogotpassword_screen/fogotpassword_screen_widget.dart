@@ -73,7 +73,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Forgot password',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Flexible(
@@ -254,7 +254,7 @@ class _FogotpasswordScreenWidgetState extends State<FogotpasswordScreenWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Forgot password',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Flexible(

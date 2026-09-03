@@ -82,7 +82,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'About us ',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

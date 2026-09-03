@@ -18,6 +18,7 @@ import '/backend/schema/user_record.dart';
 import '/backend/schema/util/firestore_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/componants/referral_prompt/referral_prompt.dart';
+import '/componants/app_dialog_shell/app_dialog_shell.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -399,61 +400,59 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
     showDialog(
       context: context,
       builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         return FadeIn(
-          child: AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-            title: Column(
+          child: AppDialogShell(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.redAccent.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 42),
+                  child: const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 38),
                 ),
-                const SizedBox(height: 18),
-                Text(
+                const SizedBox(height: 14),
+                const Text(
                   "Account Mismatch",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: FFFont.f20,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Your account credentials mismatched. Kindly login through 'Sign in with Google' for a seamless experience.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: FFFont.f14,
+                    height: 1.5,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  height: 42,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF24389C),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      elevation: 0,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "Try Again",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: FFFont.f14),
+                    ),
                   ),
                 ),
               ],
             ),
-            content: Text(
-              "Your account credentials mismatched. Kindly login through 'Sign in with Google' for a seamless experience.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: FFFont.f16,
-                height: 1.5,
-                color: isDark ? Colors.white70 : Colors.black54,
-              ),
-            ),
-            actions: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF24389C),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    elevation: 0,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "Try Again",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: FFFont.f16),
-                  ),
-                ),
-              ),
-            ],
           ),
         );
       },

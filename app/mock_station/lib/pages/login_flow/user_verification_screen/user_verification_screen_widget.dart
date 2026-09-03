@@ -86,7 +86,7 @@ class _UserVerificationScreenWidgetState
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Verification',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Flexible(

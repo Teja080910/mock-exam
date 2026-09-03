@@ -3,8 +3,6 @@ import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +79,7 @@ class _DetailCategoryViewallWidgetState
               updateCallback: () => safeSetState(() {}),
               child: AppBarWidget(
                 title: 'Category',
-                backIcon: false,
+                backIcon: true,
               ),
             ),
             Expanded(
@@ -217,36 +215,26 @@ class _DetailCategoryViewallWidgetState
                                                   highlightColor:
                                                       Colors.transparent,
                                                    onTap: () async {
-                                                     if (functions.hasCategoryAccess(
-                                                       FFAppState().planStatus,
-                                                       FFAppState().subsIsSelectedAll,
-                                                       FFAppState().allowedCategoryIds,
-                                                       getJsonField(categoryListItem, r'''$._id''').toString(),
-                                                       null,
-                                                     )) {
-                                                       context.pushNamed(
-                                                         CategoryDetailPageWidget
-                                                             .routeName,
-                                                         queryParameters: {
-                                                           'title': serializeParam(
-                                                             getJsonField(
-                                                               categoryListItem,
-                                                               r'''$.name''',
-                                                             ).toString(),
-                                                             ParamType.String,
-                                                           ),
-                                                           'catId': serializeParam(
-                                                             getJsonField(
-                                                               categoryListItem,
-                                                               r'''$._id''',
-                                                             ).toString(),
-                                                             ParamType.String,
-                                                           ),
-                                                         }.withoutNulls,
-                                                       );
-} else {
-                                                        await showSubscriptionDialog(context);
-                                                      }
+                                                     context.pushNamed(
+                                                       CategoryDetailPageWidget
+                                                           .routeName,
+                                                       queryParameters: {
+                                                         'title': serializeParam(
+                                                           getJsonField(
+                                                             categoryListItem,
+                                                             r'''$.name''',
+                                                           ).toString(),
+                                                           ParamType.String,
+                                                         ),
+                                                         'catId': serializeParam(
+                                                           getJsonField(
+                                                             categoryListItem,
+                                                             r'''$._id''',
+                                                           ).toString(),
+                                                           ParamType.String,
+                                                         ),
+                                                       }.withoutNulls,
+                                                     );
                                                    },
                                                   child: Container(
                                                     width: () {

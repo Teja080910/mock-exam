@@ -82,7 +82,7 @@ class _PrivacyPolicyScreenWidgetState extends State<PrivacyPolicyScreenWidget>
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Privacy policy',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

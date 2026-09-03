@@ -110,7 +110,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
           children: [
             AppBarWidget(
               title: 'News',
-              backIcon: false,
+              backIcon: true,
             ),
             Expanded(
               child: _isLoading

@@ -82,7 +82,7 @@ class _TermsConditionScreenWidgetState extends State<TermsConditionScreenWidget>
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Terms & condition',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

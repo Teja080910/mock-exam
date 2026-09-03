@@ -1,8 +1,11 @@
 import '/backend/api_requests/api_calls.dart';
+import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SubcategoryDetailPageWidget extends StatefulWidget {
   const SubcategoryDetailPageWidget({
@@ -130,6 +133,17 @@ class _SubcategoryDetailPageWidgetState
   }
 
   Future<void> _openQuiz(Map quiz) async {
+    // Subscription gate: only allow starting if the user has access
+    if (!functions.hasCategoryAccess(
+      FFAppState().planStatus,
+      FFAppState().subsIsSelectedAll,
+      FFAppState().allowedCategoryIds,
+      (quiz['_id'] ?? '').toString(),
+      null,
+    )) {
+      await showSubscriptionDialog(context);
+      return;
+    }
     context.pushNamed(
       'quiz_questions_screen',
       queryParameters: {
@@ -259,25 +273,24 @@ class _SubcategoryDetailPageWidgetState
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        SizedBox(
+                          width: 30.0,
+                          height: 30.0,
+                          child: SvgPicture.asset(
+                            'assets/images/google_translate_icon.svg',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(width: 10.0),
                         Container(
-                          width: 28.0,
-                          height: 28.0,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8.0),
-                            border: Border.all(color: const Color(0xFFD9E4FF)),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.g_translate_rounded,
-                            size: 18.0,
-                            color: Color(0xFF4F46E5),
-                          ),
+                          width: 1.0,
+                          height: 20.0,
+                          color: const Color(0xFFD7E1F0),
                         ),
                         const SizedBox(width: 10.0),
                         const Expanded(
                           child: Text(
-                            'हिंदी',
+                            'हिन्दी, English',
                             style: TextStyle(
                               color: Color(0xFF111827),
                               fontSize: FFFont.f16,

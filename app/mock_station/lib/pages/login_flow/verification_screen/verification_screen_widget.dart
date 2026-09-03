@@ -86,7 +86,7 @@ class _VerificationScreenWidgetState extends State<VerificationScreenWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Verification',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Flexible(

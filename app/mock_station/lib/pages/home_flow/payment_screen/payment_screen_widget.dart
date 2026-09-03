@@ -203,7 +203,7 @@ class _PaymentScreenWidgetState extends State<PaymentScreenWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Payment method',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

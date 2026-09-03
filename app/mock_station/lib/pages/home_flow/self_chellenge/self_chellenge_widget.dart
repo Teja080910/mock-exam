@@ -64,7 +64,7 @@ class _SelfChellengeWidgetState extends State<SelfChellengeWidget> {
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'Self challenge mode',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

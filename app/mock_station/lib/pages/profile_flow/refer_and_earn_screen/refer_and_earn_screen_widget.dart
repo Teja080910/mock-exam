@@ -1,5 +1,6 @@
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
+import '/componants/app_dialog_shell/app_dialog_shell.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,14 +74,18 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
     final textController = TextEditingController(text: upiId ?? '');
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-        title: const Text('Add Your UPI ID', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
+      builder: (context) => AppDialogShell(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
+              'Add Your UPI ID',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: FFFont.f18, color: Color(0xFF111827)),
+            ),
+            const SizedBox(height: 8),
+            const Text(
               'Enter your UPI ID to receive direct cashback into your bank account.',
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: FFFont.f14, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 16.0),
@@ -92,63 +97,79 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
               ),
             ),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF64748B),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel', style: TextStyle(fontSize: FFFont.f14)),
+                  ),
+                ),
+                const SizedBox(width: 10.0),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF059669),
+                      disabledBackgroundColor: const Color(0xFF94A3B8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    ),
+                    onPressed: _savingUpi
+                        ? null
+                        : () async {
+                            if (textController.text.trim().isNotEmpty) {
+                              final token = FFAppState().loginToken;
+                              if (token.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please login to continue')),
+                                );
+                                return;
+                              }
+                              setState(() => _savingUpi = true);
+                              final res = await QuizGroup.saveUpiIdCall.call(
+                                token: token,
+                                upiId: textController.text.trim(),
+                              );
+                              final resBody = res.jsonBody;
+                              setState(() => _savingUpi = false);
+                              if (resBody != null) {
+                                final success = QuizGroup.saveUpiIdCall.success(resBody) ?? false;
+                                if (success) {
+                                  setState(() => upiId = textController.text.trim());
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('UPI ID saved successfully!')),
+                                  );
+                                } else {
+                                  final msg = QuizGroup.saveUpiIdCall.message(resBody);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(msg ?? 'Failed to save UPI ID')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                    child: _savingUpi
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('Save', style: TextStyle(color: Colors.white, fontSize: FFFont.f14)),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF059669),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            ),
-            onPressed: _savingUpi
-                ? null
-                : () async {
-                    if (textController.text.trim().isNotEmpty) {
-                      final token = FFAppState().loginToken;
-                      if (token.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please login to continue')),
-                        );
-                        return;
-                      }
-                      setState(() => _savingUpi = true);
-                      final res = await QuizGroup.saveUpiIdCall.call(
-                        token: token,
-                        upiId: textController.text.trim(),
-                      );
-                      final resBody = res.jsonBody;
-                      setState(() => _savingUpi = false);
-                      if (resBody != null) {
-                        final success = QuizGroup.saveUpiIdCall.success(resBody) ?? false;
-                        if (success) {
-                          setState(() => upiId = textController.text.trim());
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('UPI ID saved successfully!')),
-                          );
-                        } else {
-                          final msg = QuizGroup.saveUpiIdCall.message(resBody);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(msg ?? 'Failed to save UPI ID')),
-                          );
-                        }
-                      }
-                    }
-                  },
-            child: _savingUpi
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Text('Save', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
   }
@@ -167,7 +188,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
           children: [
             AppBarWidget(
               title: 'Refer & Earn',
-              backIcon: false,
+              backIcon: true,
             ),
             Expanded(
               child: SingleChildScrollView(

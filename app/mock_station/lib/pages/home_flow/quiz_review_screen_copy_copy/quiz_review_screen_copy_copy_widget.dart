@@ -95,7 +95,7 @@ class _QuizReviewScreenCopyCopyWidgetState
               updateCallback: () => safeSetState(() {}),
               child: AppBarWidget(
                 title: 'Test overview',
-                backIcon: false,
+                backIcon: true,
               ),
             ),
             Expanded(

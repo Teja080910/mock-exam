@@ -81,7 +81,7 @@ class _AboutusScreenWidgetState extends State<AboutusScreenWidget>
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
                       title: 'About us',
-                      backIcon: false,
+                      backIcon: true,
                     ),
                   ),
                   Expanded(

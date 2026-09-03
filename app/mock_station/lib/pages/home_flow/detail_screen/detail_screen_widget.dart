@@ -1,4 +1,6 @@
 import '/backend/api_requests/api_calls.dart';
+import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -625,6 +627,18 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                         onPressed: () async {
                           FFAppState().categoryID = widget.catId!;
                           FFAppState().update(() {});
+                          // Subscription gate: only allow starting if the user
+                          // has access to this category/group
+                          if (!functions.hasCategoryAccess(
+                            FFAppState().planStatus,
+                            FFAppState().subsIsSelectedAll,
+                            FFAppState().allowedCategoryIds,
+                            widget.catId,
+                            null,
+                          )) {
+                            await showSubscriptionDialog(context);
+                            return;
+                          }
                           try {
                             // Directly navigate to quiz screen, skip points check
                             context.pushNamed(

@@ -99,7 +99,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
               updateCallback: () => safeSetState(() {}),
               child: AppBarWidget(
                 title: 'Edit profile',
-                backIcon: false,
+                backIcon: true,
               ),
             ),
             Expanded(

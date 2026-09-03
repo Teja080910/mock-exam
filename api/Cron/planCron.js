@@ -12,7 +12,7 @@ cron.schedule("0 0 * * *", async () => {
     const result = await UserPlan.updateMany(
       {
         planStatus: "active",
-        expiresAt: { $lte: now },
+        expiresAt: { $ne: null, $lte: now },
       },
       {
         $set: { planStatus: "expired" },

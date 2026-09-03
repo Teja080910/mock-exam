@@ -1,3 +1,4 @@
+import '/componants/app_dialog_shell/app_dialog_shell.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -55,20 +56,11 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: Align(
-        alignment: AlignmentDirectional(0.0, 0.0),
-        child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
-          child: Material(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24.0),
-            elevation: 8,
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 32.0, 24.0, 28.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+      child: AppDialogShell(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -152,9 +144,6 @@ class _TimeoutDialogWidgetState extends State<TimeoutDialogWidget> {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
   }
 }

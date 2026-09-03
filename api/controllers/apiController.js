@@ -1736,6 +1736,7 @@ const GetPlans = async (req, res) => {
       planName: plan.planName,
       planValidity: plan.planValidity,
       planId: plan.planId,
+      planType: plan.planType || '',
       price: plan.price,
       categoryGroup: plan.categoryGroup,
     }));
@@ -2651,10 +2652,14 @@ const verifyPayment = async (req, res) => {
 
     userPlan.planStatus = "active";
 
-    // ⏰ Expiry = 1 year
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    userPlan.expiresAt = expiryDate;
+    // ⏰ Expiry = 1 year (Lifetime plans never expire)
+    if (plan.planValidity && plan.planValidity.toLowerCase().includes('lifetime')) {
+      userPlan.expiresAt = null;
+    } else {
+      const expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      userPlan.expiresAt = expiryDate;
+    }
 
     await userPlan.save();
 
