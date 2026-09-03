@@ -281,21 +281,21 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     0: {
       'accent': Color(0xFF2563EB),
       'soft': Color(0xFFDBEAFE),
-      'icon': Icons.menu_book_rounded,
+      'icon': Icons.import_contacts_rounded,
       'border': Color(0xFF93C5FD),
       'features': ['High Quality Content', 'Easy to Download'],
     },
     1: {
       'accent': Color(0xFF16A34A),
       'soft': Color(0xFFDCFCE7),
-      'icon': Icons.sticky_note_2_rounded,
+      'icon': Icons.description_rounded,
       'border': Color(0xFF86EFAC),
       'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
     },
     2: {
       'accent': Color(0xFFEA580C),
       'soft': Color(0xFFFFEDD5),
-      'icon': Icons.assignment_rounded,
+      'icon': Icons.cast_for_education_rounded,
       'border': Color(0xFFFDBA74),
       'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
     },
@@ -306,40 +306,59 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
       'border': Color(0xFFD8B4FE),
       'features': ['Ebooks + Notes + Mock Tests', 'Complete Exam Preparation in One Plan'],
     },
-    4: {
-      'accent': Color(0xFFDB2777),
-      'soft': Color(0xFFFCE7F3),
-      'icon': Icons.local_offer_rounded,
-      'border': Color(0xFFF9A8D4),
+  };
+
+  // Product-specific themes matched by planName keyword.
+  static const Map<String, Map<String, dynamic>> _productThemes = {
+    'ebook': {
+      'accent': Color(0xFF2563EB),
+      'soft': Color(0xFFDBEAFE),
+      'icon': Icons.import_contacts_rounded,
+      'border': Color(0xFF93C5FD),
       'features': ['High Quality Content', 'Easy to Download'],
+    },
+    'notes': {
+      'accent': Color(0xFF16A34A),
+      'soft': Color(0xFFDCFCE7),
+      'icon': Icons.description_rounded,
+      'border': Color(0xFF86EFAC),
+      'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
+    },
+    'mock test': {
+      'accent': Color(0xFFEA580C),
+      'soft': Color(0xFFFFEDD5),
+      'icon': Icons.cast_for_education_rounded,
+      'border': Color(0xFFFDBA74),
+      'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
+    },
+    'all in one': {
+      'accent': Color(0xFF7C3AED),
+      'soft': Color(0xFFF3E8FF),
+      'icon': Icons.card_giftcard_rounded,
+      'border': Color(0xFFD8B4FE),
+      'features': ['Ebooks + Notes + Mock Tests', 'Complete Exam Preparation in One Plan'],
+    },
+    'lifetime': {
+      'accent': Color(0xFFB45309),
+      'soft': Color(0xFFFEF3C7),
+      'icon': Icons.all_inclusive_rounded,
+      'border': Color(0xFFFCD34D),
+      'features': [
+        'Unlimited Access to All Premium Content',
+        'One-Time Payment, Lifetime Benefits',
+      ],
     },
   };
 
   Map<String, dynamic> _planTheme(String categoryName, String planName, int index) {
     final lower = '$categoryName $planName'.toLowerCase();
-    final base = _indexThemes[index % _indexThemes.length]!;
-    // Only override the feature text (and default icon per plan type) when a
-    // specific plan keyword is detected; colors are always index-based so every
-    // card is guaranteed a distinct color.
-    if (lower.contains('ebook')) {
-      return {
-        ...base,
-        'features': ['High Quality Content', 'Easy to Download'],
-      };
+    // Product keyword match wins; index-based colors are the fallback.
+    for (final entry in _productThemes.entries) {
+      if (lower.contains(entry.key)) {
+        return entry.value;
+      }
     }
-    if (lower.contains('notes')) {
-      return {
-        ...base,
-        'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
-      };
-    }
-    if (lower.contains('mock test')) {
-      return {
-        ...base,
-        'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
-      };
-    }
-    return base;
+    return _indexThemes[index % _indexThemes.length]!;
   }
 
   Widget _buildBenefitChip({
@@ -376,10 +395,12 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     required int index,
     required String price,
     required String planName,
+    required String planType,
     required String planValidity,
     required String categoryName,
     required String planId,
     required bool isAlreadyActive,
+    required List<String> features,
     required VoidCallback onBuyNow,
   }) {
     final theme = _planTheme(categoryName, planName, index);
@@ -387,11 +408,14 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     final soft = theme['soft'] as Color;
     final icon = theme['icon'] as IconData;
     final border = theme['border'] as Color;
-    final features = <String>[
-      'Full access to $categoryName',
-      '$planValidity validity',
-      'Plan ID: $planId',
-    ];
+    final resolvedFeatures = features.isNotEmpty
+        ? features
+        : (theme['features'] as List<String>? ??
+            <String>[
+              'Full access to $categoryName',
+              '$planValidity validity',
+              'Plan ID: $planId',
+            ]);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14.0),
@@ -432,7 +456,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        categoryName,
+                        planName,
                         style: const TextStyle(
                           fontSize: FFFont.f16,
                           fontWeight: FontWeight.w900,
@@ -441,7 +465,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       ),
                       const SizedBox(height: 2.0),
                       Text(
-                        planName,
+                        planType.isNotEmpty ? planType : categoryName,
                         style: TextStyle(
                           fontSize: FFFont.f12,
                           fontWeight: FontWeight.w600,
@@ -518,7 +542,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: features.map((feature) => Padding(
+                    children: resolvedFeatures.map((feature) => Padding(
                       padding: const EdgeInsets.only(bottom: 6.0),
                       child: Row(
                         children: [
@@ -674,6 +698,10 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                   getJsonField(plan, r'''$.planName''')
                                           ?.toString() ??
                                       'Standard Plan';
+                              final planType =
+                                  getJsonField(plan, r'''$.planType''')
+                                          ?.toString() ??
+                                      'Standard Plan';
                               final planValidity =
                                   getJsonField(plan, r'''$.planValidity''')
                                           ?.toString() ??
@@ -687,6 +715,13 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 plan,
                                 r'''$.categoryGroup._id''',
                               )?.toString();
+                              final planFeatures = (getJsonField(
+                                        plan,
+                                        r'''$.features''',
+                                      ) as List<dynamic>?)
+                                      ?.map((f) => f.toString())
+                                      .toList() ??
+                                  <String>[];
 
                               bool isAlreadyActive = false;
                               if (FFAppState().planStatus == 'active') {
@@ -704,10 +739,12 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 index: index,
                                 price: price,
                                 planName: planName,
+                                planType: planType,
                                 planValidity: planValidity,
                                 categoryName: categoryName,
                                 planId: getJsonField(plan, r'''$.planId''').toString(),
                                 isAlreadyActive: isAlreadyActive,
+                                features: planFeatures,
                                 onBuyNow: () async {
                                   await _startPurchase(
                                     planId:

@@ -63,22 +63,31 @@
                                                                                 required />
                                                                         </div>
                                                                     </div>
-                                                                    <div class="row mb-3">
-                                                                        <label class="col-sm-2 col-form-label"
-                                                                            for="planType">Plan Type</label>
-                                                                        <div class="col-sm-10">
-                                                                            <select class="form-control"
-                                                                                name="planType">
-                                                                                <option value="">Select Plan Type</option>
-                                                                                <option value="Standard Plan"
-                                                                                    <%=plan.planType==='Standard Plan'
-                                                                                    ? 'selected' : '' %>>Standard Plan</option>
-                                                                                <option value="Premium Plan"
-                                                                                    <%=plan.planType==='Premium Plan'
-                                                                                    ? 'selected' : '' %>>Premium Plan</option>
-                                                                            </select>
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-2 col-form-label"
+                                                                                for="planType">Plan Type</label>
+                                                                            <div class="col-sm-10">
+                                                                                <select class="form-control"
+                                                                                    name="planType">
+                                                                                    <option value="">Select Plan Type</option>
+                                                                                    <option value="Standard Plan"
+                                                                                        <%=plan.planType==='Standard Plan'
+                                                                                        ? 'selected' : '' %>>Standard Plan</option>
+                                                                                    <option value="Premium Plan"
+                                                                                        <%=plan.planType==='Premium Plan'
+                                                                                        ? 'selected' : '' %>>Premium Plan</option>
+                                                                                </select>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-2 col-form-label"
+                                                                                for="features">Features</label>
+                                                                            <div class="col-sm-10">
+                                                                                <textarea class="form-control" rows="3"
+                                                                                    name="features"
+                                                                                    placeholder="One feature per line"><% (plan.features || []).forEach(function(f){ %><%= f %>\n<% }) %></textarea>
+                                                                            </div>
+                                                                        </div>
                                                                         <div class="row mb-3">
                                                                             <label class="col-sm-2 col-form-label"
                                                                                 for="planValidity">Plan Validity</label>

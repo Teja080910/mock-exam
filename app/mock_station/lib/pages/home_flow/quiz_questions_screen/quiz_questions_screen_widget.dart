@@ -13,6 +13,7 @@ import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/custom_code/utils/html_stripper.dart';
 import '/index.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -190,8 +191,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   }
 
   String _resolveQuestionHtml(dynamic questionItem) {
-    final rawHtml =
-        _biText(questionItem, r'''$.question_title''').replaceAll('&quot;', '"');
+    final rawHtml = _biText(questionItem, r'''$.question_title''')
+        .replaceAll('&quot;', '"');
     return rawHtml;
   }
 
@@ -477,7 +478,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     ),
                   ),
                   const SizedBox(width: 8.0),
-                   Expanded(
+                  Expanded(
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
@@ -556,7 +557,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   backgroundColor: const Color(0xFFFDEBEC),
                   textColor: const Color(0xFFEF4444),
                 ),
-                 const Spacer(),
+                const Spacer(),
                 Container(
                   width: 36.0,
                   height: 36.0,
@@ -576,10 +577,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: _toggleLanguage,
-                    icon: Icon(
-                      Icons.translate_rounded,
-                      size: 18.0,
-                      color: const Color(0xFF4338CA),
+                    icon: SvgPicture.asset(
+                      'assets/images/google_translate_icon.svg',
+                      width: 22.0,
+                      height: 22.0,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -882,8 +884,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             // subtracted twice and the timer jumps back on every resume.
             _model.timerController.timer.onResetTimer();
             // Update the timer with the new remaining time
-            _model.timerController.timer
-                .setPresetTime(mSec: newMs, add: false);
+            _model.timerController.timer.setPresetTime(mSec: newMs, add: false);
           } catch (e) {
             // Handle error gracefully
           }
@@ -919,8 +920,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   String _biText(dynamic questionItem, String basePath) {
     final v = getJsonField(questionItem, basePath);
     if (v is Map) {
-      return biPick(
-          v['en']?.toString(), v['hi']?.toString(), _selectedLang);
+      return biPick(v['en']?.toString(), v['hi']?.toString(), _selectedLang);
     }
     return v == null ? '' : v.toString();
   }
@@ -932,16 +932,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   String optionBiText(dynamic option) {
     if (option is Map && option['text'] is Map) {
       final t = option['text'] as Map;
-      return biPick(
-          t['en']?.toString(), t['hi']?.toString(), _selectedLang);
+      return biPick(t['en']?.toString(), t['hi']?.toString(), _selectedLang);
     }
     if (option is Map && option['text'] is String) {
       return option['text'] as String;
     }
     return '';
   }
-
-
 
   @override
   void dispose() {
@@ -1037,33 +1034,36 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
               ? Scaffold(
                   bottomNavigationBar: Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 32.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 54.0,
-                      child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.white,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 230.0,
+                          height: 44.0,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
                               ),
-                              elevation: 0),
-                          onPressed: () {
-                              if (quizAutoSubmitted) return;
-                              setState(() {
-                                showBody = false;
-                                SchedulerBinding.instance
-                                    .addPostFrameCallback((_) async {
+                              borderRadius: BorderRadius.circular(22.0),
+                            ),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: Colors.white,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22.0),
+                                  ),
+                                  elevation: 0),
+                              onPressed: () {
+                                if (quizAutoSubmitted) return;
+                                setState(() {
+                                  showBody = false;
+                                  SchedulerBinding.instance
+                                      .addPostFrameCallback((_) async {
                                     FFAppState().quesIndex =
                                         _model.pageViewCurrentIndex + 1;
                                     safeSetState(() {});
@@ -1097,35 +1097,37 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                       (_) => safeSetState(() {}));
                                 });
                               },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 32.0,
-                                height: 32.0,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                  child: const Icon(
-                                    Icons.arrow_forward_rounded,
-                                    size: 18.0,
-                                    color: Color(0xFF2563EB),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 26.0,
+                                    height: 26.0,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 15.0,
+                                      color: Color(0xFF2563EB),
+                                    ),
                                   ),
+                                  const SizedBox(width: 10.0),
+                                  const Text(
+                                    'Agree & Continue',
+                                    style: TextStyle(
+                                      fontSize: FFFont.f14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12.0),
-                              const Text(
-                                'Agree & Continue',
-                                style: TextStyle(
-                                  fontSize: FFFont.f16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                   body: Column(
@@ -1137,128 +1139,133 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                               const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
                           child: Column(
                             children: [
-                               Row(
-                                 children: [
-                                   Material(
-                                     color: Colors.transparent,
-                                     child: InkWell(
-                                       borderRadius: BorderRadius.circular(22.0),
-                                       onTap: () => context.safePop(),
-                                       child: const Padding(
-                                         padding: EdgeInsets.all(8.0),
-                                         child: Icon(
-                                           Icons.arrow_back_rounded,
-                                           color: Color(0xFF111827),
-                                           size: 24.0,
-                                         ),
-                                       ),
-                                     ),
-                                   ),
-                                   const SizedBox(width: 8.0),
-                                   Expanded(
-                                     child: Text(
-                                       widget.title ?? '',
-                                       style: const TextStyle(
-                                         color: Color(0xFF111827),
-                                         fontSize: FFFont.f20,
-                                         fontWeight: FontWeight.w800,
-                                       ),
-                                     ),
-                                   ),
-                                   if (widget.image != null &&
-                                       widget.image!.isNotEmpty)
-                                     const SizedBox(width: 12.0),
-                                   if (widget.image != null &&
-                                       widget.image!.isNotEmpty)
-                                     ClipOval(
-                                       child: Container(
-                                         width: 48.0,
-                                         height: 48.0,
-                                         decoration: const BoxDecoration(
-                                           shape: BoxShape.circle,
-                                         ),
-                                         padding: const EdgeInsets.all(2.0),
-                                         child: ClipOval(
-                                           child: CachedNetworkImage(
-                                             imageUrl: widget.image!,
-                                             fit: BoxFit.cover,
-                                             errorWidget: (context, url, error) =>
-                                                 Container(
-                                               color: const Color(0xFFF5F8FF),
-                                               alignment: Alignment.center,
-                                               child: const Icon(
-                                                 Icons.image_outlined,
-                                                 color: Color(0xFF94A3B8),
-                                               ),
-                                             ),
-                                           ),
-                                         ),
-                                       ),
-                                     ),
-                                 ],
-                               ),
-                               const SizedBox(height: 16.0),
-                               custom_widgets.HtmlConverterExp(
-                                 width: double.infinity,
-                                 height: null,
-                                 text: widget.description!,
-                               ),
-                               const SizedBox(height: 16.0),
-                               const Divider(
-                                 height: 24.0,
-                                 thickness: 1.0,
-                                 color: Color(0xFFE5E7EB),
-                               ),
-                               const SizedBox(height: 8.0),
-                               Row(
-                                 mainAxisAlignment: MainAxisAlignment.end,
-                                 children: [
-                                   Material(
-                                     color: Colors.transparent,
-                                     child: InkWell(
-                                       onTap: _toggleLanguage,
-                                       borderRadius: BorderRadius.circular(8.0),
-                                       child: Container(
-                                         padding: const EdgeInsets.symmetric(
-                                             horizontal: 12.0, vertical: 8.0),
-                                         decoration: BoxDecoration(
-                                           color: Colors.white,
-                                           borderRadius: BorderRadius.circular(8.0),
-                                           border: Border.all(
-                                               color: const Color(0xFFD1D5DB)),
-                                         ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.g_translate_rounded,
-                                                size: 18.0,
+                              Row(
+                                children: [
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(22.0),
+                                      onTap: () => context.safePop(),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Icon(
+                                          Icons.arrow_back_rounded,
+                                          color: Color(0xFF111827),
+                                          size: 24.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8.0),
+                                  Expanded(
+                                    child: Text(
+                                      widget.title ?? '',
+                                      style: const TextStyle(
+                                        color: Color(0xFF111827),
+                                        fontSize: FFFont.f20,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  if (widget.image != null &&
+                                      widget.image!.isNotEmpty)
+                                    const SizedBox(width: 12.0),
+                                  if (widget.image != null &&
+                                      widget.image!.isNotEmpty)
+                                    ClipOval(
+                                      child: Container(
+                                        width: 48.0,
+                                        height: 48.0,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: ClipOval(
+                                          child: CachedNetworkImage(
+                                            imageUrl: widget.image!,
+                                            fit: BoxFit.cover,
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Container(
+                                              color: const Color(0xFFF5F8FF),
+                                              alignment: Alignment.center,
+                                              child: const Icon(
+                                                Icons.image_outlined,
+                                                color: Color(0xFF94A3B8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16.0),
+                              custom_widgets.HtmlConverterExp(
+                                width: double.infinity,
+                                height: null,
+                                text: widget.description!,
+                              ),
+                              const SizedBox(height: 16.0),
+                              const Divider(
+                                height: 24.0,
+                                thickness: 1.0,
+                                color: Color(0xFFE5E7EB),
+                              ),
+                              const SizedBox(height: 8.0),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: _toggleLanguage,
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14.0, vertical: 10.0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          border: Border.all(
+                                              color: const Color(0xFFD1D5DB)),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SizedBox(
+                                              width: 22.0,
+                                              height: 22.0,
+                                              child: SvgPicture.asset(
+                                                'assets/images/google_translate_icon.svg',
+                                                fit: BoxFit.contain,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8.0),
+                                            Text(
+                                              _selectedLang == 'hi'
+                                                  ? 'हिन्दी'
+                                                  : 'English',
+                                              style: const TextStyle(
+                                                fontSize: FFFont.f16,
+                                                fontWeight: FontWeight.w500,
                                                 color: Color(0xFF2563EB),
                                               ),
-                                              const SizedBox(width: 6.0),
-                                              Text(
-                                               _selectedLang == 'hi'
-                                                   ? 'हिन्दी'
-                                                   : 'English',
-                                               style: const TextStyle(
-                                                 fontSize: FFFont.f14,
-                                                 fontWeight: FontWeight.w500,
-                                                 color: Color(0xFF374151),
-                                               ),
-                                             ),
-                                             const SizedBox(width: 6.0),
-                                             const Icon(
-                                               Icons.keyboard_arrow_down_rounded,
-                                               size: 18.0,
-                                               color: Color(0xFF6B7280),
-                                             ),
-                                           ],
-                                         ),
-                                       ),
-                                     ),
-                                   ),
-                                 ],
-                               ),
+                                            ),
+                                            const SizedBox(width: 8.0),
+                                            const Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              size: 20.0,
+                                              color: Color(0xFF2563EB),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -1425,23 +1432,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               categorywisequiz);
                                                                       if (subjectKeys
                                                                           .isNotEmpty) {
-                                                                        final currentSubject =
-                                                                            (getJsonField(
-                                                                                      categorywisequiz
-                                                                                          .elementAtOrNull(idx),
-                                                                                      r'''$.subject''') ??
-                                                                                    getJsonField(
-                                                                                        categorywisequiz
-                                                                                            .elementAtOrNull(idx),
-                                                                                        r'''$.subcategoryName''') ??
-                                                                                    '')
-                                                                                .toString()
-                                                                                .trim();
+                                                                        final currentSubject = (getJsonField(categorywisequiz.elementAtOrNull(idx), r'''$.subject''') ??
+                                                                                getJsonField(categorywisequiz.elementAtOrNull(idx), r'''$.subcategoryName''') ??
+                                                                                '')
+                                                                            .toString()
+                                                                            .trim();
                                                                         final newIndex =
-                                                                            subjectKeys.indexOf(
-                                                                                currentSubject);
+                                                                            subjectKeys.indexOf(currentSubject);
                                                                         if (newIndex !=
-                                                                            -1 &&
+                                                                                -1 &&
                                                                             newIndex !=
                                                                                 _selectedSubjectIndex) {
                                                                           _selectedSubjectIndex =
@@ -1485,32 +1484,36 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           ? optionA['image']
                                                                               .toString()
                                                                           : '';
-                                                                      final optionAText = optionBiText(
-                                                                          optionA);
-                                                                       final optionBImage = (optionB is Map &&
-                                                                               optionB['image'] !=
-                                                                                   null)
-                                                                           ? optionB['image']
-                                                                               .toString()
-                                                                           : '';
-                                                                       final optionBText = optionBiText(
-                                                                            optionB);
-                                                                       final optionCImage = (optionC is Map &&
-                                                                               optionC['image'] !=
-                                                                                   null)
-                                                                           ? optionC['image']
-                                                                               .toString()
-                                                                           : '';
-                                                                       final optionCText = optionBiText(
-                                                                            optionC);
-                                                                       final optionDImage = (optionD is Map &&
-                                                                               optionD['image'] !=
-                                                                                   null)
-                                                                           ? optionD['image']
-                                                                               .toString()
-                                                                           : '';
-                                                                       final optionDText = optionBiText(
-                                                                            optionD);
+                                                                      final optionAText =
+                                                                          optionBiText(
+                                                                              optionA);
+                                                                      final optionBImage = (optionB is Map &&
+                                                                              optionB['image'] !=
+                                                                                  null)
+                                                                          ? optionB['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionBText =
+                                                                          optionBiText(
+                                                                              optionB);
+                                                                      final optionCImage = (optionC is Map &&
+                                                                              optionC['image'] !=
+                                                                                  null)
+                                                                          ? optionC['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionCText =
+                                                                          optionBiText(
+                                                                              optionC);
+                                                                      final optionDImage = (optionD is Map &&
+                                                                              optionD['image'] !=
+                                                                                  null)
+                                                                          ? optionD['image']
+                                                                              .toString()
+                                                                          : '';
+                                                                      final optionDText =
+                                                                          optionBiText(
+                                                                              optionD);
                                                                       final questionHtml =
                                                                           _resolveQuestionHtml(
                                                                               categorywisequizItem);
@@ -2675,9 +2678,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                       final correctAnswer =
                                                                           _answerText(
                                                                               currentQuestion);
-                                                                       final correctAnswerStr =
-                                                                           normalizeAnswer(
-                                                                               correctAnswer);
+                                                                      final correctAnswerStr =
+                                                                          normalizeAnswer(
+                                                                              correctAnswer);
 
                                                                       // Check if the option key matches directly
                                                                       final userKeyNormalized =
@@ -2866,12 +2869,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           } else if (opt['text']
                                                                               is Map) {
                                                                             textValue = biPick(
-                                                                                opt['text']['en']
-                                                                                    ?.toString(),
-                                                                                opt['text']['hi']
-                                                                                    ?.toString(),
-                                                                                FFAppState()
-                                                                                    .quizLang);
+                                                                                opt['text']['en']?.toString(),
+                                                                                opt['text']['hi']?.toString(),
+                                                                                FFAppState().quizLang);
                                                                           } else if (opt['text'] is Map &&
                                                                               opt['text']['text'] is String) {
                                                                             textValue =
@@ -2919,8 +2919,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             userAnswersPerQuestion[i] ??
                                                                                 'skipped';
                                                                         final correctAnswer =
-                                                                            _answerText(
-                                                                                q);
+                                                                            _answerText(q);
 
                                                                         // Count correct/wrong/skipped
                                                                         if (userAnswer ==
@@ -3304,18 +3303,18 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                         'subject': getJsonField(
                                                                             q,
                                                                             r'''$.subject'''),
-                                                                         'option': getJsonField(
-                                                                             q,
-                                                                             r'''$.option'''),
-                                                                         'answer': getJsonField(
-                                                                             q,
-                                                                             r'''$.answer'''),
-                                                                         'user_answer':
-                                                                             userAnswer,
-                                                                         'description': getJsonField(
-                                                                             q,
-                                                                             r'''$.description'''),
-                                                                       });
+                                                                        'option': getJsonField(
+                                                                            q,
+                                                                            r'''$.option'''),
+                                                                        'answer': getJsonField(
+                                                                            q,
+                                                                            r'''$.answer'''),
+                                                                        'user_answer':
+                                                                            userAnswer,
+                                                                        'description': getJsonField(
+                                                                            q,
+                                                                            r'''$.description'''),
+                                                                      });
                                                                     }
 
                                                                     // Update FFAppState().quesReviewList

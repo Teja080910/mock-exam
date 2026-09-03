@@ -41,6 +41,7 @@ const addPlan = async (req, res) => {
                 price: req.body.price,
                 planId: randomPlanId,
                 planType: req.body.planType || '',
+                features: (req.body.features || '').split('\n').map(f => f.trim()).filter(Boolean),
                 categoryGroup: categoryGroupVal
             });
             const savePlan = await planData.save();
@@ -121,6 +122,7 @@ const updatePlan = async (req, res) => {
                         planValidity: req.body.planValidity,
                         price: req.body.price,
                         planType: req.body.planType || '',
+                        features: (req.body.features || '').split('\n').map(f => f.trim()).filter(Boolean),
                         categoryGroup: categoryGroupVal
                     }
                 });

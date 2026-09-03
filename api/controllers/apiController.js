@@ -1737,6 +1737,7 @@ const GetPlans = async (req, res) => {
       planValidity: plan.planValidity,
       planId: plan.planId,
       planType: plan.planType || '',
+      features: plan.features || [],
       price: plan.price,
       categoryGroup: plan.categoryGroup,
     }));
