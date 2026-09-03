@@ -60,7 +60,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
                           'Study Notes',
                           style: const TextStyle(
                             color: Color(0xFF10213F),
-                            fontSize: FFFont.f22,
+                            fontSize: FFFont.f20,
                             fontWeight: FontWeight.w800,
                           ),
                         ),

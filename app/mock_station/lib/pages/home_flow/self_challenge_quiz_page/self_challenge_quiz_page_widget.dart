@@ -273,7 +273,7 @@ class _SelfChallengeQuizPageWidgetState
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily: 'Roboto',
-                                                        fontSize: FFFont.f22,
+                                                        fontSize: FFFont.f20,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.bold,

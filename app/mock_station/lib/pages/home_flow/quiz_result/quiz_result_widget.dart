@@ -289,7 +289,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 badge,
                 style: TextStyle(
                   color: accentColor,
-                  fontSize: FFFont.f9,
+                  fontSize: FFFont.f10,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -797,7 +797,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text('Great Job! 🎉', style: TextStyle(color: Color(0xFF18C66A), fontSize: FFFont.f24, fontWeight: FontWeight.w900)),
+                            Text('Great Job! 🎉', style: TextStyle(color: Color(0xFF18C66A), fontSize: FFFont.f20, fontWeight: FontWeight.w900)),
                             SizedBox(height: 8.0),
                             Text('You have completed the test successfully.', style: TextStyle(color: Color(0xFF64748B), fontSize: FFFont.f14, height: 1.35, fontWeight: FontWeight.w500)),
                           ],
@@ -814,7 +814,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                         center: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('$correct/$total', style: const TextStyle(color: Color(0xFF111827), fontSize: FFFont.f28, fontWeight: FontWeight.w900)),
+                            Text('$correct/$total', style: const TextStyle(color: Color(0xFF111827), fontSize: FFFont.f24, fontWeight: FontWeight.w900)),
                             const SizedBox(height: 4.0),
                             const Text('Score', style: TextStyle(color: Color(0xFF64748B), fontSize: FFFont.f11, fontWeight: FontWeight.w600)),
                           ],

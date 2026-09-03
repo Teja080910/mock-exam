@@ -204,7 +204,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                             Text(
                               "Account Login",
                               style: TextStyle(
-                                fontSize: FFFont.f22,
+                                fontSize: FFFont.f20,
                                 fontWeight: FontWeight.w900,
                                 color: isDark ? Colors.white : Colors.black87,
                               ),
@@ -420,7 +420,7 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
-                    fontSize: FFFont.f22,
+                    fontSize: FFFont.f20,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),

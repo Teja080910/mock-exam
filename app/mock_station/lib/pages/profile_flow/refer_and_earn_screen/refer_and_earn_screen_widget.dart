@@ -212,7 +212,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                               RichText(
                                 text: const TextSpan(
                                   style: TextStyle(
-                                    fontSize: FFFont.f28,
+                                    fontSize: FFFont.f24,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF1E293B),
                                     height: 1.15,
@@ -671,7 +671,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: FFFont.f22,
+                        fontSize: FFFont.f20,
                       ),
                     ),
                     const Text(
@@ -690,7 +690,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: FFFont.f22,
+                        fontSize: FFFont.f20,
                       ),
                     ),
                     const Text(

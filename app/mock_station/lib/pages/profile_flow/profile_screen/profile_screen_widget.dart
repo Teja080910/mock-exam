@@ -179,7 +179,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   _displayName,
                   style: const TextStyle(
                     color: Color(0xFF10213F),
-                    fontSize: FFFont.f22,
+                    fontSize: FFFont.f20,
                     fontWeight: FontWeight.w900,
                   ),
                 ),

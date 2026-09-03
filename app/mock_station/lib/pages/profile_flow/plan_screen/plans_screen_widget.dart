@@ -610,7 +610,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
             subtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: FFFont.f9,
+              fontSize: FFFont.f10,
               fontWeight: FontWeight.w500,
               color: FlutterFlowTheme.of(context).secondaryText,
               height: 1.1,

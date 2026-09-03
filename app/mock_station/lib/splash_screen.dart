@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Mock Station',
               style: TextStyle(
-                fontSize: FFFont.f24,
+                fontSize: FFFont.f20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),

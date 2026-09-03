@@ -478,7 +478,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             value,
             style: TextStyle(
               color: fg,
-              fontSize: FFFont.f22,
+              fontSize: FFFont.f20,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -573,7 +573,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                   value,
                   style: TextStyle(
                     color: color,
-                    fontSize: FFFont.f22,
+                    fontSize: FFFont.f20,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -910,7 +910,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                             'Great Job! 🎉',
                             style: TextStyle(
                               color: Color(0xFF16A34A),
-                              fontSize: FFFont.f28,
+                              fontSize: FFFont.f24,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -960,7 +960,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                                 '$correct/$total',
                                 style: const TextStyle(
                                   color: Color(0xFF111827),
-                                  fontSize: FFFont.f28,
+                                  fontSize: FFFont.f24,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),

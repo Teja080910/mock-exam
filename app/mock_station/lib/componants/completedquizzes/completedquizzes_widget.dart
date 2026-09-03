@@ -69,7 +69,7 @@ class _CompletedquizzesWidgetState extends State<CompletedquizzesWidget> {
                     'No completed Tests yet',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Roboto',
-                          fontSize: FFFont.f24,
+                          fontSize: FFFont.f20,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           useGoogleFonts: false,

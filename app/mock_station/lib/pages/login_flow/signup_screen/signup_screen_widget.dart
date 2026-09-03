@@ -192,7 +192,7 @@ class _SignupScreenWidgetState extends State<SignupScreenWidget>
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'Roboto',
-                                          fontSize: FFFont.f28,
+                                          fontSize: FFFont.f24,
                                           fontWeight: FontWeight.bold,
                                           useGoogleFonts: false,
                                         ),

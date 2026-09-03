@@ -135,7 +135,7 @@ class _OnBordingScreenWidgetState extends State<OnBordingScreenWidget> {
                                           .override(
                                             fontFamily: 'Roboto',
                                             color: Color(0xFF1C1B1B),
-                                            fontSize: FFFont.f28,
+                                            fontSize: FFFont.f24,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.bold,
                                             useGoogleFonts: false,

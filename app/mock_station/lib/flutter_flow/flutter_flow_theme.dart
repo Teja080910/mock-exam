@@ -211,21 +211,21 @@ class ThemeTypography extends Typography {
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: FFFont.f24,
+        fontSize: FFFont.f20,
       );
   String get headlineSmallFamily => 'Roboto';
   TextStyle get headlineSmall => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w500,
-        fontSize: FFFont.f24,
+        fontSize: FFFont.f20,
       );
   String get titleLargeFamily => 'Roboto';
   TextStyle get titleLarge => TextStyle(
         fontFamily: 'Roboto',
         color: theme.primaryText,
         fontWeight: FontWeight.w500,
-        fontSize: FFFont.f22,
+        fontSize: FFFont.f20,
       );
   String get titleMediumFamily => 'Roboto';
   TextStyle get titleMedium => TextStyle(

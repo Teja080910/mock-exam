@@ -33,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     'My Account',
                     style: TextStyle(
-                      fontSize: FFFont.f28,
+                      fontSize: FFFont.f24,
                       fontWeight: FontWeight.bold,
                       color: FlutterFlowTheme.of(context).primaryText,
                     ),
