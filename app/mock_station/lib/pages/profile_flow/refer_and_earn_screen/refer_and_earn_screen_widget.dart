@@ -276,7 +276,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                           width: 150,
                           height: 170,
                           child: Image.asset(
-                            'assets/images/refer_gift.png',
+                            'assets/images/refer_promo.jpeg',
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => const Icon(
                               Icons.card_giftcard_rounded,
