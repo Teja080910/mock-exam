@@ -53,7 +53,8 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   bool _showDisclaimerBanner = true;
 
   // Max groups shown per scope section before a "View All" button appears
-  static const int _maxGroupsPerSection = 15;
+  // (4 columns x 3 rows = 12 slots; last slot is View All)
+  static const int _maxGroupsPerSection = 11;
 
   @override
   void initState() {
@@ -210,7 +211,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   }
 
   Widget _buildGroupGrid(BuildContext context, String title, List<CategoryGroup> groups) {
-    // Show up to 15 groups; a "View All" cell appears if there are more
+    // Show up to 11 groups; a "View All" cell appears if there are more
     final hasMore = groups.length > _maxGroupsPerSection;
     final visibleGroups = hasMore
         ? groups.take(_maxGroupsPerSection).toList()

@@ -194,8 +194,8 @@ class _SubcategoryDetailPageWidgetState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 72.0,
-                          height: 72.0,
+                          width: 58.0,
+                          height: 58.0,
                           decoration: BoxDecoration(
                             color: const Color(0xFFF5F8FF),
                             borderRadius: BorderRadius.circular(12.0),
@@ -274,8 +274,8 @@ class _SubcategoryDetailPageWidgetState
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: 30.0,
-                          height: 30.0,
+                          width: 22.0,
+                          height: 22.0,
                           child: SvgPicture.asset(
                             'assets/images/google_translate_icon.svg',
                             fit: BoxFit.contain,
@@ -299,8 +299,8 @@ class _SubcategoryDetailPageWidgetState
                           ),
                         ),
                         SizedBox(
-                          width: 107.0,
-                          height: 42.0,
+                          width: 90.0,
+                          height: 34.0,
                           child: ElevatedButton(
                             onPressed: () async => _openQuiz(quiz),
                             style: ElevatedButton.styleFrom(

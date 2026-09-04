@@ -90,12 +90,12 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
 
                 return ListView.separated(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 16.0,
+                    horizontal: 14.0,
+                    vertical: 12.0,
                   ),
                   itemCount: ebooks.length,
                   separatorBuilder: (context, index) =>
-                      const SizedBox(height: 16.0),
+                      const SizedBox(height: 12.0),
                   itemBuilder: (context, index) {
                     final ebook = ebooks[index];
                     final ebookName =
@@ -138,7 +138,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                 alignment: Alignment.centerLeft,
                                 child: Container(
                                   width: 4.0,
-                                  height: 72.0,
+                                  height: 58.0,
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .primary,
@@ -149,19 +149,19 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                             ),
                             Padding(
                               padding: const EdgeInsets.fromLTRB(
-                                  16.0, 16.0, 14.0, 16.0),
+                                  14.0, 12.0, 12.0, 12.0),
                               child: Row(
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(8.0),
                                     child: CachedNetworkImage(
                                       imageUrl: imageUrl,
-                                      width: 100.0,
-                                      height: 118.0,
+                                      width: 80.0,
+                                      height: 100.0,
                                       fit: BoxFit.cover,
                                       placeholder: (context, url) => Container(
-                                        width: 100.0,
-                                        height: 118.0,
+                                        width: 80.0,
+                                        height: 100.0,
                                         color: FlutterFlowTheme.of(context)
                                             .primaryBackground,
                                         child: Center(
@@ -181,8 +181,8 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                       ),
                                       errorWidget: (context, url, error) =>
                                           Container(
-                                        width: 100.0,
-                                        height: 118.0,
+                                        width: 80.0,
+                                        height: 100.0,
                                         color: FlutterFlowTheme.of(context)
                                             .primaryBackground,
                                         child: Icon(
@@ -193,7 +193,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 14.0),
+                                  const SizedBox(width: 12.0),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -214,7 +214,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                                 useGoogleFonts: false,
                                               ),
                                         ),
-                                        const SizedBox(height: 6.0),
+                                        const SizedBox(height: 4.0),
                                         Text(
                                           'Click to view ebooks',
                                           style: FlutterFlowTheme.of(context)
@@ -234,7 +234,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                   const SizedBox(width: 8.0),
                                   Icon(
                                     Icons.chevron_right,
-                                    size: 28.0,
+                                    size: 24.0,
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryText,
                                   ),
