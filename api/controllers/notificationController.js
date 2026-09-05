@@ -2,7 +2,36 @@ const Notification = require("../models/notificationModel");
 const common_Notification = require("../models/commonNotificationModel");
 const Admin = require("../models/adminModel");
 const admin = require('../config/firebase');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
+
+// Extract first base64 image from Quill description, save as banner file, strip data URIs from HTML
+function extractDescriptionImage(description) {
+    if (!description) return { image: '', cleanDescription: description };
+    const imgRegex = /<img[^>]*src="data:image\/(\w+);base64,([^"]+)"[^>]*>/gi;
+    let match;
+    let image = '';
+    let cleanDescription = description;
+    const imageDir = path.join(__dirname, '../public/assets/userImages');
+    if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
+    while ((match = imgRegex.exec(description)) !== null) {
+        if (!image) {
+            try {
+                const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+                const filename = `${Date.now()}-description-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                fs.writeFileSync(path.join(imageDir, filename), Buffer.from(match[2], 'base64'));
+                image = filename;
+            } catch (e) {
+                console.log('Failed to save description image:', e.message);
+            }
+        }
+    }
+    if (image) {
+        cleanDescription = description.replace(imgRegex, '').trim();
+    }
+    return { image, cleanDescription };
+}
 
 // Load notification
 const loadNotification = async (req, res) => {
@@ -34,10 +63,11 @@ const addNotification = async (req, res) => {
     try {
         let loginData = await Admin.findById({_id:req.session.user_id});
         if (loginData.is_admin == 1) {
+            const { image: descImage, cleanDescription } = extractDescriptionImage(req.body.description);
             const nottificationData = new common_Notification({
                 title: req.body.title,
-                description: req.body.description,
-                image: req.file ? req.file.filename : ''
+                description: cleanDescription || req.body.description,
+                image: req.file ? req.file.filename : descImage
             });
             const saveNotification = await nottificationData.save();
 
