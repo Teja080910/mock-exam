@@ -1163,7 +1163,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                               borderRadius: BorderRadius.circular(6.0),
                             ),
                             child: Text(
-                              '${optionIndex + 1}',
+                              String.fromCharCode(65 + optionIndex),
                               style: const TextStyle(
                                 color: Color(0xFF111827),
                                 fontSize: FFFont.f12,
@@ -1510,7 +1510,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                               borderRadius: BorderRadius.circular(6.0),
                             ),
                             child: Text(
-                              '${optionIndex + 1}',
+                              String.fromCharCode(65 + optionIndex),
                               style: const TextStyle(
                                 color: Color(0xFF111827),
                                 fontSize: FFFont.f12,
