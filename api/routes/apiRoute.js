@@ -227,8 +227,10 @@ api_route.post("/getallnews", async (req, res) => {
       _id: item._id,
       title: item.title,
       post_type: item.post_type || 'notification',
+      category: item.category || '',
       short_description: item.short_description || item.description || '',
       description: item.description || '',
+      image: item.image || '',
       link: item.link || "",
       createdAt: item.createdAt,
     }));

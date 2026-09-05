@@ -220,10 +220,10 @@ admin_route.get('/delete-category-group', categoryGroupController.deleteGroup);
 
 // News
 admin_route.get('/add-news', NewsController.loadNews);
-admin_route.post('/add-news', NewsController.addNews);
+admin_route.post('/add-news', upload.single('image'), NewsController.addNews);
 admin_route.get('/view-news', NewsController.viewNews);
 admin_route.get('/edit-news', NewsController.editNews);
-admin_route.post('/edit-news', NewsController.updateNews);
+admin_route.post('/edit-news', upload.single('image'), NewsController.updateNews);
 admin_route.get('/delete-news', NewsController.deleteNews);
 admin_route.post('/news-is-active/:id/toggle', NewsController.activeStatus);
 

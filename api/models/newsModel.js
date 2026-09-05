@@ -11,6 +11,11 @@ const NewsSchema = mongoose.Schema({
         default: 'notification',
         required: true
     },
+    category: {
+        type: String,
+        default: 'General',
+        trim: true
+    },
     short_description: {
         type: String,
         required: true,
@@ -19,6 +24,10 @@ const NewsSchema = mongoose.Schema({
     description: {
         type: String,
         required: false
+    },
+    image: {
+        type: String,
+        default: ''
     },
     link: {
         type: String,

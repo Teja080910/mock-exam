@@ -18,8 +18,10 @@ const addNews = async (req, res) => {
             const newsData = new News({
                 title: req.body.title,
                 post_type: req.body.post_type,
+                category: req.body.category || 'General',
                 short_description: req.body.short_description,
                 description: req.body.short_description,
+                image: req.file ? req.file.filename : '',
                 link: req.body.link,
                 is_active: req.body.is_active == "on" ? 1 : 0
             });
@@ -74,11 +76,15 @@ const updateNews = async (req, res) => {
             const updateData = {
                 title: req.body.title,
                 post_type: req.body.post_type,
+                category: req.body.category || 'General',
                 short_description: req.body.short_description,
                 description: req.body.short_description,
                 link: req.body.link,
                 is_active: req.body.is_active == "on" ? 1 : 0
             };
+            if (req.file) {
+                updateData.image = req.file.filename;
+            }
             await News.findByIdAndUpdate({ _id: id }, { $set: updateData });
             res.redirect('/view-news');
         } else {

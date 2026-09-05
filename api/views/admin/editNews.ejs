@@ -10,7 +10,7 @@
                                     <span class="text-muted fw-light">News /</span> Edit News
                                 </h4>
                                 <div class="card mb-4">
-                                    <form action="" method="post">
+                                    <form action="" method="post" enctype="multipart/form-data">
                                         <div class="card-body">
                                             <% if(typeof message !== 'undefined'){ %>
                                                 <div class="alert alert-primary alert-dismissible" role="alert"><%= message %>
@@ -27,7 +27,7 @@
                                                 <div class="col-md-12">
                                                     <div class="row mb-3">
                                                         <label class="col-sm-2 col-form-label"
-                                                            for="basic-icon-default-fullname">Title</label>
+                                                            for="title">Title</label>
                                                         <div class="col-sm-10">
                                                             <div class="input-group input-group-merge">
                                                                 <input type="text" class="form-control" name="title" value="<%= editnews.title %>" placeholder="e.g. SSC CGL 2026 Tier 1 Result Declared" required />
@@ -37,15 +37,38 @@
                                                     </div>
                                                     <div class="row mb-3">
                                                         <label class="col-sm-2 col-form-label"
+                                                            for="category">Category</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group input-group-merge">
+                                                                <input type="text" class="form-control" name="category" value="<%= editnews.category || '' %>" placeholder="e.g. Government Exams, Banking, Railway" />
+                                                            </div>
+                                                            <small class="text-muted">e.g. Government Exams, Banking, Railway, SSC, UPSC</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label"
                                                             for="post_type">Post Type</label>
                                                         <div class="col-sm-10">
                                                             <select class="form-select" name="post_type" id="post_type" required>
+                                                                <option value="notification" <% if (editnews.post_type === 'notification' || !editnews.post_type) { %> selected <% } %>>Notification</option>
                                                                 <option value="result" <% if (editnews.post_type === 'result') { %> selected <% } %>>Result</option>
                                                                 <option value="admit_card" <% if (editnews.post_type === 'admit_card') { %> selected <% } %>>Admit Card</option>
                                                                 <option value="answer_key" <% if (editnews.post_type === 'answer_key') { %> selected <% } %>>Answer Key</option>
-                                                                <option value="notification" <% if (editnews.post_type === 'notification' || !editnews.post_type) { %> selected <% } %>>Notification</option>
                                                                 <option value="other" <% if (editnews.post_type === 'other') { %> selected <% } %>>Other</option>
                                                             </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label"
+                                                            for="image">Banner Image</label>
+                                                        <div class="col-sm-10">
+                                                            <% if(editnews.image) { %>
+                                                                <div class="mb-2">
+                                                                    <img src="/assets/userImages/<%= editnews.image %>" alt="Current image" style="max-width: 200px; max-height: 120px; border-radius: 8px; object-fit: cover;">
+                                                                </div>
+                                                            <% } %>
+                                                            <input type="file" class="form-control" name="image" accept="image/*" />
+                                                            <small class="text-muted">Upload a new banner image to replace the current one (recommended: 800x400px)</small>
                                                         </div>
                                                     </div>
                                                     <div class="row mb-3">
@@ -61,7 +84,7 @@
                                                     </div>
                                                     <div class="row mb-3">
                                                         <label class="col-sm-2 col-form-label"
-                                                            for="basic-icon-default-fullname">Website Link (optional)</label>
+                                                            for="link">Website Link (optional)</label>
                                                         <div class="col-sm-10">
                                                             <div class="input-group input-group-merge">
                                                                 <input type="url" class="form-control" name="link" value="<%= editnews.link %>" placeholder="https://example.com" />
@@ -69,7 +92,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="row mb-3">
-                                                        <label class="col-sm-2 col-form-label" for="basic-icon-default-fullname">is Active</label>
+                                                        <label class="col-sm-2 col-form-label" for="is_active">Is Active</label>
                                                         <div class="col-sm-10">
                                                             <div class="form-check form-switch mb-2">
                                                                 <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_active" <% if(editnews.is_active == 1) { %> checked <% } %>>
