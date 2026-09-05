@@ -239,12 +239,12 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                                 imageUrl:
                                                     '${FFAppConstants.imageBaseURL}$image',
                                                 width: double.infinity,
-                                                height: 200,
+                                                height: 150,
                                                 fit: BoxFit.cover,
                                                 placeholder: (context, url) =>
                                                     Container(
                                                   width: double.infinity,
-                                                  height: 200,
+                                                  height: 150,
                                                   color: const Color(
                                                       0xFFF0F5FF),
                                                   child: const Center(
@@ -258,7 +258,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                                         error) =>
                                                     Container(
                                                   width: double.infinity,
-                                                  height: 200,
+                                                  height: 150,
                                                   color: const Color(
                                                       0xFFF0F5FF),
                                                   child: Icon(
@@ -274,7 +274,7 @@ class _NewsScreenWidgetState extends State<NewsScreenWidget> {
                                           else
                                             Container(
                                               width: double.infinity,
-                                              height: 200,
+                                              height: 150,
                                               decoration: const BoxDecoration(
                                                 color: Color(0xFFF0F5FF),
                                                 borderRadius:
@@ -514,11 +514,11 @@ class NewsDetailScreenWidget extends StatelessWidget {
                     CachedNetworkImage(
                       imageUrl: '${FFAppConstants.imageBaseURL}$image',
                       width: double.infinity,
-                      height: 240,
+                      height: 200,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         width: double.infinity,
-                        height: 240,
+                        height: 200,
                         color: const Color(0xFFF0F5FF),
                         child: const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
@@ -526,7 +526,7 @@ class NewsDetailScreenWidget extends StatelessWidget {
                       ),
                       errorWidget: (context, url, error) => Container(
                         width: double.infinity,
-                        height: 240,
+                        height: 200,
                         color: const Color(0xFFF0F5FF),
                         child: Icon(Icons.newspaper_rounded,
                             size: 48, color: Colors.grey.shade300),
