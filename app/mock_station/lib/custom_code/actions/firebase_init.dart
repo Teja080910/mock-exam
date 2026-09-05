@@ -19,6 +19,8 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+
 import 'notification_init.dart';
 
 import 'package:intl/intl.dart';
@@ -73,7 +75,22 @@ Future<void> backgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> _showNotification(RemoteMessage message) async {
-  const AndroidNotificationDetails androidNotificationDetails =
+  final imageUrl = message.notification?.android?.imageUrl;
+  BigPictureStyleInformation? styleInformation;
+  if (imageUrl != null && imageUrl.isNotEmpty) {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode == 200) {
+        styleInformation = BigPictureStyleInformation(
+          ByteArrayAndroidBitmap(response.bodyBytes),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error fetching notification image: $e');
+    }
+  }
+
+  final AndroidNotificationDetails androidNotificationDetails =
       AndroidNotificationDetails(
     'high_importance_channel',
     'High Importance Notifications',
@@ -81,9 +98,11 @@ Future<void> _showNotification(RemoteMessage message) async {
     importance: Importance.max,
     priority: Priority.high,
     ticker: 'ticker',
+    icon: 'ic_notification',
+    styleInformation: styleInformation,
   );
 
-  const NotificationDetails notificationDetails =
+  final NotificationDetails notificationDetails =
       NotificationDetails(android: androidNotificationDetails);
 
   await flutterLocalNotificationsPlugin.show(
