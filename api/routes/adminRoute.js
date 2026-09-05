@@ -173,7 +173,7 @@ admin_route.post('/setting', SettingController.addSetting);
 
 // Notifications
 admin_route.get('/add-notification', notificationController.loadNotification);
-admin_route.post('/add-notification', notificationController.addNotification);
+admin_route.post('/add-notification', upload.single('image'), notificationController.addNotification);
 admin_route.get('/view-notification', notificationController.viewNotification);
 
 // SMTP Settings

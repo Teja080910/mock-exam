@@ -27,6 +27,7 @@
                                                         <th>Sr No</th>
                                                         <th>Title</th>
                                                         <th>Description</th>
+                                                        <th>Image</th>
                                                         <th>Sent At</th>
                                                     </tr>
                                                 </thead>
@@ -41,6 +42,13 @@
                                                             </td>
                                                             <td>
                                                                 <%- notification.description %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (notification.image) { %>
+                                                                    <img src="/assets/userImages/<%= notification.image %>" width="60" height="40" style="object-fit:cover;border-radius:6px;" />
+                                                                <% } else { %>
+                                                                    <span class="text-muted">-</span>
+                                                                <% } %>
                                                             </td>
                                                             <td>
                                                                 <%= notification.createdAt.toLocaleString() %>

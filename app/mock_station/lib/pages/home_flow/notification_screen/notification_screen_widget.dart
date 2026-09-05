@@ -7,6 +7,7 @@ import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'notification_screen_model.dart';
@@ -189,6 +190,11 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                             final notificationsDetailsItem =
                                                 notificationsDetails[
                                                     notificationsDetailsIndex];
+                                            final notificationImage =
+                                                getJsonField(
+                                                        notificationsDetailsItem,
+                                                        r'''$.image''')
+                                                    .toString();
                                             return Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -215,13 +221,69 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                 ),
                                                 child: Padding(
                                                   padding: EdgeInsets.all(16.0),
-                                                  child: Row(
+                                                  child: Column(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
+                                                      if (notificationImage
+                                                          .isNotEmpty)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  bottom: 14.0),
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10.0),
+                                                            child:
+                                                                CachedNetworkImage(
+                                                              imageUrl:
+                                                                  '${FFAppConstants.imageBaseURL}$notificationImage',
+                                                              width: double
+                                                                  .infinity,
+                                                              height: 130.0,
+                                                              fit: BoxFit
+                                                                  .cover,
+                                                              placeholder: (context,
+                                                                      url) =>
+                                                                  Container(
+                                                                height: 130.0,
+                                                                color: const Color(
+                                                                    0xFFF1F5F9),
+                                                                child: const Icon(
+                                                                    Icons
+                                                                        .image_outlined,
+                                                                    color: Color(
+                                                                        0xFF9CA3AF)),
+                                                              ),
+                                                              errorWidget: (context,
+                                                                      url,
+                                                                      error) =>
+                                                                  Container(
+                                                                height: 130.0,
+                                                                color: const Color(
+                                                                    0xFFF1F5F9),
+                                                                child: const Icon(
+                                                                    Icons
+                                                                        .broken_image_outlined,
+                                                                    color: Color(
+                                                                        0xFF9CA3AF)),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
                                                       Container(
                                                         width: 40.0,
                                                         height: 40.0,
@@ -366,6 +428,8 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                       ),
                                                     ].divide(
                                                         SizedBox(width: 16.0)),
+                                                  ),
+                                                    ],
                                                   ),
                                                 ),
                                               ),

@@ -2418,6 +2418,7 @@ const GetNotifications = async (req, res) => {
         _id: notification._id,
         title: notification.title,
         description: notification.description,
+        image: notification.image || '',
         createdAt: notification.createdAt,
       }));
       res.json({

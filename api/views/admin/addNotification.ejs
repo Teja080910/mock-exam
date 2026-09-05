@@ -10,7 +10,7 @@
                                     <span class="text-muted fw-light">Notification /</span> Send A Notification To Users
                                 </h4>
                                 <div class="card mb-4">
-                                    <form action="" method="post">
+                                    <form action="" method="post" enctype="multipart/form-data">
                                         <div class="card-body">
                                             <% if(typeof message !== 'undefined'){ %>
                                                 <div class="alert alert-primary alert-dismissible" role="alert"><%= message %>
@@ -40,6 +40,14 @@
                                                         <div class="col-sm-10">
                                                             <div id="description"></div>
                                                             <input type="hidden" name="description">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <label class="col-sm-2 col-form-label"
+                                                            for="basic-icon-default-fullname">Notification Image</label>
+                                                        <div class="col-sm-10">
+                                                            <input type="file" class="form-control" name="image" accept="image/*" />
+                                                            <small class="text-muted">Optional banner image shown in the notification card</small>
                                                         </div>
                                                     </div>
                                                 </div>

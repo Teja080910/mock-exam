@@ -36,7 +36,8 @@ const addNotification = async (req, res) => {
         if (loginData.is_admin == 1) {
             const nottificationData = new common_Notification({
                 title: req.body.title,
-                description: req.body.description
+                description: req.body.description,
+                image: req.file ? req.file.filename : ''
             });
             const saveNotification = await nottificationData.save();
 
@@ -58,7 +59,10 @@ const addNotification = async (req, res) => {
                 const body = nottificationData.description.replace(/<[^>]*>/g, '').trim();
     
                 //sendPushNotifications(serverKey, deviceTokens, title, body);
-                sendPushNotification(registrationTokens, title, body);
+                const imageUrl = nottificationData.image
+                    ? `https://app.mockstation.com/assets/userImages/${nottificationData.image}`
+                    : '';
+                sendPushNotification(registrationTokens, title, body, imageUrl);
     
                 if (nottificationData) {
                     res.render('addNotification', { message: 'Notification Sent Successfully..!!' });
@@ -75,7 +79,7 @@ const addNotification = async (req, res) => {
 }
 
 // Firebase Push Notification to all users
-function sendPushNotification(registrationTokens, title, body) {
+function sendPushNotification(registrationTokens, title, body, imageUrl = '') {
     const message = {
         notification: {
             title: title,
@@ -83,6 +87,9 @@ function sendPushNotification(registrationTokens, title, body) {
         },
         tokens: registrationTokens
     };
+    if (imageUrl) {
+        message.notification.imageUrl = imageUrl;
+    }
   
     admin.messaging().sendEachForMulticast(message)
         .then((response) => {
