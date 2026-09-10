@@ -87,15 +87,36 @@ const addQuestions = async (req, res) => {
                             };
                         }
 
+                        // Extract base64 images embedded in the question title (Quill editor)
+                        let titleHtml = req.body.question_title || '';
+                        let titleHtmlHi = req.body.question_title_hi || '';
+                        let extractedImage = '';
+                        const imgRegex = /<img[^>]*src="data:image\/(\w+);base64,([^"]+)"[^>]*>/gi;
+                        const imageDir = path.join(__dirname, '../public/assets/userImages');
+                        if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
+                        const imgMatch = imgRegex.exec(titleHtml);
+                        if (imgMatch) {
+                            try {
+                                const ext = imgMatch[1] === 'jpeg' ? 'jpg' : imgMatch[1];
+                                const filename = `${Date.now()}-question-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                                fs.writeFileSync(path.join(imageDir, filename), Buffer.from(imgMatch[2], 'base64'));
+                                extractedImage = filename;
+                                titleHtml = titleHtml.replace(imgRegex, '').trim();
+                                titleHtmlHi = titleHtmlHi.replace(imgRegex, '').trim();
+                            } catch (e) {
+                                console.log('Failed to save question title image:', e.message);
+                            }
+                        }
+
                         const QuestionsData = new Questions({
                             categoryId: req.body.categoryId,
                             subcategoryId: req.body.subcategoryId,
                             quizId: req.body.quizId,
                             subject: req.body.subject || '',
-                            question_title: bilingual(req.body.question_title, req.body.question_title_hi),
-                            image: optionType === "images" && req.files.image && req.files.image[0] ? req.files.image[0].filename : undefined,
+                            question_title: bilingual(titleHtml, titleHtmlHi),
+                            image: req.files.image && req.files.image[0] ? req.files.image[0].filename : (extractedImage || undefined),
                             audio: optionType === "audio" ? req.files.audio[0].filename : undefined,
-                            question_type: optionType,
+                            question_type: (optionType !== "images" && extractedImage) ? "images" : optionType,
                             option: optionData,
                             answer: bilingual(req.body.answer, req.body.answer_hi),
                             description: {
