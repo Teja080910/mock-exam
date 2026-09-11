@@ -2,7 +2,8 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const axios = require('axios');
 
-const PROD_BASE = 'https://mediumspringgreen-aardvark-783458.hostingersite.com/api';
+// Override with PROD_BASE when migrating from another deployment.
+const PROD_BASE = process.env.PROD_BASE || 'https://app.mockstation.com/api';
 
 async function fetchProd(endpoint, data = {}) {
   try {
@@ -31,6 +32,7 @@ async function migrate() {
       await db.collection('categories').insertOne({
         _id: new mongoose.Types.ObjectId(c._id),
         name: c.name,
+        displayName: c.displayName || c.name,
         image: c.image,
         is_feature: c.is_feature || 0,
         is_active: 1,
@@ -51,6 +53,9 @@ async function migrate() {
         await db.collection('categorygroups').insertOne({
           _id: new mongoose.Types.ObjectId(g._id),
           displayName: g.displayName,
+          code: g.code || '',
+          image: g.image || '',
+          scope: ['central', 'state', 'none'].includes(g.scope) ? g.scope : 'none',
           categories: g.categories?.map(c => new mongoose.Types.ObjectId(c._id)) || [],
           createdAt: new Date(),
           updatedAt: new Date()
@@ -97,13 +102,39 @@ async function migrate() {
   const quizList = quizRes?.data?.quizDetails || quizRes?.data?.quizzesDetails;
   if (quizList) {
     await db.collection('quizzes').deleteMany({});
-    for (const q of quizList) {
+
+    // getallquizzes omits subcategoryId. Fetch each subcategory's quizzes so
+    // category detail pages can still list the production tests locally.
+    const quizById = new Map(quizList.map(q => [q._id.toString(), { ...q }]));
+    const localSubcategories = await db.collection('subcategories').find({}).toArray();
+    for (const subcategory of localSubcategories) {
+      const subRes = await fetchProd('getquizbysubcategory', {
+        subcategoryId: subcategory._id.toString()
+      });
+      for (const subQuiz of subRes?.quizzes || []) {
+        const id = subQuiz._id?.toString();
+        if (!id) continue;
+        quizById.set(id, {
+          ...(quizById.get(id) || {}),
+          ...subQuiz,
+          subcategoryId: subcategory._id.toString(),
+          categoryId: subQuiz.categoryId?.toString?.() || subQuiz.categoryId || subcategory.categoryId.toString()
+        });
+      }
+    }
+
+    for (const q of quizById.values()) {
+      const categoryId = q.categoryId?._id || q.categoryId;
+      if (!categoryId) continue;
+      const subcategoryId = q.subcategoryId?._id || q.subcategoryId;
       await db.collection('quizzes').insertOne({
         _id: new mongoose.Types.ObjectId(q._id),
         name: q.name,
-        categoryId: new mongoose.Types.ObjectId(q.categoryId),
+        categoryId: new mongoose.Types.ObjectId(categoryId),
+        ...(subcategoryId ? { subcategoryId: new mongoose.Types.ObjectId(subcategoryId) } : {}),
         image: q.image || '',
         timer_status: q.timer_status || 0,
+        minimum_required_points: q.minimum_required_points || 0,
         minutes_per_quiz: q.minutes_per_quiz || 0,
         total_questions: q.total_questions || 0,
         correct_ans_reward_per_question: q.correct_ans_reward_per_question || 0,
@@ -111,15 +142,16 @@ async function migrate() {
         description: q.description || '',
         is_played: q.is_played || 0,
         is_active: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date(q.createdAt || Date.now()),
+        updatedAt: new Date(q.updatedAt || Date.now())
       });
     }
-    console.log(`  Inserted ${quizList.length} quizzes`);
+    console.log(`  Inserted ${quizById.size} quizzes (${[...quizById.values()].filter(q => q.subcategoryId).length} linked to subcategories)`);
   }
 
   // 5. Questions
   console.log('\n4. Migrating questions...');
+  await db.collection('questions').deleteMany({});
   const allQuizzes = await db.collection('quizzes').find({}).toArray();
   let totalQuestions = 0;
   for (const quiz of allQuizzes) {
@@ -143,10 +175,12 @@ async function migrate() {
           }
         }
 
+        const subcategoryId = q.subcategoryId?._id || q.subcategoryId;
         await db.collection('questions').insertOne({
           _id: new mongoose.Types.ObjectId(q._id),
-          categoryId: new mongoose.Types.ObjectId(q.categoryId),
+          categoryId: new mongoose.Types.ObjectId(q.categoryId?._id || q.categoryId || quiz.categoryId),
           quizId: new mongoose.Types.ObjectId(q.quizId?._id || q.quizId),
+          ...(subcategoryId ? { subcategoryId: new mongoose.Types.ObjectId(subcategoryId) } : {}),
           question_type: qType,
           question_title: q.question_title || '',
           image: q.image || '',

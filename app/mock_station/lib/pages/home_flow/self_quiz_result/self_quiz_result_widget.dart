@@ -80,9 +80,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
       final questionData = item is Map ? (item['question'] ?? item) : item;
       final subject = _cleanText(
         (item is Map ? item['subject'] : null) ??
-            getJsonField(questionData, r'''$.subject''') ??
-            (item is Map ? item['subcategoryName'] : null) ??
-            getJsonField(questionData, r'''$.subcategoryName'''),
+            getJsonField(questionData, r'''$.subject'''),
       );
       if (subject.isEmpty) continue;
       if (!labels.contains(subject)) {
@@ -90,6 +88,32 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
       }
     }
     return labels;
+  }
+
+  bool _isSubjectWiseTest(List<dynamic> questions) {
+    final closedSubjects = <String>{};
+    String? currentSubject;
+    var hasSubject = false;
+
+    for (final item in questions) {
+      final questionData = item is Map ? (item['question'] ?? item) : item;
+      final subject = _cleanText(
+        (item is Map ? item['subject'] : null) ??
+            getJsonField(questionData, r'''$.subject'''),
+      );
+      if (subject.isEmpty) return false;
+      hasSubject = true;
+
+      if (currentSubject == null) {
+        currentSubject = subject;
+      } else if (subject != currentSubject) {
+        closedSubjects.add(currentSubject);
+        if (closedSubjects.contains(subject)) return false;
+        currentSubject = subject;
+      }
+    }
+
+    return hasSubject;
   }
 
   Future<void> _goHome() async {
@@ -1063,7 +1087,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                 ),
               ),
               const SizedBox(height: 14.0),
-              if (sectionLabels.length >= 2)
+              if (sectionLabels.length >= 2 && _isSubjectWiseTest(_questions()))
                 Container(
                   padding: const EdgeInsets.all(14.0),
                   decoration: BoxDecoration(

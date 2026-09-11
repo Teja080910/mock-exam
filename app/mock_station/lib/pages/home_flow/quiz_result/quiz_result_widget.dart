@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
@@ -56,9 +57,11 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     with TickerProviderStateMixin {
   late QuizResultModel _model;
   late TabController _tabController;
-  late TabController _answerKeyTabController;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  String _answerKeyFilter = 'all';
+  int _selectedAnswerKeyIndex = 0;
+  String _answerKeyLanguage = 'en';
 
   double get _score {
     return (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) -
@@ -130,7 +133,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           fontFamily: 'Roboto',
           fontSize: FFFont.f16,
           letterSpacing: 0.0,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.normal,
           useGoogleFonts: false,
           lineHeight: 1.5,
         );
@@ -428,6 +431,11 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   Widget _buildSectionalSummary() {
+    final source = FFAppState().quesList.isNotEmpty
+        ? FFAppState().quesList.toList()
+        : FFAppState().quesReviewList.toList();
+    if (!_isSubjectWiseTest(source)) return const SizedBox.shrink();
+
     final sections = _sectionSummaryItems();
     if (sections.isEmpty) return const SizedBox.shrink();
 
@@ -658,6 +666,35 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     }
 
     return sections;
+  }
+
+  bool _isSubjectWiseTest(List<dynamic> source) {
+    final closedSubjects = <String>{};
+    String? currentSubject;
+    var hasSubject = false;
+
+    for (final item in source) {
+      final subject = _subjectName(item).trim();
+      // A sectional summary is valid only when every question explicitly
+      // belongs to a subject. The exam subcategory is not a subject.
+      if (subject.isEmpty) return false;
+      hasSubject = true;
+
+      if (currentSubject == null) {
+        currentSubject = subject;
+        continue;
+      }
+      if (subject == currentSubject) continue;
+
+      closedSubjects.add(currentSubject);
+      if (closedSubjects.contains(subject)) {
+        // Example: Maths, Reasoning, Maths = mixed/interleaved questions.
+        return false;
+      }
+      currentSubject = subject;
+    }
+
+    return hasSubject;
   }
 
   List<String> _sectionLabelsFromData(List<dynamic> source) {
@@ -932,52 +969,640 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   Widget _buildAnswerKeyTab() {
-    final questions = FFAppState().quesList.toList();
-    final list = questions.isNotEmpty
-        ? questions
-        : List.generate(
-            widget.totalQuestion ?? 0,
-            (index) => <String, dynamic>{'user_answer': 'skipped'},
-          );
-
-    final answered = list.where((q) =>
-        q['user_answer'] != null && q['user_answer'] != 'skipped').toList();
-    final skipped = list.where((q) =>
-        q['user_answer'] == null || q['user_answer'] == 'skipped').toList();
+    final entries = _answerKeyEntries();
+    if (_selectedAnswerKeyIndex >= entries.length) {
+      _selectedAnswerKeyIndex = entries.isEmpty ? 0 : entries.length - 1;
+    }
 
     return Column(
       children: [
-        Align(
-          alignment: const Alignment(0.0, 0),
-          child: TabBar(
-            labelColor: FlutterFlowTheme.of(context).primaryText,
-            unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
-            labelStyle: FlutterFlowTheme.of(context).titleMedium.override(
-                  fontFamily: 'Roboto',
-                  letterSpacing: 0.0,
-                  useGoogleFonts: false,
-                ),
-            unselectedLabelStyle: const TextStyle(),
-            indicatorColor: FlutterFlowTheme.of(context).primary,
-            padding: const EdgeInsets.all(4.0),
-            tabs: [
-              Tab(text: 'Answered (${answered.length})'),
-              Tab(text: 'Skipped (${skipped.length})'),
-            ],
-            controller: _answerKeyTabController,
-            onTap: (i) async {},
-          ),
-        ),
+        _buildAnswerKeyToolbar(entries),
         Expanded(
-          child: TabBarView(
-            controller: _answerKeyTabController,
-            children: [
-              _buildAnsweredList(answered),
-              _buildSkippedList(skipped),
-            ],
-          ),
+          child: entries.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No questions match this filter.',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: FFFont.f14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(10.0, 12.0, 10.0, 18.0),
+                  child: _buildAnswerKeyQuestionCard(
+                    question: entries[_selectedAnswerKeyIndex]['question'],
+                    questionNumber: entries[_selectedAnswerKeyIndex]['index'] + 1,
+                  ),
+                ),
         ),
       ],
+    );
+  }
+
+  List<dynamic> _answerKeySource() {
+    final questions = FFAppState().quesList.toList();
+    if (questions.isNotEmpty) return questions;
+    return List.generate(
+      widget.totalQuestion ?? 0,
+      (index) => <String, dynamic>{'user_answer': 'skipped'},
+    );
+  }
+
+  List<Map<String, dynamic>> _answerKeyEntries() {
+    final source = _answerKeySource();
+    final entries = <Map<String, dynamic>>[];
+    for (var index = 0; index < source.length; index++) {
+      final question = source[index];
+      if (_answerKeyFilter == 'all' ||
+          _answerKeyStatus(question) == _answerKeyFilter) {
+        entries.add({'question': question, 'index': index});
+      }
+    }
+    return entries;
+  }
+
+  dynamic _answerKeyValue(dynamic item, String key) {
+    if (item is Map) {
+      final directValue = item[key];
+      if (directValue != null) return directValue;
+      final nested = item['question'];
+      if (nested is Map && nested[key] != null) return nested[key];
+    }
+    return null;
+  }
+
+  String _answerKeyStatus(dynamic question) {
+    final userAnswer = _cleanText(
+      _answerKeyValue(question, 'user_answer'),
+    ).toLowerCase();
+    if (userAnswer.isEmpty || userAnswer == 'skipped') return 'skip';
+
+    final options = _optionMap(question);
+    final correctAnswer = _cleanText(
+      biText(
+        _answerKeyValue(question, 'correct_answer') ??
+            _answerKeyValue(question, 'answer'),
+      ),
+    );
+    final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
+    final correctKey = _normalizedAnswerKey(correctAnswer, options) ??
+        correctAnswer.toLowerCase();
+    return userKey == correctKey ? 'correct' : 'incorrect';
+  }
+
+  Future<void> _showAnswerKeyFilters() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18.0)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18.0, 12.0, 18.0, 10.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Filters',
+                        style: TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: FFFont.f18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const Divider(height: 1.0),
+                ...[
+                  ('correct', 'Correct', const Color(0xFF16A34A)),
+                  ('incorrect', 'Incorrect', const Color(0xFFDC2626)),
+                  ('skip', 'Skip', const Color(0xFF9CA3AF)),
+                ].map((filter) {
+                  final isSelected = _answerKeyFilter == filter.$1;
+                  return InkWell(
+                    onTap: () => Navigator.pop(
+                      sheetContext,
+                      isSelected ? 'all' : filter.$1,
+                    ),
+                    child: Container(
+                      height: 58.0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFE5E7EB)),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            color: const Color(0xFF2563EB),
+                            size: 26.0,
+                          ),
+                          const SizedBox(width: 10.0),
+                          Expanded(
+                            child: Text(
+                              filter.$2,
+                              style: const TextStyle(
+                                color: Color(0xFF374151),
+                                fontSize: FFFont.f14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 14.0,
+                            height: 14.0,
+                            decoration: BoxDecoration(
+                              color: filter.$3,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      safeSetState(() {
+        _answerKeyFilter = selected;
+        _selectedAnswerKeyIndex = 0;
+      });
+    }
+  }
+
+  void _toggleAnswerKeyLanguage() {
+    _answerKeyLanguage = _answerKeyLanguage == 'hi' ? 'en' : 'hi';
+    FFAppState().quizLang = _answerKeyLanguage;
+    safeSetState(() {});
+  }
+
+  Widget _buildAnswerKeyToolbar(List<Map<String, dynamic>> entries) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10.0, 8.0, 10.0, 8.0),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: entries.asMap().entries.map((entry) {
+                  final visibleIndex = entry.key;
+                  final item = entry.value;
+                  final status = _answerKeyStatus(item['question']);
+                  final color = status == 'correct'
+                      ? const Color(0xFF16C784)
+                      : status == 'incorrect'
+                          ? const Color(0xFFFF5A64)
+                          : const Color(0xFFD1D5DB);
+                  final selected = visibleIndex == _selectedAnswerKeyIndex;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: GestureDetector(
+                      onTap: () => safeSetState(
+                        () => _selectedAnswerKeyIndex = visibleIndex,
+                      ),
+                      child: Container(
+                        width: 32.0,
+                        height: 32.0,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: selected
+                              ? Border.all(
+                                  color: const Color(0xFF1D66E5),
+                                  width: 2.0,
+                                )
+                              : null,
+                        ),
+                        child: Text(
+                          '${item['index'] + 1}',
+                          style: TextStyle(
+                            color: status == 'skip'
+                                ? const Color(0xFF374151)
+                                : Colors.white,
+                            fontSize: FFFont.f12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6.0),
+          Container(width: 1.0, height: 28.0, color: const Color(0xFFE5E7EB)),
+          IconButton(
+            tooltip: 'Filters',
+            onPressed: _showAnswerKeyFilters,
+            icon: const Icon(
+              Icons.filter_alt_outlined,
+              color: Color(0xFF111827),
+              size: 21.0,
+            ),
+          ),
+          Container(
+            width: 34.0,
+            height: 34.0,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              onPressed: _toggleAnswerKeyLanguage,
+              icon: SvgPicture.asset(
+                'assets/images/google_translate_icon.svg',
+                width: 20.0,
+                height: 20.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnswerKeyStats(dynamic question) {
+    final source = _answerKeySource();
+    final correctCount = source.where((item) => _answerKeyStatus(item) == 'correct').length;
+    final total = source.length;
+    final correctPercentage = total == 0 ? 0 : ((correctCount / total) * 100).round();
+    final yourTime = _answerKeyTime(question);
+    final avgTime = _averageAnswerKeyTime(source.length);
+
+    Widget metric(String label, String value, {IconData? icon}) {
+      return Expanded(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: const Color(0xFF2563EB), size: 18.0),
+              const SizedBox(width: 4.0),
+            ],
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF374151),
+                      fontSize: FFFont.f9,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: FFFont.f10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 14.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: const Color(0xFF2563EB)),
+      ),
+      child: Row(
+        children: [
+          metric('Your time', yourTime, icon: Icons.access_time_rounded),
+          Container(width: 1.0, height: 26.0, color: const Color(0xFFE5E7EB)),
+          metric('Avg. time', avgTime),
+          Container(width: 1.0, height: 26.0, color: const Color(0xFFE5E7EB)),
+          metric('Answered correctly', '$correctPercentage%', icon: Icons.check_circle_outline_rounded),
+        ],
+      ),
+    );
+  }
+
+  int _parseAnswerKeySeconds(dynamic value) {
+    if (value is num) return value.round();
+    final text = value?.toString().trim() ?? '';
+    if (text.contains(':')) {
+      final parts = text.split(':');
+      if (parts.length == 2) {
+        return (int.tryParse(parts[0]) ?? 0) * 60 +
+            (int.tryParse(parts[1]) ?? 0);
+      }
+    }
+    return int.tryParse(text) ?? 0;
+  }
+
+  String _answerKeyTime(dynamic question) {
+    final raw = _answerKeyValue(question, 'time_taken') ??
+        _answerKeyValue(question, 'timeTaken') ??
+        _answerKeyValue(question, 'duration');
+    final seconds = _parseAnswerKeySeconds(raw);
+    if (seconds > 0) return _formatSeconds(seconds);
+    final totalSeconds = _parseAnswerKeySeconds(widget.quizTime);
+    return totalSeconds > 0 ? _formatSeconds(totalSeconds) : '00:00';
+  }
+
+  String _averageAnswerKeyTime(int questionCount) {
+    if (questionCount <= 0) return '00:00';
+    final totalSeconds = _parseAnswerKeySeconds(widget.quizTime);
+    if (totalSeconds <= 0) return '00:00';
+    return _formatSeconds((totalSeconds / questionCount).round());
+  }
+
+  Widget _buildAnswerKeyQuestionCard({
+    required dynamic question,
+    required int questionNumber,
+  }) {
+    final options = _optionMap(question);
+    final userAnswer = _answerKeyValue(question, 'user_answer');
+    final correctAnswer = biText(
+      _answerKeyValue(question, 'correct_answer') ??
+          _answerKeyValue(question, 'answer'),
+    );
+    final questionTitle = biText(
+      _answerKeyValue(question, 'question_title') ??
+          _answerKeyValue(question, 'question'),
+    );
+    final description = biText(
+      _answerKeyValue(question, 'description') ??
+          _answerKeyValue(question, 'explanation'),
+    );
+    final questionImage = _answerKeyValue(question, 'image');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 14.0,
+            color: Color(0x14000000),
+            offset: Offset(0.0, 4.0),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9.0, vertical: 5.0),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3E8FF),
+                  borderRadius: BorderRadius.circular(6.0),
+                ),
+                child: Text(
+                  'Q$questionNumber',
+                  style: const TextStyle(
+                    color: Color(0xFF7C3AED),
+                    fontSize: FFFont.f14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: _buildQuestionHtmlWidget(
+                  context: context,
+                  questionHtml: questionTitle,
+                ),
+              ),
+            ],
+          ),
+          if (questionImage != null && questionImage.toString().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0.0, 14.0, 0.0, 8.0),
+              child: Center(
+                child: CachedNetworkImage(
+                  imageUrl: '${FFAppConstants.imageBaseURL}$questionImage',
+                  fit: BoxFit.contain,
+                  height: 220.0,
+                  errorWidget: (context, url, error) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          const SizedBox(height: 8.0),
+          ...options.keys.toList().asMap().entries.map((entry) {
+            final optionIndex = entry.key;
+            final optionKey = entry.value;
+            final option = options[optionKey];
+            final optionText = _optionText(options, optionKey);
+            final optionImage = option is Map ? option['image'] : null;
+            final normalizedOption = _cleanText(optionText).toLowerCase();
+            final normalizedCorrect = _cleanText(correctAnswer).toLowerCase();
+            final normalizedUser = _cleanText(userAnswer).toLowerCase();
+            final isCorrect = normalizedCorrect.isNotEmpty &&
+                (_normalizedAnswerKey(normalizedCorrect, options) == optionKey.toLowerCase() ||
+                    normalizedOption == normalizedCorrect);
+            final isUserSelected = normalizedUser.isNotEmpty &&
+                normalizedUser != 'skipped' &&
+                (_normalizedAnswerKey(normalizedUser, options) == optionKey.toLowerCase() ||
+                    normalizedOption == normalizedUser);
+            final isUserCorrect = isCorrect && isUserSelected;
+
+            final background = isUserCorrect || isCorrect
+                ? const Color(0xFFF0FBF4)
+                : isUserSelected
+                    ? const Color(0xFFFFF1F2)
+                    : Colors.white;
+            final border = isUserCorrect || isCorrect
+                ? const Color(0xFF86EFAC)
+                : isUserSelected
+                    ? const Color(0xFFFECACA)
+                    : const Color(0xFFE5E7EB);
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 9.0),
+                decoration: BoxDecoration(
+                  color: background,
+                  borderRadius: BorderRadius.circular(9.0),
+                  border: Border.all(color: border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isUserCorrect || isCorrect
+                          ? Icons.check_circle
+                          : isUserSelected
+                              ? Icons.cancel
+                              : Icons.cancel,
+                      color: isUserCorrect || isCorrect
+                          ? const Color(0xFF16A34A)
+                          : isUserSelected
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFF9CA3AF),
+                      size: 21.0,
+                    ),
+                    const SizedBox(width: 10.0),
+                    Container(
+                      width: 26.0,
+                      height: 26.0,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(6.0),
+                      ),
+                      child: Text(
+                        String.fromCharCode(65 + optionIndex),
+                        style: const TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: FFFont.f12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (optionImage != null && optionImage.toString().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6.0),
+                              child: CachedNetworkImage(
+                                imageUrl: '${FFAppConstants.imageBaseURL}$optionImage',
+                                width: 50.0,
+                                height: 50.0,
+                                fit: BoxFit.contain,
+                                errorWidget: (context, url, error) => const SizedBox.shrink(),
+                              ),
+                            ),
+                          RichText(
+                            textScaler: MediaQuery.of(context).textScaler,
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: optionText,
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: FFFont.f14,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.35,
+                                  ),
+                                ),
+                                if (isUserCorrect)
+                                  const TextSpan(
+                                    text: ' (Correct Answer & Your Answer)',
+                                    style: TextStyle(
+                                      color: Color(0xFF16A34A),
+                                      fontSize: FFFont.f14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  )
+                                else if (isCorrect)
+                                  const TextSpan(
+                                    text: ' (Correct Answer)',
+                                    style: TextStyle(
+                                      color: Color(0xFF16A34A),
+                                      fontSize: FFFont.f14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  )
+                                else if (isUserSelected)
+                                  const TextSpan(
+                                    text: ' (Your Answer)',
+                                    style: TextStyle(
+                                      color: Color(0xFFEF4444),
+                                      fontSize: FFFont.f14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          _buildAnswerKeyStats(question),
+          const SizedBox(height: 10.0),
+          SizedBox(
+            width: double.infinity,
+            child: FFButtonWidget(
+              onPressed: () {
+                context.pushNamed(
+                  ExplanationPageWidget.routeName,
+                  queryParameters: {
+                    'explanation': serializeParam(
+                      description.isNotEmpty
+                          ? description
+                          : 'No explanation available for this question.',
+                      ParamType.String,
+                    ),
+                  }.withoutNulls,
+                );
+              },
+              text: 'View Solution',
+              icon: const Icon(
+                Icons.visibility_rounded,
+                color: Color(0xFF1D66E5),
+                size: 18.0,
+              ),
+              options: FFButtonOptions(
+                width: double.infinity,
+                height: 44.0,
+                color: const Color(0xFFEAF3FF),
+                textStyle: const TextStyle(
+                  color: Color(0xFF1D66E5),
+                  fontSize: FFFont.f14,
+                  fontWeight: FontWeight.w700,
+                ),
+                elevation: 0.0,
+                borderRadius: BorderRadius.circular(9.0),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1850,7 +2475,10 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   Map<String, dynamic> _optionMap(dynamic item) {
-    final options = getJsonField(item, r'''$.option''');
+    var options = getJsonField(item, r'''$.option''');
+    if (options == null && item is Map && item['question'] is Map) {
+      options = getJsonField(item['question'], r'''$.option''');
+    }
     if (options is Map) {
       return Map<String, dynamic>.from(options);
     }
@@ -1896,9 +2524,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final questionData = item is Map ? (item['question'] ?? item) : item;
     final subject = _cleanText(
       (item is Map ? item['subject'] : null) ??
-          getJsonField(questionData, r'''$.subject''') ??
-          (item is Map ? item['subcategoryName'] : null) ??
-          getJsonField(questionData, r'''$.subcategoryName'''),
+          getJsonField(questionData, r'''$.subject'''),
     );
     return subject;
   }
@@ -2192,10 +2818,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     super.initState();
     // Quiz is over — unlock the app so the user can navigate away
     FFAppState().isQuizActive = false;
+    _answerKeyLanguage = FFAppState().quizLang;
     _model = createModel(context, () => QuizResultModel());
     _tabController = TabController(vsync: this, length: 3)
-      ..addListener(() => safeSetState(() {}));
-    _answerKeyTabController = TabController(vsync: this, length: 2)
       ..addListener(() => safeSetState(() {}));
 
     // DEBUG PRINTS
@@ -2230,7 +2855,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   @override
   void dispose() {
     _tabController.dispose();
-    _answerKeyTabController.dispose();
     _model.dispose();
 
     super.dispose();

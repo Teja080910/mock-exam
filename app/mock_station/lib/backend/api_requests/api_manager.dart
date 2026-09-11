@@ -216,8 +216,10 @@ class ApiManager {
     final makeRequest = callType == ApiCallType.GET
         ? (client != null ? client.get : http.get)
         : (client != null ? client.delete : http.delete);
-    final response =
-        await makeRequest(Uri.parse(apiUrl), headers: toStringMap(headers));
+    final response = await makeRequest(
+      Uri.parse(apiUrl),
+      headers: toStringMap(headers),
+    ).timeout(const Duration(seconds: 15));
     return ApiCallResponse.fromHttpResponse(response, returnBody, decodeUtf8);
   }
 
@@ -268,8 +270,11 @@ class ApiManager {
       ApiCallType.PATCH: client != null ? client.patch : http.patch,
       ApiCallType.DELETE: client != null ? client.delete : http.delete,
     }[type]!;
-    final response = await requestFn(Uri.parse(apiUrl),
-        headers: toStringMap(headers), body: postBody);
+    final response = await requestFn(
+      Uri.parse(apiUrl),
+      headers: toStringMap(headers),
+      body: postBody,
+    ).timeout(const Duration(seconds: 15));
     return ApiCallResponse.fromHttpResponse(response, returnBody, decodeUtf8);
   }
 

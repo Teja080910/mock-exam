@@ -22,6 +22,7 @@ import 'quiz_questions_screen_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
+import 'dart:async';
 export 'quiz_questions_screen_model.dart';
 
 class QuizQuestionsScreenWidget extends StatefulWidget {
@@ -69,6 +70,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
 
   // Add this at the top of the _QuizQuestionsScreenWidgetState class:
   Map<int, String> userAnswersPerQuestion = {};
+  final Set<int> _markedForReview = <int>{};
+  bool _showReviewToast = false;
+  Timer? _reviewToastTimer;
+  final Map<int, int> _questionTimeMilliseconds = <int, int>{};
+  DateTime? _questionTimingStartedAt;
+  int _questionTimingIndex = 0;
+  bool _questionTimingActive = false;
   bool showBody = false;
   int actualQuizDurationMinutes = 0;
   bool timerStarted = false;
@@ -576,6 +584,37 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                   child: IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
+                    onPressed: _toggleMarkedForReview,
+                    icon: Icon(
+                      _markedForReview.contains(_model.pageViewCurrentIndex)
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
+                      color: _markedForReview.contains(_model.pageViewCurrentIndex)
+                          ? const Color(0xFFEC4899)
+                          : const Color(0xFF111827),
+                      size: 22.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Container(
+                  width: 36.0,
+                  height: 36.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0F111827),
+                        blurRadius: 12.0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                     onPressed: _toggleLanguage,
                     icon: SvgPicture.asset(
                       'assets/images/google_translate_icon.svg',
@@ -606,6 +645,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     constraints: const BoxConstraints(),
                     onPressed: () async {
                       if (quizAutoSubmitted) return;
+                      _pauseQuestionTiming();
                       final apiQuestions = QuizGroup.getquestionsbyquizidApiCall
                               .questionDetailsList(
                                 (_model.quizRes?.jsonBody ?? ''),
@@ -623,6 +663,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                             'subcategoryName':
                                 getJsonField(q, r'''$.subcategoryName'''),
                             'subject': getJsonField(q, r'''$.subject'''),
+                            'markedForReview': _markedForReview.contains(idx),
+                            'time_taken': _questionTimeSeconds(idx),
                           };
                         }).toList();
                         FFAppState().quesReviewList = reviewList;
@@ -644,6 +686,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                             'quizTime': serializeParam(
                                 _elapsedTimeLabel, ParamType.String),
                           }.withoutNulls);
+                      _resumeQuestionTiming();
                       if (result != null && _model.pageViewController != null) {
                         _model.pageViewController!.animateToPage(
                           result,
@@ -825,6 +868,68 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     );
   }
 
+  void _toggleMarkedForReview() {
+    if (quizAutoSubmitted) return;
+
+    final questionIndex = _model.pageViewCurrentIndex;
+    final isNowMarked = !_markedForReview.contains(questionIndex);
+    setState(() {
+      if (isNowMarked) {
+        _markedForReview.add(questionIndex);
+      } else {
+        _markedForReview.remove(questionIndex);
+      }
+      _showReviewToast = isNowMarked;
+    });
+
+    _reviewToastTimer?.cancel();
+    if (isNowMarked) {
+      _reviewToastTimer = Timer(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showReviewToast = false);
+      });
+    }
+  }
+
+  void _startQuestionTiming(int index) {
+    if (quizAutoSubmitted) return;
+    _questionTimingIndex = index;
+    _questionTimingStartedAt = DateTime.now();
+    _questionTimingActive = true;
+  }
+
+  void _recordCurrentQuestionTime() {
+    if (!_questionTimingActive || _questionTimingStartedAt == null) return;
+    final elapsed = DateTime.now()
+        .difference(_questionTimingStartedAt!)
+        .inMilliseconds;
+    if (elapsed > 0) {
+      _questionTimeMilliseconds[_questionTimingIndex] =
+          (_questionTimeMilliseconds[_questionTimingIndex] ?? 0) + elapsed;
+    }
+  }
+
+  void _pauseQuestionTiming() {
+    if (!_questionTimingActive) return;
+    _recordCurrentQuestionTime();
+    _questionTimingStartedAt = null;
+    _questionTimingActive = false;
+  }
+
+  void _resumeQuestionTiming() {
+    if (quizAutoSubmitted || _questionTimingActive) return;
+    _startQuestionTiming(_model.pageViewCurrentIndex);
+  }
+
+  void _switchQuestionTiming(int index) {
+    if (_questionTimingActive && _questionTimingIndex == index) return;
+    _pauseQuestionTiming();
+    _startQuestionTiming(index);
+  }
+
+  int _questionTimeSeconds(int index) {
+    return ((_questionTimeMilliseconds[index] ?? 0) / 1000).round();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -859,6 +964,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     // Pausing on inactive caused the countdown to be adjusted twice
     // (double subtraction), which made the time flutter/jump.
     if (state == AppLifecycleState.paused) {
+      _pauseQuestionTiming();
       if (timerStarted && timerInitialized) {
         _backgroundTime = DateTime.now();
         _pauseTimer();
@@ -889,9 +995,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             // Handle error gracefully
           }
         }
-
         _resumeTimer();
       }
+      _resumeQuestionTiming();
     }
 
     _lastLifecycleState = state;
@@ -943,6 +1049,8 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this); // Remove lifecycle observer
+    _pauseQuestionTiming();
+    _reviewToastTimer?.cancel();
     // Quiz screen is closed — unlock the app
     FFAppState().isQuizActive = false;
     _model.dispose();
@@ -1223,7 +1331,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                       borderRadius: BorderRadius.circular(8.0),
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 14.0, vertical: 10.0),
+                                            horizontal: 12.0, vertical: 8.0),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
@@ -1235,28 +1343,28 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             SizedBox(
-                                              width: 22.0,
-                                              height: 22.0,
+                                              width: 20.0,
+                                              height: 20.0,
                                               child: SvgPicture.asset(
                                                 'assets/images/google_translate_icon.svg',
                                                 fit: BoxFit.contain,
                                               ),
                                             ),
-                                            const SizedBox(width: 8.0),
+                                            const SizedBox(width: 6.0),
                                             Text(
                                               _selectedLang == 'hi'
                                                   ? 'हिन्दी'
                                                   : 'English',
                                               style: const TextStyle(
-                                                fontSize: FFFont.f16,
+                                                fontSize: FFFont.f14,
                                                 fontWeight: FontWeight.w500,
                                                 color: Color(0xFF2563EB),
                                               ),
                                             ),
-                                            const SizedBox(width: 8.0),
+                                            const SizedBox(width: 6.0),
                                             const Icon(
                                               Icons.keyboard_arrow_down_rounded,
-                                              size: 20.0,
+                                              size: 18.0,
                                               color: Color(0xFF2563EB),
                                             ),
                                           ],
@@ -1339,6 +1447,19 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                               ?.toList() ??
                                           [];
 
+                                  if (!_questionTimingActive &&
+                                      categorywisequiz.isNotEmpty) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (mounted &&
+                                          !_questionTimingActive &&
+                                          !quizAutoSubmitted) {
+                                        _startQuestionTiming(
+                                            _model.pageViewCurrentIndex);
+                                      }
+                                    });
+                                  }
+
                                   return Column(
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
@@ -1409,6 +1530,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                 max(0, min(0, categorywisequiz.length - 1))),
                                                                     onPageChanged:
                                                                         (idx) async {
+                                                                      _switchQuestionTiming(idx);
                                                                       FFAppState()
                                                                               .selectedColorIndex =
                                                                           selectedOptionPerQuestion[idx] ??
@@ -1592,6 +1714,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           }
 
                                                                                                           quizAutoSubmitted = true;
+                                                                                                          _pauseQuestionTiming();
 
                                                                                                           await showDialog(
                                                                                                             barrierDismissible: false,
@@ -1945,6 +2068,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                 }
 
                                                                                                 quizAutoSubmitted = true;
+                                                                                                _pauseQuestionTiming();
 
                                                                                                 await showDialog(
                                                                                                   barrierDismissible: false,
@@ -2072,6 +2196,20 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   ),
                                                                                                   child: Column(
                                                                                                     children: [
+                                                                                                      const Align(
+                                                                                                        alignment: Alignment.centerLeft,
+                                                                                                        child: Padding(
+                                                                                                          padding: EdgeInsets.only(left: 8.0, top: 6.0),
+                                                                                                          child: Text(
+                                                                                                            'A',
+                                                                                                            style: TextStyle(
+                                                                                                              color: Color(0xFF111827),
+                                                                                                              fontSize: FFFont.f14,
+                                                                                                              fontWeight: FontWeight.w800,
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ),
                                                                                                       if (optionAImage.isNotEmpty)
                                                                                                         CachedNetworkImage(
                                                                                                           imageUrl: '${FFAppConstants.imageBaseURL}${optionAImage}',
@@ -2104,6 +2242,20 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   ),
                                                                                                   child: Column(
                                                                                                     children: [
+                                                                                                      const Align(
+                                                                                                        alignment: Alignment.centerLeft,
+                                                                                                        child: Padding(
+                                                                                                          padding: EdgeInsets.only(left: 8.0, top: 6.0),
+                                                                                                          child: Text(
+                                                                                                            'B',
+                                                                                                            style: TextStyle(
+                                                                                                              color: Color(0xFF111827),
+                                                                                                              fontSize: FFFont.f14,
+                                                                                                              fontWeight: FontWeight.w800,
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ),
                                                                                                       if (optionBImage.isNotEmpty)
                                                                                                         CachedNetworkImage(
                                                                                                           imageUrl: '${FFAppConstants.imageBaseURL}${optionBImage}',
@@ -2136,6 +2288,20 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   ),
                                                                                                   child: Column(
                                                                                                     children: [
+                                                                                                      const Align(
+                                                                                                        alignment: Alignment.centerLeft,
+                                                                                                        child: Padding(
+                                                                                                          padding: EdgeInsets.only(left: 8.0, top: 6.0),
+                                                                                                          child: Text(
+                                                                                                            'C',
+                                                                                                            style: TextStyle(
+                                                                                                              color: Color(0xFF111827),
+                                                                                                              fontSize: FFFont.f14,
+                                                                                                              fontWeight: FontWeight.w800,
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ),
                                                                                                       if (optionCImage.isNotEmpty)
                                                                                                         CachedNetworkImage(
                                                                                                           imageUrl: '${FFAppConstants.imageBaseURL}${optionCImage}',
@@ -2168,6 +2334,20 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   ),
                                                                                                   child: Column(
                                                                                                     children: [
+                                                                                                      const Align(
+                                                                                                        alignment: Alignment.centerLeft,
+                                                                                                        child: Padding(
+                                                                                                          padding: EdgeInsets.only(left: 8.0, top: 6.0),
+                                                                                                          child: Text(
+                                                                                                            'D',
+                                                                                                            style: TextStyle(
+                                                                                                              color: Color(0xFF111827),
+                                                                                                              fontSize: FFFont.f14,
+                                                                                                              fontWeight: FontWeight.w800,
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ),
                                                                                                       if (optionDImage.isNotEmpty)
                                                                                                         CachedNetworkImage(
                                                                                                           imageUrl: '${FFAppConstants.imageBaseURL}${optionDImage}',
@@ -2525,6 +2705,59 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                         CrossAxisAlignment
                                                             .center,
                                                     children: [
+                                                      if (_showReviewToast)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                  bottom: 10.0),
+                                                          child: Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 12.0,
+                                                              vertical: 8.0,
+                                                            ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: const Color(
+                                                                  0xFF9CA3AF),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          999.0),
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: [
+                                                                Image.asset(
+                                                                  'assets/images/mocktest_logo.png',
+                                                                  width: 22.0,
+                                                                  height: 22.0,
+                                                                  fit: BoxFit
+                                                                      .contain,
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 8.0),
+                                                                const Text(
+                                                                  'Marked For Review',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontSize:
+                                                                        FFFont
+                                                                            .f12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
                                                       Padding(
                                                         padding:
                                                             EdgeInsetsDirectional
@@ -2644,6 +2877,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                       () async {
                                                                     if (quizAutoSubmitted)
                                                                       return;
+                                                                    _pauseQuestionTiming();
                                                                     // First, process the answer for the current question
                                                                     // Get the user's selected option key
                                                                     final userSelectedKey =
@@ -3014,6 +3248,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           'subject': getJsonField(
                                                                               q,
                                                                               r'''$.subject'''),
+                                                                          'markedForReview':
+                                                                              _markedForReview.contains(i),
+                                                                          'time_taken':
+                                                                              _questionTimeSeconds(i),
                                                                         });
                                                                       }
 
@@ -3311,6 +3549,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             r'''$.answer'''),
                                                                         'user_answer':
                                                                             userAnswer,
+                                                                        'markedForReview':
+                                                                            _markedForReview.contains(i),
+                                                                        'time_taken':
+                                                                            _questionTimeSeconds(i),
                                                                         'description': getJsonField(
                                                                             q,
                                                                             r'''$.description'''),

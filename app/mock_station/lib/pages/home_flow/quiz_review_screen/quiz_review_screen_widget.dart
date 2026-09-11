@@ -164,41 +164,139 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     return value != null && value.toString() != 'skipped';
   }
 
+  bool _isMarkedForReview(dynamic question) {
+    final value = getJsonField(question, r'''$.markedForReview''');
+    return value == true || value.toString().toLowerCase() == 'true';
+  }
+
   Widget _buildLegendDot({
     required Color color,
     required String label,
     bool outlined = false,
   }) {
     return Expanded(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 12.0,
+              height: 12.0,
+              decoration: BoxDecoration(
+                color: outlined ? Colors.white : color,
+                shape: BoxShape.circle,
+                border: Border.all(color: color, width: 1.2),
+              ),
+            ),
+            const SizedBox(width: 8.0),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF374151),
+                fontSize: FFFont.f11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMarkedLegend() {
+    return const Expanded(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.star_rounded, color: Color(0xFFEC4899), size: 16.0),
+            SizedBox(width: 6.0),
+            Text(
+              'Marked for Review',
+              style: TextStyle(
+                color: Color(0xFF374151),
+                fontSize: FFFont.f11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGridLegend() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FBFF),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: const Color(0xFFE4EAF4)),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          _buildLegendDot(
+            color: const Color(0xFF1D66E5),
+            label: 'Answered',
+          ),
           Container(
-            width: 12.0,
-            height: 12.0,
-            decoration: BoxDecoration(
-              color: outlined ? Colors.white : color,
-              shape: BoxShape.circle,
-              border: Border.all(color: color, width: 1.2),
-            ),
+            width: 1.0,
+            height: 16.0,
+            color: const Color(0xFFE5E7EB),
           ),
-          const SizedBox(width: 8.0),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: FFFont.f11,
-              fontWeight: FontWeight.w600,
-            ),
+          _buildLegendDot(
+            color: const Color(0xFF8EA0BF),
+            label: 'Not Answered',
+            outlined: true,
           ),
+          Container(
+            width: 1.0,
+            height: 16.0,
+            color: const Color(0xFFE5E7EB),
+          ),
+          _buildMarkedLegend(),
         ],
       ),
+    );
+  }
+
+  Widget _buildGridStats(List<dynamic> questions) {
+    final answered = questions.where(_isAnswered).length;
+    final marked = questions.where(_isMarkedForReview).length;
+    final notAnswered = questions.length - answered;
+
+    Widget stat(String value, Color color) {
+      return Expanded(
+        child: Center(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: FFFont.f14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        stat(answered.toString(), const Color(0xFF1D66E5)),
+        stat(notAnswered.toString(), const Color(0xFF374151)),
+        stat(marked.toString(), const Color(0xFFEC4899)),
+      ],
     );
   }
 
   Widget _buildNumberChip({
     required int number,
     required bool filled,
+    bool marked = false,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
@@ -222,14 +320,29 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 ]
               : const [],
         ),
-        alignment: Alignment.center,
-        child: Text(
-          number.toString(),
-          style: TextStyle(
-            color: filled ? Colors.white : const Color(0xFF374151),
-            fontSize: FFFont.f12,
-            fontWeight: FontWeight.w700,
-          ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Text(
+              number.toString(),
+              style: TextStyle(
+                color: filled ? Colors.white : const Color(0xFF374151),
+                fontSize: FFFont.f12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (marked)
+              const Positioned(
+                right: -7.0,
+                bottom: -7.0,
+                child: Icon(
+                  Icons.star_rounded,
+                  color: Color(0xFFEC4899),
+                  size: 16.0,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -317,33 +430,9 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
               ],
             ),
             const SizedBox(height: 12.0),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FBFF),
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(color: const Color(0xFFE4EAF4)),
-              ),
-              child: Row(
-                children: [
-                  _buildLegendDot(
-                    color: const Color(0xFF1D66E5),
-                    label: 'Answered',
-                  ),
-                  Container(
-                    width: 1.0,
-                    height: 16.0,
-                    color: const Color(0xFFE5E7EB),
-                  ),
-                  _buildLegendDot(
-                    color: const Color(0xFF8EA0BF),
-                    label: 'Not Answered',
-                    outlined: true,
-                  ),
-                ],
-              ),
-            ),
+            _buildGridLegend(),
+            const SizedBox(height: 8.0),
+            _buildGridStats(questions),
             const SizedBox(height: 14.0),
             _buildQuestionGrid(questions: questions),
             if (showSubmitButton) ...[
@@ -419,6 +508,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                             : i) +
                         1,
                     filled: _isAnswered(questions[i]),
+                    marked: _isMarkedForReview(questions[i]),
                     onTap: () => context.pop(allQuestions != null
                         ? allQuestions.indexOf(questions[i])
                         : i),
@@ -583,6 +673,9 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                             filled: i < displayQuestions.length
                                 ? _isAnswered(displayQuestions[i])
                                 : false,
+                            marked: i < displayQuestions.length
+                                ? _isMarkedForReview(displayQuestions[i])
+                                : false,
                           ),
                         ),
                       ),
@@ -591,33 +684,9 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
               },
             ),
             const SizedBox(height: 18.0),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FBFF),
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(color: const Color(0xFFE4EAF4)),
-              ),
-              child: Row(
-                children: [
-                  _buildLegendDot(
-                    color: const Color(0xFF1D66E5),
-                    label: 'Answered',
-                  ),
-                  Container(
-                    width: 1.0,
-                    height: 16.0,
-                    color: const Color(0xFFE5E7EB),
-                  ),
-                  _buildLegendDot(
-                    color: const Color(0xFF8EA0BF),
-                    label: 'Not Answered',
-                    outlined: true,
-                  ),
-                ],
-              ),
-            ),
+            _buildGridLegend(),
+            const SizedBox(height: 8.0),
+            _buildGridStats(displayQuestions),
             const SizedBox(height: 12.0),
             Row(
               children: [
@@ -732,33 +801,9 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 }).toList(),
               ),
               const SizedBox(height: 14.0),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9FBFF),
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(color: const Color(0xFFE4EAF4)),
-                ),
-                child: Row(
-                  children: [
-                    _buildLegendDot(
-                      color: const Color(0xFF1D66E5),
-                      label: 'Answered',
-                    ),
-                    Container(
-                      width: 1.0,
-                      height: 16.0,
-                      color: const Color(0xFFE5E7EB),
-                    ),
-                    _buildLegendDot(
-                      color: const Color(0xFF8EA0BF),
-                      label: 'Not Answered',
-                      outlined: true,
-                    ),
-                  ],
-                ),
-              ),
+              _buildGridLegend(),
+              const SizedBox(height: 8.0),
+              _buildGridStats(displayQuestions),
               const SizedBox(height: 14.0),
               _buildQuestionGrid(
                 questions: displayQuestions,
@@ -832,6 +877,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
     final sectionTabCount = questions.isEmpty ? 25 : questions.length.clamp(0, 25).toInt();
     final answeredCount = questions.where(_isAnswered).length;
     final notAnsweredCount = (questions.isEmpty ? 25 : questions.length) - answeredCount;
+    final markedCount = questions.where(_isMarkedForReview).length;
 
     final Map<String, List<dynamic>> grouped = {};
     for (final q in questions) {
@@ -930,7 +976,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 6.0),
                               child: Text(
-                                'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
+                                'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}  |  Marked: $markedCount',
                                 style: const TextStyle(
                                   color: Color(0xFF64748B),
                                   fontSize: FFFont.f11,
@@ -945,7 +991,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 6.0),
                               child: Text(
-                                'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}',
+                                'Answered: $answeredCount  |  Not Answered: ${notAnsweredCount < 0 ? 0 : notAnsweredCount}  |  Marked: $markedCount',
                                 style: const TextStyle(
                                   color: Color(0xFF64748B),
                                   fontSize: FFFont.f11,

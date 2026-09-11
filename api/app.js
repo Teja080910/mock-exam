@@ -57,7 +57,15 @@ app.use((req, res, next) => {
 
 // Load The Public Directory
 const path = require("path");
-app.use(express.static(path.join(__dirname, 'public')));
+const publicDirectory = path.join(__dirname, 'public');
+app.use(express.static(publicDirectory));
+
+// Missing image files must return 404 instead of falling through to an HTML
+// page. Flutter otherwise tries to decode that HTML as an image and logs
+// ImageDecoder errors while the image widget remains in its loading state.
+app.use('/assets/userImages', (req, res) => {
+  res.status(404).end();
+});
 
 // Enable CORS for all routes
 app.use(cors({

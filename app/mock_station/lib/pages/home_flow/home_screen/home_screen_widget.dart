@@ -16,6 +16,7 @@ import '/componants/subscription_required_dialog/subscription_required_dialog_wi
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/pages/home_flow/all_group_list_page/all_group_list_page_widget.dart';
+import '/pages/home_flow/search_screen/search_screen_widget.dart';
 import '/index.dart';
 import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -327,8 +328,8 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: hasImage ? Colors.transparent : const Color(0xFFEEF3FF),
                 shape: BoxShape.circle,
@@ -397,6 +398,36 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
               Image.asset('assets/images/mock_test_horizontal_logo.png', width: 150),
             ],
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12.0),
+              child: Container(
+                width: 48.0,
+                height: 48.0,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F5FF),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SearchScreenWidget(),
+                      ),
+                    );
+                  },
+                  tooltip: 'Search',
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF2563EB),
+                    size: 28.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
           elevation: 0,
         ),
         body: Builder(
