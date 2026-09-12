@@ -28,6 +28,15 @@ const QuizSchema = mongoose.Schema({
         type: String,
         default: ''
     },
+    question_mode: {
+        type: String,
+        enum: ['subject', 'mix'],
+        default: 'mix'
+    },
+    chapter: {
+        type: String,
+        default: ''
+    },
     quizId:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Quiz'

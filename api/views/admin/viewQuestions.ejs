@@ -153,6 +153,7 @@
                                                         <th>Scope</th>
                                                         <th>Subcategory</th>
                                                         <th>Subject</th>
+                                                        <th>Mode</th>
                                                         <th class="quiz-width">Quiz Name</th>
                                                         <th>Is Enable</th>
                                                         <th>Action</th>
@@ -202,6 +203,13 @@
                                                             <td>
                                                                 <%= questionsData.subject ? questionsData.subject : '-' %>
                                                             </td>
+                                                            <td>
+                                                                <% if(questionsData.question_mode === 'subject') { %>
+                                                                    <span class="badge bg-label-warning">Subject</span>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-label-info">Mix</span>
+                                                                <% } %>
+                                                            </td>
                                                             <td style="width:200px">
                                                                 <span class="badge bg-label-primary"><%= questionsData.quizId ? questionsData.quizId.name : 'No Quiz' %></span>
                                                             </td>
@@ -218,6 +226,7 @@
                                                                     </form>                   
                                                                 </td>
                                                                 <td>
+                                                                    <a class="text-info me-2 btn-view-question" href="#" data-title-en="<%= langText(questionsData.question_title, 'en') %>" data-title-hi="<%= langText(questionsData.question_title, 'hi') %>" data-type="<%= questionsData.question_type %>" data-question-mode="<%= questionsData.question_mode || 'mix' %>" data-category="<%= questionsData.categoryId ? questionsData.categoryId.name : '-' %>" data-subcategory="<%= questionsData.subcategoryId ? questionsData.subcategoryId.name : '-' %>" data-subject="<%= questionsData.subject || '-' %>" data-quiz="<%= questionsData.quizId ? questionsData.quizId.name : 'No Quiz' %>" data-scope="<%= questionsData.scope || 'none' %>" data-is-active="<%= questionsData.is_active %>" data-option-a-en="<%= optTextEn(questionsData.option.a) %>" data-option-b-en="<%= optTextEn(questionsData.option.b) %>" data-option-c-en="<%= optTextEn(questionsData.option.c) %>" data-option-d-en="<%= optTextEn(questionsData.option.d) %>" data-option-a-hi="<%= optTextHi(questionsData.option.a) %>" data-option-b-hi="<%= optTextHi(questionsData.option.b) %>" data-option-c-hi="<%= optTextHi(questionsData.option.c) %>" data-option-d-hi="<%= optTextHi(questionsData.option.d) %>" data-answer-en="<%= typeof questionsData.answer === 'string' ? questionsData.answer : ((questionsData.answer && questionsData.answer.en) || '') %>" data-answer-hi="<%= (questionsData.answer && questionsData.answer.hi) || '' %>" data-bs-toggle="modal" data-bs-target="#viewQuestionModal"><i class="bx bx-show me-2"></i></a>
                                                                     <a class="text-success me-2" href="/edit-questions?id=<%= questionsData._id %>"><i class="me-2 bx bx-edit-alt"></i></a>
                                                                     <a class="text-danger me-2 btn-delete-question" href="/delete-questions?id=<%= questionsData._id %>&ajax=1" data-id="<%= questionsData._id %>"><i class="bx bx-trash me-2"></i></a>
                                                                 </td>
@@ -228,6 +237,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td>
+                                                                    <a class="text-info me-2 btn-view-question" href="#" data-title-en="<%= langText(questionsData.question_title, 'en') %>" data-title-hi="<%= langText(questionsData.question_title, 'hi') %>" data-type="<%= questionsData.question_type %>" data-question-mode="<%= questionsData.question_mode || 'mix' %>" data-category="<%= questionsData.categoryId ? questionsData.categoryId.name : '-' %>" data-subcategory="<%= questionsData.subcategoryId ? questionsData.subcategoryId.name : '-' %>" data-subject="<%= questionsData.subject || '-' %>" data-quiz="<%= questionsData.quizId ? questionsData.quizId.name : 'No Quiz' %>" data-scope="<%= questionsData.scope || 'none' %>" data-is-active="<%= questionsData.is_active %>" data-option-a-en="<%= optTextEn(questionsData.option.a) %>" data-option-b-en="<%= optTextEn(questionsData.option.b) %>" data-option-c-en="<%= optTextEn(questionsData.option.c) %>" data-option-d-en="<%= optTextEn(questionsData.option.d) %>" data-option-a-hi="<%= optTextHi(questionsData.option.a) %>" data-option-b-hi="<%= optTextHi(questionsData.option.b) %>" data-option-c-hi="<%= optTextHi(questionsData.option.c) %>" data-option-d-hi="<%= optTextHi(questionsData.option.d) %>" data-answer-en="<%= typeof questionsData.answer === 'string' ? questionsData.answer : ((questionsData.answer && questionsData.answer.en) || '') %>" data-answer-hi="<%= (questionsData.answer && questionsData.answer.hi) || '' %>" data-bs-toggle="modal" data-bs-target="#viewQuestionModal"><i class="bx bx-show me-2"></i></a>
                                                                     <a class="text-success me-2" href="/edit-questions?id=<%= questionsData._id %>"><i class="me-2 bx bx-edit-alt me-"></i></a>
                                                                     <a class="text-danger me-2" href="" onclick="return alert('You have no access to delete this questions.')"><i class="bx bx-trash me-2"></i></a>
                                                                 </td>
@@ -436,4 +446,94 @@
                         });
                 });
             </script>
+
+<div class="modal fade" id="viewQuestionModal" tabindex="-1" aria-labelledby="viewQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewQuestionModalLabel">Question Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Question (EN)</label>
+                        <p id="viewQTitleEn" class="border rounded p-2 bg-light"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Question (HI)</label>
+                        <p id="viewQTitleHi" class="border rounded p-2 bg-light"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Options (EN)</label>
+                        <div id="viewQOptionsEn" class="border rounded p-2 bg-light"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Options (HI)</label>
+                        <div id="viewQOptionsHi" class="border rounded p-2 bg-light"></div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Answer (EN)</label>
+                        <p id="viewQAnswerEn" class="border rounded p-2 bg-light"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Answer (HI)</label>
+                        <p id="viewQAnswerHi" class="border rounded p-2 bg-light"></p>
+                    </div>
+                </div>
+                <hr>
+                <table class="table table-borderless mb-0">
+                    <tr><td class="fw-bold text-muted" style="width:130px;">Type</td><td id="viewQType"></td></tr>
+                    <tr><td class="fw-bold text-muted">Mode</td><td id="viewQMode"></td></tr>
+                    <tr><td class="fw-bold text-muted">Category</td><td id="viewQCategory"></td></tr>
+                    <tr><td class="fw-bold text-muted">Subcategory</td><td id="viewQSubcategory"></td></tr>
+                    <tr><td class="fw-bold text-muted">Subject</td><td id="viewQSubject"></td></tr>
+                    <tr><td class="fw-bold text-muted">Quiz</td><td id="viewQQuiz"></td></tr>
+                    <tr><td class="fw-bold text-muted">Scope</td><td id="viewQScope"></td></tr>
+                    <tr><td class="fw-bold text-muted">Status</td><td id="viewQStatus"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-question').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('viewQTitleEn').textContent = this.dataset.titleEn || '-';
+            document.getElementById('viewQTitleHi').textContent = this.dataset.titleHi || '-';
+            document.getElementById('viewQAnswerEn').textContent = this.dataset.answerEn || '-';
+            document.getElementById('viewQAnswerHi').textContent = this.dataset.answerHi || '-';
+            var opts = '<div>A. ' + (this.dataset.optionAEn || '-') + '</div>' +
+                       '<div>B. ' + (this.dataset.optionBEn || '-') + '</div>' +
+                       '<div>C. ' + (this.dataset.optionCEn || '-') + '</div>' +
+                       '<div>D. ' + (this.dataset.optionDEn || '-') + '</div>';
+            document.getElementById('viewQOptionsEn').innerHTML = opts;
+            var optsHi = '<div>A. ' + (this.dataset.optionAHi || '-') + '</div>' +
+                         '<div>B. ' + (this.dataset.optionBHi || '-') + '</div>' +
+                         '<div>C. ' + (this.dataset.optionCHi || '-') + '</div>' +
+                         '<div>D. ' + (this.dataset.optionDHi || '-') + '</div>';
+            document.getElementById('viewQOptionsHi').innerHTML = optsHi;
+            document.getElementById('viewQType').textContent = this.dataset.type;
+            var modeMap = { subject: '<span class="badge bg-label-warning">Subject</span>', mix: '<span class="badge bg-label-info">Mix</span>' };
+            document.getElementById('viewQMode').innerHTML = modeMap[this.dataset.questionMode] || modeMap['mix'];
+            document.getElementById('viewQCategory').textContent = this.dataset.category;
+            document.getElementById('viewQSubcategory').textContent = this.dataset.subcategory;
+            document.getElementById('viewQSubject').textContent = this.dataset.subject;
+            document.getElementById('viewQQuiz').textContent = this.dataset.quiz;
+            var scopeMap = { central: '<span class="badge bg-label-info">Central</span>', state: '<span class="badge bg-label-warning">State</span>', none: '<span class="badge bg-label-secondary">None</span>' };
+            document.getElementById('viewQScope').innerHTML = scopeMap[this.dataset.scope] || scopeMap['none'];
+            document.getElementById('viewQStatus').innerHTML = this.dataset.isActive == '1' ? '<span class="badge bg-success">Enabled</span>' : '<span class="badge bg-danger">Disabled</span>';
+        });
+    });
+</script>
+
         <%- include('../layout/footer.ejs') %>

@@ -1,0 +1,109 @@
+<style>
+    #imageViewerOverlay {
+        display: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0,0,0,0.92) !important;
+        z-index: 999999 !important;
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
+    }
+    #imageViewerOverlay.show {
+        display: flex !important;
+    }
+    #imageViewerOverlay img {
+        max-width: 92%;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.6);
+    }
+    #imageViewerOverlay .iv-close {
+        position: fixed;
+        top: 20px;
+        right: 30px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        z-index: 1000000;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    #imageViewerOverlay .iv-close:hover {
+        color: #ddd;
+    }
+    .modal-img-viewable {
+        cursor: zoom-in;
+        transition: transform 0.2s;
+    }
+    .modal-img-viewable:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div id="imageViewerOverlay">
+    <span class="iv-close">&times;</span>
+    <img id="imageViewerImg" src="">
+</div>
+
+<script>
+(function() {
+    var overlay = document.getElementById('imageViewerOverlay');
+    var viewerImg = document.getElementById('imageViewerImg');
+    var closeBtn = overlay.querySelector('.iv-close');
+
+    function openImageViewer(src) {
+        viewerImg.src = src;
+        overlay.classList.add('show');
+    }
+
+    function closeImageViewer() {
+        overlay.classList.remove('show');
+        viewerImg.src = '';
+    }
+
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay || e.target === closeBtn) {
+            closeImageViewer();
+        }
+    });
+
+    closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeImageViewer();
+    });
+
+    viewerImg.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    function initImageViewer() {
+        document.querySelectorAll('.modal-img-viewable').forEach(function(img) {
+            if (img._ivInit) return;
+            img._ivInit = true;
+            img.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openImageViewer(this.src);
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initImageViewer);
+
+    document.addEventListener('shown.bs.modal', function() {
+        setTimeout(initImageViewer, 100);
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay.classList.contains('show')) {
+            closeImageViewer();
+        }
+    });
+})();
+</script>

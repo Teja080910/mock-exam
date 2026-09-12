@@ -15,6 +15,14 @@ const questionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    subject: {
+        type: String,
+        default: ''
+    },
+    chapter: {
+        type: String,
+        default: ''
+    },
     // Updated option fields to be flexible (string or object) and optional
     option: {
         a: {

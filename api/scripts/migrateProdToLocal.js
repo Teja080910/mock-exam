@@ -182,6 +182,8 @@ async function migrate() {
           quizId: new mongoose.Types.ObjectId(q.quizId?._id || q.quizId),
           ...(subcategoryId ? { subcategoryId: new mongoose.Types.ObjectId(subcategoryId) } : {}),
           question_type: qType,
+          subject: q.subject || '',
+          chapter: q.chapter || '',
           question_title: q.question_title || '',
           image: q.image || '',
           audio: q.audio || '',

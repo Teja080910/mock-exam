@@ -11,7 +11,35 @@
                         </h4>
                         <div class="card mb-4">
                             <div class="card-body">
-                                <a href="/add-category-group" class="btn btn-primary mb-3">Add Category Group</a>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <a href="/add-category-group" class="btn btn-primary">Add Category Group</a>
+                                </div>
+                                <form method="get" action="/view-category-groups" class="row g-3 mb-4">
+                                    <div class="col-md-2">
+                                        <select name="scope" class="form-select" onchange="this.form.submit()">
+                                            <option value="">All Scopes</option>
+                                            <option value="central" <%= filters.scope === 'central' ? 'selected' : '' %>>Central wise</option>
+                                            <option value="state" <%= filters.scope === 'state' ? 'selected' : '' %>>State wise</option>
+                                            <option value="none" <%= filters.scope === 'none' ? 'selected' : '' %>>None</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                                            <option value="">All Categories</option>
+                                            <% allCategories.forEach(function(cat) { %>
+                                                <option value="<%= cat._id %>" <%= filters.categoryId === String(cat._id) ? 'selected' : '' %>><%= cat.displayName || cat.name %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="search" class="form-control" placeholder="Search by name or code..." value="<%= filters.search %>">
+                                    </div>
+                                    <div class="col-md-3 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                                        <a href="/view-category-groups" class="btn btn-outline-secondary btn-sm">Reset</a>
+                                    </div>
+                                    <input type="hidden" name="page" value="1">
+                                </form>
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -46,6 +74,7 @@
                                                     <% }) %>
                                                 </td>
                                                 <td>
+                                                    <a href="#" class="btn btn-sm btn-info me-1 btn-view-category-group" data-code="<%= group.code || '-' %>" data-display-name="<%= group.displayName %>" data-scope="<%= scope %>" data-scope-label="<%= scopeLabel %>" data-categories="<% group.categories.forEach(function(cat, idx) { %><%= cat.displayName || cat.name %><%= idx < group.categories.length - 1 ? ', ' : '' %><% }) %>" data-image="<%= group.image || '' %>" data-bs-toggle="modal" data-bs-target="#viewCategoryGroupModal"><i class="bx bx-show"></i> View</a>
                                                     <a href="/edit-category-group?id=<%= group._id %>" class="btn btn-sm btn-warning">Edit</a>
                                                     <a href="/delete-category-group?id=<%= group._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                                                 </td>
@@ -53,6 +82,7 @@
                                         <% }) %>
                                     </tbody>
                                 </table>
+                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
                             </div>
                         </div>
                     </div>
@@ -61,4 +91,51 @@
             <%- include('../layout/footer.ejs') %>
         </div>
     </div>
-</div> 
+</div>
+
+<div class="modal fade" id="viewCategoryGroupModal" tabindex="-1" aria-labelledby="viewCategoryGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewCategoryGroupModalLabel">Category Group Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3" id="viewCGImageWrap" style="display:none;">
+                    <img id="viewCGImage" src="" alt="Image" class="modal-img-viewable" style="width: 80px; height: 80px; border-radius: 8px; object-fit: cover;" />
+                </div>
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:130px;">Code</td><td id="viewCGCode"></td></tr>
+                    <tr><td class="fw-bold text-muted">Display Name</td><td id="viewCGDisplayName"></td></tr>
+                    <tr><td class="fw-bold text-muted">Scope</td><td id="viewCGScope"></td></tr>
+                    <tr><td class="fw-bold text-muted">Categories</td><td id="viewCGCategories"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-category-group').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var imgWrap = document.getElementById('viewCGImageWrap');
+            if (this.dataset.image) {
+                document.getElementById('viewCGImage').src = '/assets/userImages/' + this.dataset.image;
+                imgWrap.style.display = '';
+            } else {
+                imgWrap.style.display = 'none';
+            }
+            document.getElementById('viewCGCode').textContent = this.dataset.code;
+            document.getElementById('viewCGDisplayName').textContent = this.dataset.displayName;
+            var scopeClasses = { central: 'bg-primary', state: 'bg-success', none: 'bg-secondary' };
+            document.getElementById('viewCGScope').innerHTML = '<span class="badge ' + (scopeClasses[this.dataset.scope] || 'bg-secondary') + '">' + this.dataset.scopeLabel + '</span>';
+            document.getElementById('viewCGCategories').textContent = this.dataset.categories || '-';
+        });
+    });
+</script>
+
+<%- include('../partials/imageViewer') %>

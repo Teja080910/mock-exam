@@ -29,6 +29,7 @@
                                                         <th>Description</th>
                                                         <th>Image</th>
                                                         <th>Sent At</th>
+                                                        <th>Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -53,6 +54,9 @@
                                                             <td>
                                                                 <%= notification.createdAt.toLocaleString() %>
                                                             </td>
+                                                            <td>
+                                                                <a href="#" class="text-info me-3 btn-view-notification" data-title="<%= notification.title %>" data-description="<%= notification.description %>" data-image="<%= notification.image || '' %>" data-sent-at="<%= notification.createdAt.toLocaleString() %>" data-bs-toggle="modal" data-bs-target="#viewNotificationModal"><i class="bx bx-show"></i></a>
+                                                            </td>
                                                         </tr>
                                                     <% }); %>
                                         </tbody>
@@ -70,3 +74,47 @@
     </div>
 
 <%- include('../layout/footer.ejs') %>
+
+<div class="modal fade" id="viewNotificationModal" tabindex="-1" aria-labelledby="viewNotificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewNotificationModalLabel">Notification Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3" id="viewNotifImageWrap" style="display:none;">
+                    <img id="viewNotifImage" src="" alt="Notification Image" class="rounded modal-img-viewable" style="max-width: 100%; max-height: 200px; object-fit: cover;">
+                </div>
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:100px;">Title</td><td id="viewNotifTitle"></td></tr>
+                    <tr><td class="fw-bold text-muted">Description</td><td id="viewNotifDesc"></td></tr>
+                    <tr><td class="fw-bold text-muted">Sent At</td><td id="viewNotifSentAt"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-notification').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var imgWrap = document.getElementById('viewNotifImageWrap');
+            if (this.dataset.image) {
+                document.getElementById('viewNotifImage').src = '/assets/userImages/' + this.dataset.image;
+                imgWrap.style.display = '';
+            } else {
+                imgWrap.style.display = 'none';
+            }
+            document.getElementById('viewNotifTitle').textContent = this.dataset.title;
+            document.getElementById('viewNotifDesc').innerHTML = this.dataset.description || '-';
+            document.getElementById('viewNotifSentAt').textContent = this.dataset.sentAt;
+        });
+    });
+</script>
+
+<%- include('../partials/imageViewer') %>

@@ -65,6 +65,9 @@
                                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                                     </button>
                                                                     <div class="dropdown-menu">
+                                                                        <a class="dropdown-item btn-view-banner" href="#" data-title="<%= allBanner.title %>" data-description="<%= allBanner.description %>" data-image="<%= allBanner.image %>" data-order="<%= allBanner.order %>" data-is-active="<%= allBanner.is_active %>" data-bs-toggle="modal" data-bs-target="#viewBannerModal">
+                                                                            <i class="bx bx-show me-1"></i> View
+                                                                        </a>
                                                                         <a class="dropdown-item" href="/edit-banner?id=<%= allBanner._id %>">
                                                                             <i class="bx bx-edit-alt me-1"></i> Edit
                                                                         </a>
@@ -94,10 +97,47 @@
 
 <%- include('../layout/footer.ejs') %>
 
+<div class="modal fade" id="viewBannerModal" tabindex="-1" aria-labelledby="viewBannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewBannerModalLabel">Banner Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <img id="viewBannerImage" src="" alt="Banner" class="rounded modal-img-viewable" style="max-width: 100%; max-height: 200px; object-fit: cover;">
+                </div>
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:120px;">Title</td><td id="viewBannerTitle"></td></tr>
+                    <tr><td class="fw-bold text-muted">Description</td><td id="viewBannerDesc"></td></tr>
+                    <tr><td class="fw-bold text-muted">Order</td><td id="viewBannerOrder"></td></tr>
+                    <tr><td class="fw-bold text-muted">Status</td><td id="viewBannerStatus"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/imageViewer') %>
+
 <script>
     $(document).ready(function() {
         $('.form-check-input').change(function() {
             $(this).closest('form').submit();
+        });
+        document.querySelectorAll('.btn-view-banner').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('viewBannerImage').src = './assets/userImages/' + this.dataset.image;
+                document.getElementById('viewBannerTitle').textContent = this.dataset.title;
+                document.getElementById('viewBannerDesc').innerHTML = this.dataset.description || '-';
+                document.getElementById('viewBannerOrder').textContent = this.dataset.order;
+                document.getElementById('viewBannerStatus').innerHTML = this.dataset.isActive == '1' || this.dataset.isActive == 'true' ? '<span class="badge bg-success">Enabled</span>' : '<span class="badge bg-danger">Disabled</span>';
+            });
         });
     });
 </script>

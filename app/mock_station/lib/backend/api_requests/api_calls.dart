@@ -1587,6 +1587,10 @@ class GetuserrankApiCall {
         response,
         r'''$.data.user''',
       );
+  double? percentile(dynamic response) => castToType<double>(getJsonField(
+        response,
+        r'''$.data.user.percentile''',
+      ));
   int? success(dynamic response) => castToType<int>(getJsonField(
         response,
         r'''$.data.success''',

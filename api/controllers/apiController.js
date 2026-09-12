@@ -1412,6 +1412,8 @@ const toAppQuestion = (question) => {
   };
   return {
     question_title: { en: title.en, hi: title.hi },
+    subject: question.subject || '',
+    chapter: question.chapter || '',
     option: { a: opt("a"), b: opt("b"), c: opt("c"), d: opt("d") },
     answer: { en: answer.en, hi: answer.hi },
     description: { en: stripBr(descRaw.en), hi: stripBr(descRaw.hi) },
@@ -1837,6 +1839,8 @@ const StartQuiz = async (req, res) => {
         image: question.image,
         audio: question.audio,
         question_type: question.question_type,
+        subject: question.subject || "",
+        chapter: question.chapter || "",
         option: option,
         answer: question.answer,
         user_answer: question.user_answer,
@@ -2178,33 +2182,36 @@ const GetUserRank = async (req, res) => {
         },
       });
     }
-    const bestScore = await UserQuiz.aggregate([
+    const quizObjectId = new (require("mongoose").Types.ObjectId)(quizId);
+    const bestScores = await UserQuiz.aggregate([
       {
         $match: {
           userId: new (require("mongoose").Types.ObjectId)(req.body.userId),
-          quizId: new (require("mongoose").Types.ObjectId)(quizId),
+          quizId: quizObjectId,
         },
       },
       {
         $group: { _id: null, bestScore: { $max: "$score" } },
       },
     ]);
-    const userBestScore = bestScore.length > 0 ? bestScore[0].bestScore : 0;
-    const userRank =
-      (await UserQuiz.aggregate([
-        {
-          $match: { quizId: new (require("mongoose").Types.ObjectId)(quizId) },
-        },
-        {
-          $group: { _id: "$userId", bestScore: { $max: "$score" } },
-        },
-        {
-          $match: { bestScore: { $gt: userBestScore } },
-        },
-        {
-          $count: "count",
-        },
-      ]))[0]?.count + 1 || 1;
+    const userBestScore = bestScores.length > 0 ? bestScores[0].bestScore : 0;
+    const participantScores = await UserQuiz.aggregate([
+      { $match: { quizId: quizObjectId } },
+      { $group: { _id: "$userId", bestScore: { $max: "$score" } } },
+    ]);
+    const totalParticipants = participantScores.length;
+    const betterParticipants = participantScores.filter(
+      (participant) => Number(participant.bestScore || 0) > Number(userBestScore || 0),
+    ).length;
+    const lowerScoringParticipants = participantScores.filter(
+      (participant) => Number(participant.bestScore || 0) < Number(userBestScore || 0),
+    ).length;
+    const userRank = betterParticipants + 1;
+    // A percentile is not meaningful with only one participant. Return null
+    // until another user's result exists for this quiz.
+    const percentile = totalParticipants <= 1
+      ? null
+      : (lowerScoringParticipants / totalParticipants) * 100;
     console.log(
       "User best score:",
       userBestScore,
@@ -2222,6 +2229,8 @@ const GetUserRank = async (req, res) => {
           image: user.image ? user.image : "",
           points: userBestScore,
           rank: userRank,
+          percentile: percentile === null ? null : Number(percentile.toFixed(1)),
+          totalParticipants,
         },
         error: 0,
       },

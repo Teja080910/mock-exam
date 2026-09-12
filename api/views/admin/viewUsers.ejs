@@ -76,14 +76,16 @@
                                                             </td>
                                                             <td>
                                                                 <% if(loginData.is_admin==1) { %>
+                                                                    <a href="#" class="text-info me-2 btn-view-user" data-username="<%= users[i].username %>" data-email="<%= users[i].email %>" data-phone="<%= users[i].phone %>" data-points="<%= users[i].points %>" data-referral-code="<%= users[i].referral_code || '-' %>" data-referred-by="<%= (users[i].referred_by && users[i].referred_by.username) ? users[i].referred_by.username : '-' %>" data-is-verified="<%= users[i].is_verified %>" data-active="<%= users[i].active %>" data-image="<%= users[i].image || '' %>" data-bs-toggle="modal" data-bs-target="#viewUserModal"><i class="bx bx-show"></i></a>
                                                                     <form class="toggle-form" data-user-id="<%= users[i]._id %>"data-action="/view-users/<%= users[i]._id %>/toggle" method="POST">
-                                                                        <button type="button" class="btn <%= users[i].active ? 'btn-primary' : 'btn-danger' %> toggle-button2" 
-                                                                            data-user-active="<%= users[i].active ? 'Active' : 'Deactivate' %>" 
+                                                                        <button type="button" class="btn <%= users[i].active ? 'btn-primary' : 'btn-danger' %> toggle-button2"
+                                                                            data-user-active="<%= users[i].active ? 'Active' : 'Deactivate' %>"
                                                                             data-user-username="<%= users[i].username %>">
                                                                             <%= users[i].active ? 'Active' : 'Deactivate' %>
                                                                         </button>
                                                                     </form>
                                                                 <% } else { %>
+                                                                    <a href="#" class="text-info me-2 btn-view-user" data-username="<%= users[i].username %>" data-email="<%= users[i].email %>" data-phone="<%= users[i].phone %>" data-points="<%= users[i].points %>" data-referral-code="<%= users[i].referral_code || '-' %>" data-referred-by="<%= (users[i].referred_by && users[i].referred_by.username) ? users[i].referred_by.username : '-' %>" data-is-verified="<%= users[i].is_verified %>" data-active="<%= users[i].active %>" data-image="<%= users[i].image || '' %>" data-bs-toggle="modal" data-bs-target="#viewUserModal"><i class="bx bx-show"></i></a>
                                                                     <button type="" class="btn <%= users[i].active ? 'btn-primary' : 'btn-danger' %>"
                                                                         onclick="return alert(`You have no access to edit <%= users[i].username %>.` )">
                                                                         <%= users[i].active ? 'Active'
@@ -154,4 +156,72 @@
         });
     });
 </script>
+
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewUserModalLabel">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div id="viewUserAvatar" class="rounded-circle d-inline-flex align-items-center justify-content-center modal-img-viewable" style="width: 80px; height: 80px; background: #6c757d; color: #fff; font-size: 28px;"></div>
+                </div>
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:130px;">Name</td><td id="viewUserName"></td></tr>
+                    <tr><td class="fw-bold text-muted">Email</td><td id="viewUserEmail"></td></tr>
+                    <tr><td class="fw-bold text-muted">Phone</td><td id="viewUserPhone"></td></tr>
+                    <tr><td class="fw-bold text-muted">Points</td><td id="viewUserPoints"></td></tr>
+                    <tr><td class="fw-bold text-muted">Referral Code</td><td id="viewUserReferral"></td></tr>
+                    <tr><td class="fw-bold text-muted">Referred By</td><td id="viewUserReferredBy"></td></tr>
+                    <tr><td class="fw-bold text-muted">Verified</td><td id="viewUserVerified"></td></tr>
+                    <tr><td class="fw-bold text-muted">Status</td><td id="viewUserStatus"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-user').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var avatar = document.getElementById('viewUserAvatar');
+            if (this.dataset.image) {
+                avatar.innerHTML = '<img src="./assets/userImages/' + this.dataset.image + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" />';
+                avatar.style.background = 'transparent';
+                var loadedImg = avatar.querySelector('img');
+                if (loadedImg) {
+                    loadedImg.classList.add('modal-img-viewable');
+                    loadedImg.style.cursor = 'zoom-in';
+                    loadedImg.addEventListener('click', function(ev) {
+                        ev.stopPropagation();
+                        var overlay = document.getElementById('imageViewerOverlay');
+                        var viewerImg = document.getElementById('imageViewerImg');
+                        viewerImg.src = this.src;
+                        overlay.classList.add('show');
+                    });
+                }
+            } else {
+                avatar.textContent = this.dataset.username.charAt(0).toUpperCase();
+                avatar.style.background = '#6c757d';
+            }
+            document.getElementById('viewUserName').textContent = this.dataset.username;
+            document.getElementById('viewUserEmail').textContent = this.dataset.email;
+            document.getElementById('viewUserPhone').textContent = this.dataset.phone;
+            document.getElementById('viewUserPoints').textContent = this.dataset.points;
+            document.getElementById('viewUserReferral').textContent = this.dataset.referralCode;
+            document.getElementById('viewUserReferredBy').textContent = this.dataset.referredBy;
+            document.getElementById('viewUserVerified').innerHTML = this.dataset.isVerified == '1' ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
+            document.getElementById('viewUserStatus').innerHTML = this.dataset.active == 'true' || this.dataset.active == '1' ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+        });
+    });
+</script>
+
+<%- include('../partials/imageViewer') %>
+
 <%- include('../layout/footer.ejs') %>

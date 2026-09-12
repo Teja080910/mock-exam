@@ -69,6 +69,7 @@
                                                                 </td>
                                                                 <td>
                                                                     <div class="d-flex gap-3">
+                                                                        <a href="#" class="text-info me-3 btn-view-intro" data-title="<%= allIntro.title %>" data-description="<%= allIntro.description %>" data-image="<%= allIntro.image %>" data-is-active="<%= allIntro.is_active %>" data-bs-toggle="modal" data-bs-target="#viewIntroModal"><i class="bx bx-show"></i></a>
                                                                         <a href="/edit-intro?id=<%= allIntro._id %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
                                                                         <a href="/delete-intro?id=<%= allIntro._id %>" onclick="return confirm('Are you sure want to delete this <%= allIntro.title %> ?' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
                                                                     </div>
@@ -81,10 +82,11 @@
                                                                 </td>
                                                                 <td>
                                                                     <div class="d-flex gap-3">
+                                                                        <a href="#" class="text-info me-3 btn-view-intro" data-title="<%= allIntro.title %>" data-description="<%= allIntro.description %>" data-image="<%= allIntro.image %>" data-is-active="<%= allIntro.is_active %>" data-bs-toggle="modal" data-bs-target="#viewIntroModal"><i class="bx bx-show"></i></a>
                                                                         <a href="/edit-intro?id=<%= allIntro._id %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a><a href="" onclick="return alert('You have no access to delete <%= allIntro.title %>.' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
                                                                     </div>
                                                                 </td>
-                                                            <%  }  %> 
+                                                            <%  }  %>
                                                         </tr>
                                                     <% }); %>
                                                 </tbody>
@@ -103,4 +105,43 @@
             </div>
 
         <script src="/assets/js/statusEnable.js"></script>
+
+<div class="modal fade" id="viewIntroModal" tabindex="-1" aria-labelledby="viewIntroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewIntroModalLabel">Intro Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <img id="viewIntroImage" src="" alt="Intro Image" class="rounded-circle modal-img-viewable" style="width: 80px; height: 80px; object-fit: cover;">
+                </div>
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:120px;">Title</td><td id="viewIntroTitle"></td></tr>
+                    <tr><td class="fw-bold text-muted">Description</td><td id="viewIntroDesc"></td></tr>
+                    <tr><td class="fw-bold text-muted">Status</td><td id="viewIntroStatus"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-intro').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('viewIntroImage').src = './assets/userImages/' + this.dataset.image;
+            document.getElementById('viewIntroTitle').textContent = this.dataset.title;
+            document.getElementById('viewIntroDesc').innerHTML = this.dataset.description || '-';
+            document.getElementById('viewIntroStatus').innerHTML = this.dataset.isActive == '1' ? '<span class="badge bg-success">Enabled</span>' : '<span class="badge bg-danger">Disabled</span>';
+        });
+    });
+</script>
+
+<%- include('../partials/imageViewer') %>
+
 <%- include('../layout/footer.ejs') %>

@@ -74,20 +74,22 @@
                                                                     </a>
                                                                 </form>                   
                                                             </td>
-                                                            <td>
-                                                                <a class="text-success me-3" href="/edit-quiz?id=<%= quizData._id %>"><i class="me-2 bx bx-edit-alt"></i></a>
-                                                                <a class="text-danger me-3" href="/delete-quiz?id=<%= quizData._id %>" onclick="return confirm('Are you sure want to delete this quiz?')"><i class="bx bx-trash"></i></a>
-                                                            </td>
+                                                                <td>
+                                                                    <a class="text-info me-3 btn-view-quiz" href="#" data-id="<%= quizData._id %>" data-name="<%= quizData.name %>" data-image="<%= quizData.image %>" data-category="<%= quizData.categoryId ? quizData.categoryId.name : 'No Category' %>" data-subcategory="<%= quizData.subcategoryId ? quizData.subcategoryId.name : '-' %>" data-is-active="<%= quizData.is_active %>" data-question-count="<% if (question.length > 0) { let count = 0; for (let j = 0; j < question.length; j++) { if (question[j].quizId && String(quizData._id) === String(question[j].quizId._id)) { count++; } } %><%= count %><% } else { %>0<% } %>" data-bs-toggle="modal" data-bs-target="#viewQuizModal"><i class="bx bx-show"></i></a>
+                                                                    <a class="text-success me-3" href="/edit-quiz?id=<%= quizData._id %>"><i class="me-2 bx bx-edit-alt"></i></a>
+                                                                    <a class="text-danger me-3" href="/delete-quiz?id=<%= quizData._id %>" onclick="return confirm('Are you sure want to delete this quiz?')"><i class="bx bx-trash"></i></a>
+                                                                </td>
                                                         <% } else { %>
-                                                            <td>
-                                                                <div class="form-check form-switch mb-0" onclick="alert('You have no access to change status..!!')">
-                                                                    <input class="form-check-input" type="checkbox" name="is_active" <% if(quizData.is_active==1) { %> checked <% }else{} %>disabled>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <a class="text-success me-3" href="/edit-quiz?id=<%= quizData._id %>"><i class="me-2 bx bx-edit-alt"></i></a>
-                                                                <a class="text-danger me-3" href="" onclick="return alert('You have no access to delete this quiz.')"><i class="bx bx-trash"></i></a>
-                                                            </td>
+                                                                <td>
+                                                                    <div class="form-check form-switch mb-0" onclick="alert('You have no access to change status..!!')">
+                                                                        <input class="form-check-input" type="checkbox" name="is_active" <% if(quizData.is_active==1) { %> checked <% }else{} %>disabled>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <a class="text-info me-3 btn-view-quiz" href="#" data-id="<%= quizData._id %>" data-name="<%= quizData.name %>" data-image="<%= quizData.image %>" data-category="<%= quizData.categoryId ? quizData.categoryId.name : 'No Category' %>" data-subcategory="<%= quizData.subcategoryId ? quizData.subcategoryId.name : '-' %>" data-is-active="<%= quizData.is_active %>" data-bs-toggle="modal" data-bs-target="#viewQuizModal"><i class="bx bx-show"></i></a>
+                                                                    <a class="text-success me-3" href="/edit-quiz?id=<%= quizData._id %>"><i class="me-2 bx bx-edit-alt"></i></a>
+                                                                    <a class="text-danger me-3" href="" onclick="return alert('You have no access to delete this quiz.')"><i class="bx bx-trash"></i></a>
+                                                                </td>
                                                     <% } %>
                                                     </tr>
                                                 <% }); %>
@@ -105,4 +107,47 @@
         </div>
 
     <script src="/assets/js/statusEnable.js"></script>
+
+<div class="modal fade" id="viewQuizModal" tabindex="-1" aria-labelledby="viewQuizModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewQuizModalLabel">Quiz Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <img id="viewQuizImage" src="" alt="Quiz Image" class="rounded-circle modal-img-viewable" style="width: 80px; height: 80px; object-fit: cover;">
+                </div>
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:140px;">Name</td><td id="viewQuizName"></td></tr>
+                    <tr><td class="fw-bold text-muted">Category</td><td id="viewQuizCategory"></td></tr>
+                    <tr><td class="fw-bold text-muted">Subcategory</td><td id="viewQuizSubcategory"></td></tr>
+                    <tr><td class="fw-bold text-muted">Questions</td><td id="viewQuizQuestionCount"></td></tr>
+                    <tr><td class="fw-bold text-muted">Status</td><td id="viewQuizStatus"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-quiz').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('viewQuizImage').src = './assets/userImages/' + this.dataset.image;
+            document.getElementById('viewQuizName').textContent = this.dataset.name;
+            document.getElementById('viewQuizCategory').textContent = this.dataset.category;
+            document.getElementById('viewQuizSubcategory').textContent = this.dataset.subcategory;
+            document.getElementById('viewQuizQuestionCount').textContent = this.dataset.questionCount || '0';
+            document.getElementById('viewQuizStatus').innerHTML = this.dataset.isActive == '1' ? '<span class="badge bg-success">Enabled</span>' : '<span class="badge bg-danger">Disabled</span>';
+        });
+    });
+</script>
+
+<%- include('../partials/imageViewer') %>
+
 <%- include('../layout/footer.ejs') %>

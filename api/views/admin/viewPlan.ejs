@@ -69,6 +69,7 @@
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex gap-3">
+                                                                    <a href="#" class="text-info me-3 btn-view-plan" data-plan-id="<%= allPlan.planId %>" data-plan-name="<%= allPlan.planName %>" data-category-group="<%= allPlan.categoryGroup ? allPlan.categoryGroup.displayName : 'All Category Groups' %>" data-validity="<%= allPlan.planValidity %>" data-price="<%= allPlan.price %>" data-bs-toggle="modal" data-bs-target="#viewPlanModal"><i class="bx bx-show"></i></a>
                                                                     <% if (loginData.is_admin==1) { %>
                                                                         <a href="/edit-plan?id=<%= allPlan._id %>"
                                                                             class="text-success me-3"><i
@@ -105,3 +106,39 @@
                  </div>
 
                 <%- include('../layout/footer.ejs') %>
+
+<div class="modal fade" id="viewPlanModal" tabindex="-1" aria-labelledby="viewPlanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewPlanModalLabel">Plan Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr><td class="fw-bold text-muted" style="width:140px;">Plan ID</td><td id="viewPlanId"></td></tr>
+                    <tr><td class="fw-bold text-muted">Plan Name</td><td id="viewPlanName"></td></tr>
+                    <tr><td class="fw-bold text-muted">Category Group</td><td id="viewPlanCategoryGroup"></td></tr>
+                    <tr><td class="fw-bold text-muted">Validity</td><td id="viewPlanValidity"></td></tr>
+                    <tr><td class="fw-bold text-muted">Price</td><td id="viewPlanPrice"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-view-plan').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('viewPlanId').textContent = this.dataset.planId;
+            document.getElementById('viewPlanName').textContent = this.dataset.planName;
+            document.getElementById('viewPlanCategoryGroup').textContent = this.dataset.categoryGroup;
+            document.getElementById('viewPlanValidity').textContent = this.dataset.validity;
+            document.getElementById('viewPlanPrice').textContent = '\u20B9 ' + this.dataset.price;
+        });
+    });
+</script>

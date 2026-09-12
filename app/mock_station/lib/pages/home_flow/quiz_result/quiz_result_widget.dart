@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'quiz_result_model.dart';
@@ -62,6 +61,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   String _answerKeyFilter = 'all';
   int _selectedAnswerKeyIndex = 0;
   String _answerKeyLanguage = 'en';
+  double? _percentile;
+  String _strengthFilter = 'Strong';
 
   double get _score {
     return (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) -
@@ -81,6 +82,33 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       return 0;
     }
     return ((widget.correctAnswer ?? 0) / total) * 100;
+  }
+
+  Future<void> _loadPercentile() async {
+    final userId = getJsonField(
+      FFAppState().userDetils,
+      r'''$.id''',
+    ).toString();
+    if (userId.isEmpty || (widget.quizID ?? '').isEmpty) return;
+
+    try {
+      final response = await QuizGroup.getuserrankApiCall.call(
+        userId: userId,
+        quizId: widget.quizID,
+        token: FFAppState().loginToken,
+      );
+      if (QuizGroup.getuserrankApiCall.success(response.jsonBody) == 1) {
+        final value = double.tryParse(
+          (getJsonField(response.jsonBody, r'''$.data.user.percentile''') ?? '')
+              .toString(),
+        );
+        if (mounted && value != null) {
+          safeSetState(() => _percentile = value.clamp(0.0, 100.0).toDouble());
+        }
+      }
+    } catch (_) {
+      // The local result remains usable when the percentile request is offline.
+    }
   }
 
   // Helper function to extract option image
@@ -303,6 +331,63 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     );
   }
 
+  Widget _buildInsightCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color accentColor,
+    required Color backgroundColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14.0),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.0,
+            height: 40.0,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Icon(icon, color: accentColor, size: 24.0),
+          ),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF374151),
+                    fontSize: FFFont.f10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: accentColor,
+                    fontSize: FFFont.f20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSectionSummaryRow({
     required IconData icon,
     required Color accentColor,
@@ -426,6 +511,297 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             borderRadius: BorderRadius.circular(1.2),
           ),
         ),
+      ),
+    );
+  }
+
+  List<dynamic> _resultQuestionSource() {
+    return FFAppState().quesList.isNotEmpty
+        ? FFAppState().quesList.toList()
+        : FFAppState().quesReviewList.toList();
+  }
+
+  String _chapterName(dynamic item) {
+    final questionData = item is Map ? (item['question'] ?? item) : item;
+    return _cleanText(
+      (item is Map ? item['chapter'] : null) ??
+          getJsonField(questionData, r'''$.chapter'''),
+    );
+  }
+
+  List<Map<String, dynamic>> _chapterAnalysisItems() {
+    final groups = <String, Map<String, dynamic>>{};
+    final source = _resultQuestionSource();
+
+    for (var index = 0; index < source.length; index++) {
+      final item = source[index];
+      final chapter = _chapterName(item);
+      if (chapter.isEmpty) continue;
+
+      final subject = _subjectName(item);
+      // Strengths and weaknesses are chapter-wise. Do not create separate
+      // divisions for subjects in a mixed exam.
+      final key = chapter.toLowerCase();
+      final group = groups.putIfAbsent(
+        key,
+        () => <String, dynamic>{
+          'chapter': chapter,
+          'subject': subject,
+          'correct': 0,
+          'wrong': 0,
+          'skipped': 0,
+          'questions': <Map<String, dynamic>>[],
+        },
+      );
+      final status = _answerKeyStatus(item);
+      if (status == 'correct') {
+        group['correct'] = (group['correct'] as int) + 1;
+      } else if (status == 'incorrect') {
+        group['wrong'] = (group['wrong'] as int) + 1;
+      } else {
+        group['skipped'] = (group['skipped'] as int) + 1;
+      }
+      (group['questions'] as List<Map<String, dynamic>>).add({
+        'number': index + 1,
+        'status': status,
+      });
+    }
+
+    return groups.values.map((group) {
+      final questions = group['questions'] as List<Map<String, dynamic>>;
+      final total = questions.length;
+      final correct = group['correct'] as int;
+      final percent = total == 0 ? 0.0 : (correct / total) * 100.0;
+      return <String, dynamic>{
+        ...group,
+        'total': total,
+        'percent': percent,
+        'category': percent >= 60
+            ? 'Strong'
+            : percent >= 30
+                ? 'Average'
+                : 'Weak',
+      };
+    }).toList()
+      ..sort((a, b) => (b['percent'] as double).compareTo(a['percent'] as double));
+  }
+
+  Color _strengthColor(String category) {
+    switch (category) {
+      case 'Strong':
+        return const Color(0xFF16A34A);
+      case 'Average':
+        return const Color(0xFFF59E0B);
+      default:
+        return const Color(0xFFEF4444);
+    }
+  }
+
+  Widget _buildStrengthWeaknesses() {
+    final analysis = _chapterAnalysisItems();
+    if (analysis.isEmpty) return const SizedBox.shrink();
+
+    var commonSubject = '';
+    for (final item in analysis) {
+      final subject = (item['subject'] ?? '').toString().trim();
+      if (subject.isNotEmpty) {
+        commonSubject = subject;
+        break;
+      }
+    }
+    final showSubject =
+        _isSubjectWiseTest(_resultQuestionSource()) && commonSubject.isNotEmpty;
+
+    final filtered = analysis
+        .where((item) => item['category'] == _strengthFilter)
+        .toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 14.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'STRENGTHS AND WEAKNESSES',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: FFFont.f10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.4,
+            ),
+          ),
+          if (showSubject) ...[
+            const SizedBox(height: 4.0),
+            Text(
+              'Subject: $commonSubject',
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: FFFont.f11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          const SizedBox(height: 10.0),
+          Container(
+            padding: const EdgeInsets.all(3.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18.0),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: ['Strong', 'Average', 'Weak'].map((label) {
+                final selected = _strengthFilter == label;
+                final color = _strengthColor(label);
+                return Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16.0),
+                    onTap: () => safeSetState(() => _strengthFilter = label),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 7.0),
+                      decoration: BoxDecoration(
+                        color: selected ? color : Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: selected ? Colors.white : const Color(0xFF64748B),
+                          fontSize: FFFont.f11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 12.0),
+          if (filtered.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Text(
+                'No ${_strengthFilter.toLowerCase()} chapters yet.',
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: FFFont.f12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          else
+            ...filtered.map((item) {
+              final category = item['category'] as String;
+              final color = _strengthColor(category);
+              final percent = item['percent'] as double;
+              final correct = item['correct'] as int;
+              final total = item['total'] as int;
+              final chapter = item['chapter'] as String;
+              final questions = item['questions'] as List<Map<String, dynamic>>;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            chapter,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: FFFont.f12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${percent.round()}% ($correct/$total)',
+                          style: TextStyle(
+                            color: color,
+                            fontSize: FFFont.f11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6.0),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: LinearProgressIndicator(
+                        minHeight: 5.0,
+                        value: (percent / 100.0).clamp(0.0, 1.0),
+                        backgroundColor: const Color(0xFFE5E7EB),
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      ),
+                    ),
+                    const SizedBox(height: 7.0),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4.0, right: 8.0),
+                          child: Text(
+                            'Q No.',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: FFFont.f10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Wrap(
+                            spacing: 7.0,
+                            runSpacing: 5.0,
+                            children: questions.map((question) {
+                              final status = question['status'] as String;
+                              final isCorrect = status == 'correct';
+                              final isWrong = status == 'incorrect';
+                              final circleColor = isCorrect
+                                  ? const Color(0xFF16A34A)
+                                  : isWrong
+                                      ? const Color(0xFFEF4444)
+                                      : const Color(0xFFD1D5DB);
+                              return Container(
+                                width: 26.0,
+                                height: 26.0,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: circleColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${question['number']}',
+                                  style: TextStyle(
+                                    color: isCorrect || isWrong
+                                        ? Colors.white
+                                        : const Color(0xFF374151),
+                                    fontSize: FFFont.f10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
       ),
     );
   }
@@ -669,32 +1045,16 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   bool _isSubjectWiseTest(List<dynamic> source) {
-    final closedSubjects = <String>{};
-    String? currentSubject;
-    var hasSubject = false;
-
-    for (final item in source) {
-      final subject = _subjectName(item).trim();
-      // A sectional summary is valid only when every question explicitly
-      // belongs to a subject. The exam subcategory is not a subject.
-      if (subject.isEmpty) return false;
-      hasSubject = true;
-
-      if (currentSubject == null) {
-        currentSubject = subject;
-        continue;
-      }
-      if (subject == currentSubject) continue;
-
-      closedSubjects.add(currentSubject);
-      if (closedSubjects.contains(subject)) {
-        // Example: Maths, Reasoning, Maths = mixed/interleaved questions.
-        return false;
-      }
-      currentSubject = subject;
-    }
-
-    return hasSubject;
+    final subjects = source
+        .map((item) => _subjectName(item).trim())
+        .where((subject) => subject.isNotEmpty)
+        .toSet();
+    // A sectional summary is valid only when every question belongs to one
+    // subject. Multiple subjects make this a mixed test, regardless of their
+    // ordering in the question list.
+    return source.isNotEmpty &&
+        subjects.length == 1 &&
+        source.every((item) => _subjectName(item).trim().isNotEmpty);
   }
 
   List<String> _sectionLabelsFromData(List<dynamic> source) {
@@ -892,29 +1252,34 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     ],
                   ),
                   const SizedBox(height: 14.0),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(18.0),
-                    decoration: BoxDecoration(color: const Color(0xFFF7F1FF), borderRadius: BorderRadius.circular(12.0)),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44.0, height: 44.0,
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.0)),
-                          child: const Icon(Icons.timer_outlined, color: Color(0xFFA855F7), size: 28.0),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildInsightCard(
+                          title: 'Total Time Taken',
+                          value: timeLabel,
+                          icon: Icons.timer_outlined,
+                          accentColor: const Color(0xFFA855F7),
+                          backgroundColor: const Color(0xFFF7F1FF),
                         ),
-                        const SizedBox(width: 16.0),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Total Time Taken', style: TextStyle(color: Color(0xFF111827), fontSize: FFFont.f12, fontWeight: FontWeight.w700)),
-                            const SizedBox(height: 6.0),
-                            Text(timeLabel, style: const TextStyle(color: Color(0xFF111827), fontSize: FFFont.f20, fontWeight: FontWeight.w900)),
-                          ],
+                      ),
+                      const SizedBox(width: 10.0),
+                      Expanded(
+                        child: _buildInsightCard(
+                          title: 'Percentile',
+                          value: _percentile == null
+                              ? '--'
+                              : '${_percentile!.toStringAsFixed(1)}%',
+                          icon: Icons.insights_rounded,
+                          accentColor: const Color(0xFFF59E0B),
+                          backgroundColor: const Color(0xFFFFF7E8),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 18.0),
+                  _buildStrengthWeaknesses(),
                   const SizedBox(height: 18.0),
                   _buildSectionalSummary(),
                 ],
@@ -1365,6 +1730,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       _answerKeyValue(question, 'description') ??
           _answerKeyValue(question, 'explanation'),
     );
+    final chapter = biText(_answerKeyValue(question, 'chapter')).trim();
     final questionImage = _answerKeyValue(question, 'image');
 
     return Container(
@@ -1411,6 +1777,18 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               ),
             ],
           ),
+          if (chapter.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                'Chapter: $chapter',
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: FFFont.f12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           if (questionImage != null && questionImage.toString().isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 14.0, 0.0, 8.0),
@@ -2849,6 +3227,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         score: (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) - ((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0))),
         token: FFAppState().loginToken,
       );
+      await _loadPercentile();
     });
   }
 
@@ -2874,24 +3253,10 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         child: Scaffold(
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-          body: Builder(
-            builder: (context) {
-              if (FFAppState().connected == true) {
-                return _buildResultContent();
-              } else {
-                return Align(
-                  alignment: AlignmentDirectional(0.0, 0.0),
-                  child: Lottie.asset(
-                    'assets/jsons/No_Wifi.json',
-                    width: 150.0,
-                    height: 150.0,
-                    fit: BoxFit.contain,
-                    animate: true,
-                  ),
-                );
-              }
-            },
-          ),
+          // The completed result is already available locally. Keep showing
+          // it even if the connection monitor briefly reports offline; only
+          // the percentile value depends on the follow-up API request.
+          body: _buildResultContent(),
         ),
       ),
     );

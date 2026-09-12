@@ -241,9 +241,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     required String questionHtml,
     required int questionIndex,
     required String variantKey,
+    String chapter = '',
   }) {
     final cacheKey =
-        '$questionIndex-$variantKey-$_selectedLang-${questionHtml.hashCode}';
+        '$questionIndex-$variantKey-$_selectedLang-${chapter.hashCode}-${questionHtml.hashCode}';
     final cachedWidget = _questionHtmlCache[cacheKey];
     if (cachedWidget != null) {
       return cachedWidget;
@@ -260,8 +261,42 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       },
     );
 
-    _questionHtmlCache[cacheKey] = htmlWidget;
-    return htmlWidget;
+    final chapterLabel = chapter.trim();
+    final result = chapterLabel.isEmpty
+        ? htmlWidget
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  'Chapter: $chapterLabel',
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: FFFont.f12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              htmlWidget,
+            ],
+          );
+
+    _questionHtmlCache[cacheKey] = result;
+    return result;
+  }
+
+  String _questionChapter(dynamic questionItem) {
+    final value = getJsonField(questionItem, r'''$.chapter''');
+    if (value is Map) {
+      return biPick(
+        value['en']?.toString(),
+        value['hi']?.toString(),
+        _selectedLang,
+      ).trim();
+    }
+    return value?.toString().trim() ?? '';
   }
 
   Future<void> _showQuitQuizDialog() async {
@@ -663,6 +698,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                             'subcategoryName':
                                 getJsonField(q, r'''$.subcategoryName'''),
                             'subject': getJsonField(q, r'''$.subject'''),
+                            'chapter': getJsonField(q, r'''$.chapter'''),
                             'markedForReview': _markedForReview.contains(idx),
                             'time_taken': _questionTimeSeconds(idx),
                           };
@@ -1664,6 +1700,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                           questionHtml: questionHtml,
                                                                                           questionIndex: categorywisequizIndex,
                                                                                           variantKey: 'text',
+                                                                                          chapter: _questionChapter(categorywisequizItem),
                                                                                         ),
                                                                                       ),
                                                                                       if (timerStatus == 1)
@@ -1886,6 +1923,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             questionHtml: questionHtml,
                                                                                             questionIndex: categorywisequizIndex,
                                                                                             variantKey: 'boolean',
+                                                                                            chapter: _questionChapter(categorywisequizItem),
                                                                                           ),
                                                                                         ),
                                                                                       ),
@@ -2023,6 +2061,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             questionHtml: questionHtml,
                                                                                             questionIndex: categorywisequizIndex,
                                                                                             variantKey: 'image',
+                                                                                            chapter: _questionChapter(categorywisequizItem),
                                                                                           ),
                                                                                         ),
                                                                                       ),
@@ -2420,6 +2459,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             questionHtml: questionHtml,
                                                                                             questionIndex: categorywisequizIndex,
                                                                                             variantKey: 'audio',
+                                                                                            chapter: _questionChapter(categorywisequizItem),
                                                                                           ),
                                                                                         ),
                                                                                       ),
@@ -3248,6 +3288,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           'subject': getJsonField(
                                                                               q,
                                                                               r'''$.subject'''),
+                                                                          'chapter': getJsonField(
+                                                                              q,
+                                                                              r'''$.chapter'''),
                                                                           'markedForReview':
                                                                               _markedForReview.contains(i),
                                                                           'time_taken':
@@ -3394,6 +3437,14 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               ?.elementAtOrNull(_model.pageViewCurrentIndex),
                                                                           r'''$.subject''',
                                                                         ),
+                                                                        'chapter':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.chapter''',
+                                                                        ),
                                                                         'option':
                                                                             getJsonField(
                                                                           QuizGroup
@@ -3475,6 +3526,14 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                               ?.elementAtOrNull(_model.pageViewCurrentIndex),
                                                                           r'''$.subject''',
                                                                         ),
+                                                                        'chapter':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .getquestionsbyquizidApiCall
+                                                                              .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.chapter''',
+                                                                        ),
                                                                         'option':
                                                                             getJsonField(
                                                                           QuizGroup
@@ -3541,6 +3600,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                         'subject': getJsonField(
                                                                             q,
                                                                             r'''$.subject'''),
+                                                                        'chapter': getJsonField(
+                                                                            q,
+                                                                            r'''$.chapter'''),
                                                                         'option': getJsonField(
                                                                             q,
                                                                             r'''$.option'''),

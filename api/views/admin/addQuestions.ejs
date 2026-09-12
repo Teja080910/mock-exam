@@ -105,8 +105,39 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label" for="chapterInput">Chapter</label>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control" name="chapter" id="chapterInput" placeholder="e.g. Algebra, Indian Polity" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-sm-2">
+                                                                <label class="col-form-label">Question Mode</label>
+                                                            </div>
+                                                            <div class="d-flex col-sm-10">
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input" type="radio" value="mix" name="question_mode" id="modeMix" checked>
+                                                                    <label class="form-check-label" for="modeMix">Mix</label>
+                                                                </div>
+                                                                <div class="form-check mt-3 me-3">
+                                                                    <input class="form-check-input" type="radio" value="subject" name="question_mode" id="modeSubject">
+                                                                    <label class="form-check-label" for="modeSubject">Subject</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3 subject-field" style="display:none;">
                                                     <div class="col-md-6">
                                                         <div class="row">
                                                             <div class="col-sm-2">
@@ -509,10 +540,20 @@
             document.querySelector('.option-image-fields').style.display = (type === 'images') ? '' : 'none';
             document.querySelector('.audio-wrap').style.display = (type === 'audio') ? '' : 'none';
         }
+
+        function updateSubjectField() {
+            var mode = document.querySelector('input[name="question_mode"]:checked').value;
+            document.querySelector('.subject-field').style.display = (mode === 'subject') ? '' : 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             updateOptionFields();
+            updateSubjectField();
             document.querySelectorAll('input[name="question_type"]').forEach(function(radio) {
                 radio.addEventListener('change', updateOptionFields);
+            });
+            document.querySelectorAll('input[name="question_mode"]').forEach(function(radio) {
+                radio.addEventListener('change', updateSubjectField);
             });
         });
 

@@ -32,7 +32,7 @@
 - Starts a few interactions with simple greetings ("hi") which is acceptable. Confidence: 0.7
 - Applies theming/UI updates globally, not just to one screen ("we need to update the new theme for all pages", "entire application not only in subscription"). Confidence: 0.9
 - Often wants similar UI treatment across multiple related screens in one go (e.g., applying same look to multiple listing/detail pages). Confidence: 0.85
-- Working on a Flutter app (Dart widgets like `login_screen_widget.dart`, `quiz_result_widget.dart`, etc.) with a backend API (Node/Python likely — `api/.env`, `apicontroller` references). Confidence: 0.9
+- Working on a Flutter app (Dart widgets like `login_screen_widget.dart`, `quiz_result_widget.dart`, etc.) with a Node.js backend using Express, Mongoose (MongoDB ODM), and EJS templates for the admin panel. Development uses nodemon for hot-reload. Confidence: 0.95
 - App is "mock_station" — a quiz/mock-test application. Confidence: 0.95
 - Uses FlutterFlow-style generated widget pattern (e.g., `*_widget.dart` paired with `*_model.dart`). Confidence: 0.85
 - Asks the assistant to verify changes across the full stack (admin pages, imports, API response shape) rather than just trust that "it compiles" — wants confirmation that downstream consumers (e.g., Flutter reading new fields) actually receive the data, not just that syntax is valid. Confidence: 0.9
@@ -42,3 +42,5 @@
 - When adding a new field to an existing MongoDB-backed schema, expects a migration/backfill script for existing data rather than relying on defaults alone (e.g., "for existing data how we need to manage i think one script needed"). Confidence: 0.85
 - Prefers new schema fields to be non-breaking — add a safe default so legacy docs still render correctly without crashing the UI. Confidence: 0.85
 - Prefers auto-classification scripts to include a `--dry-run` flag so changes can be previewed before being written. Confidence: 0.8
+- Expects symmetric/bidirectional tooling for operational scripts — e.g., if a prod-to-local migration exists, also create local-to-prod. Doesn't want one-way-only utilities. Confidence: 0.8
+- Prefers keeping only reusable operational scripts (seeds, migrations, admin creation, bidirectional data sync) and cleaning up one-time fix/migration scripts after they've served their purpose. Wants a lean scripts directory. Confidence: 0.8
