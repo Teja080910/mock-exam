@@ -1041,6 +1041,18 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                             .pageViewCurrentIndex),
                                                     r'''$.option''',
                                                   ),
+                                                  'subject': getJsonField(
+                                                    QuizGroup
+                                                        .selfchallangequizApiCall
+                                                        .quizdetailsList(
+                                                          (_model.selfRes
+                                                                  ?.jsonBody ??
+                                                              ''),
+                                                        )
+                                                        ?.elementAtOrNull(_model
+                                                            .pageViewCurrentIndex),
+                                                    r'''$.subject''',
+                                                  ),
                                                   'user_answer':
                                                       FFAppState().userAns,
                                                 });

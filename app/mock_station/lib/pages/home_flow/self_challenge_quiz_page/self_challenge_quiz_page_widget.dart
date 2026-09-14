@@ -1796,7 +1796,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                             _model.pageViewCurrentIndex),
                                                                     r'''$.answer''',
                                                                   ),
-                                                                  'option':
+                                                                 'option':
                                                                       getJsonField(
                                                                     QuizGroup
                                                                         .selfchallangequizApiCall
@@ -1807,6 +1807,18 @@ class _SelfChallengeQuizPageWidgetState
                                                                         ?.elementAtOrNull(
                                                                             _model.pageViewCurrentIndex),
                                                                     r'''$.option''',
+                                                                  ),
+                                                                  'subject':
+                                                                      getJsonField(
+                                                                    QuizGroup
+                                                                        .selfchallangequizApiCall
+                                                                        .quizdetailsList(
+                                                                          (_model.selfRes?.jsonBody ??
+                                                                              ''),
+                                                                        )
+                                                                        ?.elementAtOrNull(
+                                                                            _model.pageViewCurrentIndex),
+                                                                    r'''$.subject''',
                                                                   ),
                                                                   'user_answer':
                                                                       FFAppState()
@@ -2044,6 +2056,18 @@ class _SelfChallengeQuizPageWidgetState
                                                                               _model.pageViewCurrentIndex),
                                                                       r'''$.answer''',
                                                                     ),
+                                                                    'subject':
+                                                                        getJsonField(
+                                                                      QuizGroup
+                                                                          .selfchallangequizApiCall
+                                                                          .quizdetailsList(
+                                                                            (_model.selfRes?.jsonBody ??
+                                                                                ''),
+                                                                          )
+                                                                          ?.elementAtOrNull(
+                                                                              _model.pageViewCurrentIndex),
+                                                                      r'''$.subject''',
+                                                                    ),
                                                                     'user_answer':
                                                                         FFAppState()
                                                                             .userAns,
@@ -2278,6 +2302,16 @@ class _SelfChallengeQuizPageWidgetState
                                                                             ?.elementAtOrNull(_model.pageViewCurrentIndex),
                                                                         r'''$.option''',
                                                                       ),
+                                                                      'subject':
+                                                                          getJsonField(
+                                                                        QuizGroup
+                                                                            .selfchallangequizApiCall
+                                                                            .quizdetailsList(
+                                                                              (_model.selfRes?.jsonBody ?? ''),
+                                                                            )
+                                                                            ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                        r'''$.subject''',
+                                                                      ),
                                                                       'user_answer':
                                                                           FFAppState()
                                                                               .userAns,
@@ -2506,6 +2540,16 @@ class _SelfChallengeQuizPageWidgetState
                                                                               )
                                                                               ?.elementAtOrNull(_model.pageViewCurrentIndex),
                                                                           r'''$.option''',
+                                                                        ),
+                                                                        'subject':
+                                                                            getJsonField(
+                                                                          QuizGroup
+                                                                              .selfchallangequizApiCall
+                                                                              .quizdetailsList(
+                                                                                (_model.selfRes?.jsonBody ?? ''),
+                                                                              )
+                                                                              ?.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                                          r'''$.subject''',
                                                                         ),
                                                                         'user_answer':
                                                                             FFAppState().userAns,

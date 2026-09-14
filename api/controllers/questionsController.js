@@ -14,6 +14,21 @@ const Quiz = require("../models/quizModel");
 const Subcategory = require("../models/subcategoryModel");
 const CategoryGroup = require("../models/categoryGroupModel");
 
+// Import files may come from CSV or Excel and users commonly capitalize or
+// accidentally add whitespace/BOM characters to the header names. Normalize
+// headers once so both formats follow the same mapping rules.
+function normalizeImportRow(row) {
+    return Object.entries(row || {}).reduce((normalized, [key, value]) => {
+        const normalizedKey = String(key).replace(/^\uFEFF/, '').trim().toLowerCase();
+        normalized[normalizedKey] = value;
+        return normalized;
+    }, {});
+}
+
+function importText(value) {
+    return value === undefined || value === null ? '' : String(value).trim();
+}
+
 // Load questions
 const loadQuestions = async (req, res) => {
     try {
@@ -185,29 +200,34 @@ const importQuestionsCSV = async (req, res) => {
             return res.redirect('/view-questions');
         }
 
+        // Make CSV and Excel rows use identical, case-insensitive headers.
+        results = results.map(normalizeImportRow);
+
         // Process and save the data to MongoDB
         let importedCount = 0;
         let skippedCount = 0;
         for (const row of results) {
             // Skip rows with missing required fields instead of aborting the whole import
-            if (!row.question_title || !row.answer) {
+            if (!importText(row.question_title) || !importText(row.answer)) {
                 skippedCount++;
                 continue;
             }
 
+            const questionType = importText(row.question_type).toLowerCase();
             let option = {};
-            if (row.question_type === "text_only" || row.question_type === "images" || row.question_type === "audio") {
+            if (questionType === "text_only" || questionType === "images" || questionType === "audio") {
                 const optVal = (en, hi, img) => ({ text: bilingual(en, hi), image: img || '' });
                 // accept both header styles: "option.a" (sample template) and "option_a"
-                const enOpt = (letter) => row[`option.${letter}`] || row[`option_${letter}`] || row[`image_${letter}`] || row[`audio_${letter}`];
+                const enOpt = (letter) => row[`option.${letter}`] || row[`option_${letter}`] || (questionType === "audio" ? row[`audio_${letter}`] : '');
                 const hiOpt = (letter) => row[`option_${letter}_hi`] || '';
+                const imageOpt = (letter) => row[`option.${letter}.image`] || row[`option_${letter}_image`] || row[`image_${letter}`] || '';
                 option = {
-                    a: optVal(enOpt('a'), hiOpt('a')),
-                    b: optVal(enOpt('b'), hiOpt('b')),
-                    c: optVal(enOpt('c'), hiOpt('c')),
-                    d: optVal(enOpt('d'), hiOpt('d')),
+                    a: optVal(enOpt('a'), hiOpt('a'), imageOpt('a')),
+                    b: optVal(enOpt('b'), hiOpt('b'), imageOpt('b')),
+                    c: optVal(enOpt('c'), hiOpt('c'), imageOpt('c')),
+                    d: optVal(enOpt('d'), hiOpt('d'), imageOpt('d')),
                 };
-            } else if (row.question_type === "true_false") {
+            } else if (questionType === "true_false") {
                 option = {
                     answer: bilingual(row.answer, row.answer_hi),
                 };
@@ -215,28 +235,32 @@ const importQuestionsCSV = async (req, res) => {
 
             // Handle image reference from CSV/Excel
             let imagePath = null;
-            if (row.image) {
-                imagePath = row.image;
+            if (importText(row.image)) {
+                imagePath = importText(row.image);
             }
 
             // Handle audio reference from CSV/Excel
             let audioPath = null;
-            if (row.audio) {
-                audioPath = row.audio;
+            if (importText(row.audio)) {
+                audioPath = importText(row.audio);
             }
 
             // Question's subcategory = the one selected in the admin modal (the quiz's subcategory).
-            // Excel 'subcategory' column = SUBJECT name, stored as a plain string on the question
-            // (no subcategory docs auto-created), so the selected category's subcategory list
-            // stays clean while the app still shows subject-wise tabs/summary.
+            // The canonical Excel/CSV column for the question's subject is
+            // `subject`. Keep `subcategory` as a backward-compatible fallback
+            // for files made with the older importer. The selected
+            // `subcategoryId` above remains the quiz placement relationship.
+            const subject = importText(row.subject) || importText(row.subcategory);
+            const chapter = importText(row.chapter);
             const question = new Questions({
                 categoryId: req.body.categoryId,
                 subcategoryId: req.body.subcategoryId || null,
-                subject: row.subcategory ? row.subcategory.toString().trim() : '',
-                chapter: row.chapter ? row.chapter.toString().trim() : '',
+                subject,
+                question_mode: subject ? 'subject' : 'mix',
+                chapter,
                 quizId: req.body.quizId,
                 question_title: bilingual(row.question_title, row.question_title_hi),
-                question_type: row.question_type,
+                question_type: questionType,
                 option: option,
                 answer: bilingual(row.answer, row.answer_hi),
                 description: {
@@ -279,11 +303,16 @@ const sampleCSVFormat = async (req, res) => {
             "question_type",
             "question_title",
             "question_title_hi",
+            "subject",
             "chapter",
             "option.a",
             "option.b",
             "option.c",
             "option.d",
+            "option.a.image",
+            "option.b.image",
+            "option.c.image",
+            "option.d.image",
             "option_a_hi",
             "option_b_hi",
             "option_c_hi",
@@ -303,10 +332,15 @@ const sampleCSVFormat = async (req, res) => {
                 "What is the capital of France?",
                 "फ्रांस की राजधानी क्या है?",
                 "Geography",
+                "Geography",
                 "Paris",
                 "London",
                 "Berlin",
                 "Madrid",
+                "",
+                "",
+                "",
+                "",
                 "पेरिस",
                 "लंदन",
                 "बर्लिन",
@@ -324,8 +358,13 @@ const sampleCSVFormat = async (req, res) => {
                 "The Earth is flat?",
                 "क्या पृथ्वी चपटी है?",
                 "Science",
+                "Science",
                 "TRUE",
                 "FALSE",
+                "",
+                "",
+                "",
+                "",
                 "",
                 "",
                 "सही",

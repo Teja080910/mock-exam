@@ -44,3 +44,4 @@
 - Prefers auto-classification scripts to include a `--dry-run` flag so changes can be previewed before being written. Confidence: 0.8
 - Expects symmetric/bidirectional tooling for operational scripts — e.g., if a prod-to-local migration exists, also create local-to-prod. Doesn't want one-way-only utilities. Confidence: 0.8
 - Prefers keeping only reusable operational scripts (seeds, migrations, admin creation, bidirectional data sync) and cleaning up one-time fix/migration scripts after they've served their purpose. Wants a lean scripts directory. Confidence: 0.8
+- Expects seed/migration scripts to reuse existing categories, subcategories, and data structures rather than creating duplicates; will correct when a script creates something that already exists. Confidence: 0.8

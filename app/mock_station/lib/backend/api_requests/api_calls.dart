@@ -534,6 +534,7 @@ class UsereditprofileApiCall {
     String? username = '',
     String? phone = '',
     String? image = '',
+    String? email = '',
     String? token = '',
   }) async {
     final baseUrl = QuizGroup.getBaseUrl(
@@ -547,7 +548,8 @@ class UsereditprofileApiCall {
   "lastname": "${lastname}",
   "username": "${username}",
   "phone": "${phone}",
-  "image": "${image}"
+  "image": "${image}",
+  "email": "${email}"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'UsereditprofileApi',

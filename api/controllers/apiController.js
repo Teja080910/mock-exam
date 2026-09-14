@@ -981,13 +981,24 @@ const UploadImage = async (req, res) => {
 const EditUser = async (req, res) => {
   try {
     const id = req.body.id;
-    const editUser = await User.findByIdAndUpdate(id, {
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : undefined;
+    const updateData = {
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       countryCode: req.body.countryCode,
       phone: req.body.phone,
       image: req.body.image,
-    });
+    };
+    if (email) {
+      const existing = await User.findOne({ email, _id: { $ne: id } });
+      if (existing) {
+        return res.json({
+          data: { success: 0, message: "Email already exists", error: 1 },
+        });
+      }
+      updateData.email = email;
+    }
+    const editUser = await User.findByIdAndUpdate(id, updateData);
     if (editUser) {
       return res.json({
         data: { success: 1, message: "User Updated", error: 0 },
@@ -1414,6 +1425,7 @@ const toAppQuestion = (question) => {
     question_title: { en: title.en, hi: title.hi },
     subject: question.subject || '',
     chapter: question.chapter || '',
+    question_mode: question.question_mode || 'mix',
     option: { a: opt("a"), b: opt("b"), c: opt("c"), d: opt("d") },
     answer: { en: answer.en, hi: answer.hi },
     description: { en: stripBr(descRaw.en), hi: stripBr(descRaw.hi) },
@@ -1472,6 +1484,7 @@ const GetQuestionsByQuizId = async (req, res) => {
         categoryId: question.categoryId?._id || null,
         subcategoryName: question.subcategoryId?.name || '',
         subject: question.subject || '',
+        question_mode: question.question_mode || 'mix',
         quizId: {
           _id: question.quizId?._id || null,
           timer_status: question.quizId?.timer_status,
@@ -1831,22 +1844,38 @@ const StartQuiz = async (req, res) => {
     // Create an array to store question objects
     const questionDetails = [];
 
+    const copyHistoryValue = (value) => {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        return { ...value };
+      }
+      return value ?? "";
+    };
+    const cleanHistoryDescription = (value) => {
+      const stripBr = (text) => String(text || "").replace(/<p><br><\/p>/g, "");
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        return {
+          ...value,
+          en: stripBr(value.en),
+          hi: stripBr(value.hi),
+        };
+      }
+      return stripBr(value);
+    };
+
     // Iterate over each question and construct the question object
     for (const question of questions) {
       const option = question.option !== null ? question.option : {};
       const questionObject = {
-        question_title: question.question_title,
+        question_title: copyHistoryValue(question.question_title),
         image: question.image,
         audio: question.audio,
         question_type: question.question_type,
         subject: question.subject || "",
         chapter: question.chapter || "",
         option: option,
-        answer: question.answer,
+        answer: copyHistoryValue(question.answer),
         user_answer: question.user_answer,
-        description: question.description
-          ? question.description.replace(/<p><br><\/p>/g, "")
-          : "",
+        description: cleanHistoryDescription(question.description),
       };
       questionDetails.push(questionObject);
     }
@@ -2069,10 +2098,19 @@ const LeaderBoard = async (req, res) => {
         $match: { quizId: new (require("mongoose").Types.ObjectId)(quizId) },
       },
       {
-        $group: { _id: "$userId", bestScore: { $max: "$score" } },
+        // Keep all displayed values from the same best attempt. Grouping each
+        // field with $max can combine the score from one attempt with the
+        // correct-answer count from another attempt.
+        $sort: { userId: 1, score: -1, createdAt: -1 },
       },
       {
-        $sort: { bestScore: -1 },
+        $group: {
+          _id: "$userId",
+          bestAttempt: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $sort: { "bestAttempt.score": -1 },
       },
       {
         $limit: 5,
@@ -2094,7 +2132,9 @@ const LeaderBoard = async (req, res) => {
           firstname: "$user.firstname",
           lastname: "$user.lastname",
           image: { $ifNull: ["$user.image", ""] },
-          points: "$bestScore",
+          points: "$bestAttempt.score",
+          correct_answers: "$bestAttempt.correct_answers",
+          total_questions: "$bestAttempt.total_questions",
           rank: 1,
         },
       },
@@ -2194,6 +2234,11 @@ const GetUserRank = async (req, res) => {
         $group: { _id: null, bestScore: { $max: "$score" } },
       },
     ]);
+    if (bestScores.length === 0) {
+      return res.status(404).json({
+        data: { success: 0, message: "No attempt found for this quiz", error: 1 },
+      });
+    }
     const userBestScore = bestScores.length > 0 ? bestScores[0].bestScore : 0;
     const participantScores = await UserQuiz.aggregate([
       { $match: { quizId: quizObjectId } },

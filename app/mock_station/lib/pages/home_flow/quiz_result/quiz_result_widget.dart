@@ -601,16 +601,14 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final analysis = _chapterAnalysisItems();
     if (analysis.isEmpty) return const SizedBox.shrink();
 
-    var commonSubject = '';
-    for (final item in analysis) {
-      final subject = (item['subject'] ?? '').toString().trim();
-      if (subject.isNotEmpty) {
-        commonSubject = subject;
-        break;
-      }
-    }
-    final showSubject =
-        _isSubjectWiseTest(_resultQuestionSource()) && commonSubject.isNotEmpty;
+    // Collect all unique subjects
+    final subjects = analysis
+        .map((item) => (item['subject'] ?? '').toString().trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    final showSubject = _isSubjectWiseTest(_resultQuestionSource()) && subjects.isNotEmpty;
+    final subjectLabel = subjects.join(', ');
 
     final filtered = analysis
         .where((item) => item['category'] == _strengthFilter)
@@ -639,7 +637,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           if (showSubject) ...[
             const SizedBox(height: 4.0),
             Text(
-              'Subject: $commonSubject',
+              'Subjects: $subjectLabel',
               style: const TextStyle(
                 color: Color(0xFF64748B),
                 fontSize: FFFont.f11,
@@ -1049,11 +1047,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         .map((item) => _subjectName(item).trim())
         .where((subject) => subject.isNotEmpty)
         .toSet();
-    // A sectional summary is valid only when every question belongs to one
-    // subject. Multiple subjects make this a mixed test, regardless of their
-    // ordering in the question list.
+    // A subject-wise test has multiple subjects and every question belongs to one.
     return source.isNotEmpty &&
-        subjects.length == 1 &&
+        subjects.length > 1 &&
         source.every((item) => _subjectName(item).trim().isNotEmpty);
   }
 
@@ -1279,9 +1275,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     ],
                   ),
                   const SizedBox(height: 18.0),
-                  _buildStrengthWeaknesses(),
-                  const SizedBox(height: 18.0),
                   _buildSectionalSummary(),
+                  const SizedBox(height: 18.0),
+                  _buildStrengthWeaknesses(),
                 ],
               ),
             ),
@@ -2717,7 +2713,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   rank: '2',
                                   name: _displayName(topThree[1], fallbackRank: 1),
                                   points:
-                                      '${_pointsLabel(topThree[1])} / ${maxScore.toDouble().toStringAsFixed(1)}',
+                                      '${_pointsLabel(topThree[1])} / ${_totalLabel(topThree[1])}',
                                   accent: const Color(0xFF8FB4F4),
                                   nameBackground: const Color(0xFFD7E5FF),
                                   scoreColor: const Color(0xFF1D4ED8),
@@ -2733,7 +2729,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   rank: '1',
                                   name: _displayName(topThree[0], fallbackRank: 0),
                                   points:
-                                      '${_pointsLabel(topThree[0])} / ${maxScore.toDouble().toStringAsFixed(1)}',
+                                      '${_pointsLabel(topThree[0])} / ${_totalLabel(topThree[0])}',
                                   accent: const Color(0xFFF7C74D),
                                   nameBackground: const Color(0xFFF9E2A8),
                                   scoreColor: const Color(0xFFF97316),
@@ -2750,7 +2746,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   rank: '3',
                                   name: _displayName(topThree[2], fallbackRank: 2),
                                   points:
-                                      '${_pointsLabel(topThree[2])} / ${maxScore.toDouble().toStringAsFixed(1)}',
+                                      '${_pointsLabel(topThree[2])} / ${_totalLabel(topThree[2])}',
                                   accent: const Color(0xFFF59F80),
                                   nameBackground: const Color(0xFFFAD9CC),
                                   scoreColor: const Color(0xFFF97316),
@@ -2781,7 +2777,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       _leaderboardRow(
                         rank: _rankForIndex(i),
                         name: _displayName(users[i], fallbackRank: i),
-                        points: '${_pointsLabel(users[i])} / ${maxScore.toInt()}',
+                        points: '${_pointsLabel(users[i])} / ${_totalLabel(users[i])}',
                         accent: i == 0
                             ? const Color(0xFF1D4ED8)
                             : i == 1
@@ -2799,7 +2795,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           _leaderboardRow(
                             rank: currentUserRank,
                             name: _displayName(currentUserData, fallbackRank: currentUserRank - 1),
-                            points: '${_pointsLabel(currentUserData)} / ${maxScore.toInt()}',
+                            points: '${_pointsLabel(currentUserData)} / ${_totalLabel(currentUserData)}',
                             accent: const Color(0xFF1D66E5),
                             showBadge: false,
                             isCurrentUser: true,
@@ -2841,9 +2837,18 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   String _pointsLabel(dynamic user) {
-    final value = getJsonField(user, r'''$.points''') ?? getJsonField(user, r'''$.point''') ?? getJsonField(user, r'''$.score''');
+    final value = getJsonField(user, r'''$.correct_answers''') ?? getJsonField(user, r'''$.points''') ?? getJsonField(user, r'''$.point''') ?? getJsonField(user, r'''$.score''');
     final points = double.tryParse(value?.toString() ?? '') ?? 0.0;
     return points % 1 == 0 ? points.toInt().toString() : points.toStringAsFixed(1);
+  }
+
+  String _totalLabel(dynamic user) {
+    final value = getJsonField(user, r'''$.total_questions''');
+    if (value != null) {
+      final total = int.tryParse(value.toString());
+      if (total != null) return total.toString();
+    }
+    return '${widget.totalQuestion ?? 0}';
   }
 
   String _cleanText(dynamic value) {

@@ -167,11 +167,14 @@ async function migrate() {
         for (const key of ['a', 'b', 'c', 'd']) {
           const opt = q.option?.[key];
           if (typeof opt === 'string') {
-            option[key] = opt;
+            option[key] = { text: { en: opt, hi: '' }, image: '' };
           } else if (opt?.text) {
-            option[key] = opt.text;
+            option[key] = {
+              text: opt.text,
+              image: opt.image || ''
+            };
           } else {
-            option[key] = '';
+            option[key] = { text: { en: '', hi: '' }, image: '' };
           }
         }
 

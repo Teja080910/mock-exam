@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
     question_title: {
-        type: String,
+        // The mobile app sends bilingual values as { en, hi }.
+        // Mixed also keeps compatibility with older attempts that stored a string.
+        type: mongoose.Schema.Types.Mixed,
         required: true
     },
     image: {
@@ -43,7 +45,7 @@ const questionSchema = new mongoose.Schema({
         }
     },
     answer: {
-        type: String,
+        type: mongoose.Schema.Types.Mixed,
         required: true
     },
     user_answer: {
@@ -51,7 +53,7 @@ const questionSchema = new mongoose.Schema({
         required: true
     },
     description: {
-        type: String
+        type: mongoose.Schema.Types.Mixed
     }
 });
 

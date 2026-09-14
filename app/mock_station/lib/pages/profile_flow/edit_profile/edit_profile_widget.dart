@@ -647,9 +647,10 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       focusNode: _model.textFieldFocusNode4,
                                       autofocus: false,
                                       textInputAction: TextInputAction.next,
-                                      readOnly: true,
+                                      readOnly: false,
                                       obscureText: false,
                                       decoration: InputDecoration(
+                                        labelText: 'Email',
                                         labelStyle: FlutterFlowTheme.of(context)
                                             .labelMedium
                                             .override(
@@ -770,6 +771,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       token: FFAppState().loginToken,
                                       username:
                                           _model.textController3.text.trim(),
+                                      email:
+                                          _model.textController4.text.trim(),
                                     );
 
                                     if (QuizGroup.usereditprofileApiCall
