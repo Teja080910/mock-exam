@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
@@ -113,11 +114,11 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                                   QuizQuestionsScreenWidget.routeName,
                                   queryParameters: {
                                     'quizID': serializeParam(getJsonField(quiz, r'$._id').toString(), ParamType.String),
-                                    'title': serializeParam(getJsonField(quiz, r'$.name').toString(), ParamType.String),
+                                    'title': serializeParam(getJsonField(quiz, r'$.name') is Map ? jsonEncode(getJsonField(quiz, r'$.name')) : getJsonField(quiz, r'$.name').toString(), ParamType.String),
                                     'catId': serializeParam(currentAffairsCategoryId, ParamType.String),
                                     'image': serializeParam(getJsonField(quiz, r'$.image').toString(), ParamType.String),
                                     'quizTime': serializeParam(getJsonField(quiz, r'$.minutes_per_quiz').toString(), ParamType.String),
-                                    'description': serializeParam(getJsonField(quiz, r'$.description').toString(), ParamType.String),
+                                    'description': serializeParam(getJsonField(quiz, r'$.description') is Map ? jsonEncode(getJsonField(quiz, r'$.description')) : getJsonField(quiz, r'$.description').toString(), ParamType.String),
                                     'ques': serializeParam(getJsonField(quiz, r'$.total_questions'), ParamType.int),
                                     'timerStatus': serializeParam(getJsonField(quiz, r'$.timer_status'), ParamType.int),
                                   }.withoutNulls,

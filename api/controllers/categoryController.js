@@ -3,6 +3,7 @@ const path = require('path')
 const userimages = path.join('./public/assets/userImages/');
 const { verifyAdminAccess } = require('../config/verification');
 const Category = require("../models/categoryModel");
+const CategoryGroup = require("../models/categoryGroupModel");
 const Quiz = require("../models/quizModel");
 const Admin = require("../models/adminModel");
 const Subcategory = require("../models/subcategoryModel");
@@ -10,7 +11,8 @@ const Subcategory = require("../models/subcategoryModel");
 // Load category
 const loadCategory = async (req, res) => {
     try {
-        res.render('addCategory');
+        const groups = await CategoryGroup.find({}).sort({ displayName: 1 });
+        res.render('addCategory', { groups });
     } catch (error) {
         console.log(error.message);
     }
@@ -31,10 +33,17 @@ const addcategory = async (req, res) => {
             });
             const savecategory = await categoryData.save();
             if (savecategory) {
-                res.render('addCategory', { message: "Category Added SuccessFully..!!" });
+                if (req.body.categoryGroupId) {
+                    await CategoryGroup.findByIdAndUpdate(req.body.categoryGroupId, {
+                        $addToSet: { categories: savecategory._id }
+                    });
+                }
+                const groups = await CategoryGroup.find({}).sort({ displayName: 1 });
+                res.render('addCategory', { message: "Category Added SuccessFully..!!", groups });
             }
             else {
-                res.render('addCategory', { message: "Category Not Added..!!*" });
+                const groups = await CategoryGroup.find({}).sort({ displayName: 1 });
+                res.render('addCategory', { message: "Category Not Added..!!*", groups });
             }
         }
         else {
@@ -51,19 +60,64 @@ const viewCategory = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({_id:req.session.user_id});
-            const page = parseInt(req.query.page) || 1;
+            const page = Math.max(1, parseInt(req.query.page, 10) || 1);
             const limit = 20;
             const skip = (page - 1) * limit;
-            const totalItems = await Category.countDocuments();
-            const totalPages = Math.ceil(totalItems / limit);
-            const allCategory = await Category.find({}).sort({ updatedAt: -1 }).skip(skip).limit(limit);
-            const quiz = await Quiz.find().populate('categoryId');
-            if (allCategory) {
-                res.render('viewCategory', { category: allCategory, loginData: loginData, quiz: quiz, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
+
+            const filter = {};
+            if (req.query.is_active !== undefined && req.query.is_active !== '') {
+                filter.is_active = parseInt(req.query.is_active, 10);
             }
-            else {
-                console.log(error.message);
+            if (req.query.is_feature !== undefined && req.query.is_feature !== '') {
+                filter.is_feature = parseInt(req.query.is_feature, 10);
             }
+            if (req.query.search && String(req.query.search).trim() !== '') {
+                const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                filter.$or = [
+                    { name: { $regex: term, $options: 'i' } },
+                    { displayName: { $regex: term, $options: 'i' } }
+                ];
+            }
+
+            const totalItems = await Category.countDocuments(filter);
+            const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+            const allCategory = await Category.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limit);
+            
+            const categoryIds = allCategory.map(c => c._id);
+            const quizCounts = await Quiz.aggregate([
+                { $match: { categoryId: { $in: categoryIds } } },
+                { $group: { _id: "$categoryId", count: { $sum: 1 } } }
+            ]);
+            const quizCountMap = {};
+            quizCounts.forEach(qc => {
+                if (qc._id) quizCountMap[qc._id.toString()] = qc.count;
+            });
+
+            // Backward compatibility
+            const quiz = await Quiz.find({ categoryId: { $in: categoryIds } }).populate('categoryId');
+
+            const params = [];
+            if (req.query.is_active !== undefined && req.query.is_active !== '') params.push(`is_active=${encodeURIComponent(req.query.is_active)}`);
+            if (req.query.is_feature !== undefined && req.query.is_feature !== '') params.push(`is_feature=${encodeURIComponent(req.query.is_feature)}`);
+            if (req.query.search) params.push(`search=${encodeURIComponent(req.query.search)}`);
+            const extraParams = params.length > 0 ? '&' + params.join('&') : '';
+
+            res.render('viewCategory', {
+                category: allCategory,
+                loginData: loginData,
+                quiz: quiz,
+                quizCountMap: quizCountMap,
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalItems,
+                limit: limit,
+                extraParams: extraParams,
+                filters: {
+                    is_active: req.query.is_active !== undefined ? req.query.is_active : '',
+                    is_feature: req.query.is_feature !== undefined ? req.query.is_feature : '',
+                    search: req.query.search || ''
+                }
+            });
         });
     } catch (error) {
         console.log(error.message);
@@ -74,12 +128,15 @@ const viewCategory = async (req, res) => {
 const editCategory = async (req, res) => {
     try {
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-category';
         const editData = await Category.findById({ _id: id });
+        const groups = await CategoryGroup.find({}).sort({ displayName: 1 });
+        const currentGroup = await CategoryGroup.findOne({ categories: id });
         if (editData) {
-            res.render('editCategory', { category: editData });
+            res.render('editCategory', { category: editData, groups, currentGroupId: currentGroup ? currentGroup._id : null, returnUrl: returnUrl });
         }
         else {
-            res.render('editCategory', { message: 'Category Not Added' });
+            res.render('editCategory', { message: 'Category Not Added', groups, currentGroupId: null, returnUrl: returnUrl });
         }
     } catch (error) {
         console.log(error.message);
@@ -92,14 +149,16 @@ const UpdateCategory = async (req, res) => {
         let loginData = await Admin.findById({_id:req.session.user_id});
         if (loginData.is_admin == 1) {
             const id = req.body.id;
+            const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-category';
             const currentCategory = await Category.findById(id);
+            const categoryIdObj = require('mongoose').Types.ObjectId(id);
             if (req.file) {
                 if (currentCategory) {
                     if (fs.existsSync(userimages + currentCategory.image)) {
                         fs.unlinkSync(userimages + currentCategory.image)
                     }
                 }
-                const UpdateData = await Category.findByIdAndUpdate({ _id: id },
+                await Category.findByIdAndUpdate({ _id: id },
                     {
                         $set: {
                             name: req.body.name,
@@ -108,10 +167,9 @@ const UpdateCategory = async (req, res) => {
                             image: req.file.filename
                         }
                     });
-                res.redirect('/view-category');
             }
             else {
-                const UpdateData = await Category.findByIdAndUpdate({ _id: id },
+                await Category.findByIdAndUpdate({ _id: id },
                     {
                         $set: {
                             name: req.body.name,
@@ -119,8 +177,12 @@ const UpdateCategory = async (req, res) => {
                             parentCategory: req.body.parentCategory || null
                         }
                     });
-                res.redirect('/view-category');
             }
+            if (req.body.categoryGroupId) {
+                await CategoryGroup.updateMany({ categories: categoryIdObj }, { $pull: { categories: categoryIdObj } });
+                await CategoryGroup.findByIdAndUpdate(req.body.categoryGroupId, { $addToSet: { categories: categoryIdObj } });
+            }
+            res.redirect(returnUrl);
         }
         else {
             req.flash('error', 'You have no access to edit category , You are not super admin !! *');
@@ -135,6 +197,7 @@ const UpdateCategory = async (req, res) => {
 const featureStatus = async (req, res) => {
     try {
         const { id } = req.params;
+        const returnUrl = req.body.returnUrl || req.get('Referrer') || '/view-category';
         const status = await Category.findById(id);
         const is_feature = req.body.is_feature ? req.body.is_feature : "false";
         if (!status) {
@@ -142,7 +205,7 @@ const featureStatus = async (req, res) => {
         }
         status.is_feature = !status.is_feature;
         await status.save();
-        res.redirect('/view-category');
+        res.redirect(returnUrl);
 
     } catch (err) {
         console.error(err);
@@ -155,6 +218,7 @@ const featureStatus = async (req, res) => {
 const activeStatus = async (req, res) => {
     try {
         const { id } = req.params;
+        const returnUrl = req.body.returnUrl || req.get('Referrer') || '/view-category';
         const status = await Category.findById(id);
         const is_active = req.body.is_active ? req.body.is_active : "false";
         console.log(status);
@@ -164,7 +228,7 @@ const activeStatus = async (req, res) => {
         status.is_active = !status.is_active;
         console.log(status.is_active);
         await status.save();
-        res.redirect('/view-category');
+        res.redirect(returnUrl);
     } catch (err) {
         console.error(err);
         res.sendStatus(500);
@@ -175,14 +239,17 @@ const activeStatus = async (req, res) => {
 const deleteCategory = async (req, res) => {
     try {
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-category';
+        const categoryIdObj = require('mongoose').Types.ObjectId(id);
         const currentCategory = await Category.findById(id);
         if (currentCategory) {
             if (fs.existsSync(userimages + currentCategory.image)) {
                 fs.unlinkSync(userimages + currentCategory.image)
             }
         }
-        const delBanner = await Category.deleteOne({ _id: id });
-        res.redirect('/view-category');
+        await CategoryGroup.updateMany({ categories: categoryIdObj }, { $pull: { categories: categoryIdObj } });
+        await Category.deleteOne({ _id: id });
+        res.redirect(returnUrl);
     } catch (error) {
         console.log(error.message);
     }
@@ -245,21 +312,56 @@ const addSubcategory = async (req, res) => {
 const viewSubcategory = async (req, res) => {
     try {
         let loginData = await Admin.findById({ _id: req.session.user_id });
-        const page = parseInt(req.query.page) || 1;
+        const page = Math.max(1, parseInt(req.query.page, 10) || 1);
         const limit = 20;
         const skip = (page - 1) * limit;
-        const totalItems = await Subcategory.countDocuments();
-        const totalPages = Math.ceil(totalItems / limit);
-        const allSubcategory = await Subcategory.find({}).populate('categoryId').sort({ updatedAt: -1 }).skip(skip).limit(limit);
-        
-        if (allSubcategory) {
-            res.render('viewSubcategory', { subcategory: allSubcategory, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
-        } else {
-            res.render('viewSubcategory', { subcategory: [], loginData: loginData, currentPage: 1, totalPages: 0, totalItems: 0, limit: limit });
+
+        const filter = {};
+        if (req.query.categoryId && req.query.categoryId.trim() !== '') {
+            filter.categoryId = req.query.categoryId.trim();
         }
+        if (req.query.is_active !== undefined && req.query.is_active !== '') {
+            filter.is_active = parseInt(req.query.is_active, 10);
+        }
+        if (req.query.is_feature !== undefined && req.query.is_feature !== '') {
+            filter.is_feature = parseInt(req.query.is_feature, 10);
+        }
+        if (req.query.search && String(req.query.search).trim() !== '') {
+            const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.name = { $regex: term, $options: 'i' };
+        }
+
+        const categories = await Category.find().sort({ name: 1 });
+        const totalItems = await Subcategory.countDocuments(filter);
+        const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+        const allSubcategory = await Subcategory.find(filter).populate('categoryId').sort({ updatedAt: -1 }).skip(skip).limit(limit);
+
+        const params = [];
+        if (req.query.categoryId) params.push(`categoryId=${encodeURIComponent(req.query.categoryId)}`);
+        if (req.query.is_active !== undefined && req.query.is_active !== '') params.push(`is_active=${encodeURIComponent(req.query.is_active)}`);
+        if (req.query.is_feature !== undefined && req.query.is_feature !== '') params.push(`is_feature=${encodeURIComponent(req.query.is_feature)}`);
+        if (req.query.search) params.push(`search=${encodeURIComponent(req.query.search)}`);
+        const extraParams = params.length > 0 ? '&' + params.join('&') : '';
+
+        res.render('viewSubcategory', {
+            subcategory: allSubcategory,
+            category: categories,
+            loginData: loginData,
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            limit: limit,
+            extraParams: extraParams,
+            filters: {
+                categoryId: req.query.categoryId || '',
+                is_active: req.query.is_active !== undefined ? req.query.is_active : '',
+                is_feature: req.query.is_feature !== undefined ? req.query.is_feature : '',
+                search: req.query.search || ''
+            }
+        });
     } catch (error) {
         console.log('Error in viewSubcategory:', error.message);
-        res.render('viewSubcategory', { subcategory: [], loginData: null, currentPage: 1, totalPages: 0, totalItems: 0, limit: 20 });
+        res.render('viewSubcategory', { subcategory: [], category: [], loginData: null, currentPage: 1, totalPages: 0, totalItems: 0, limit: 20, extraParams: '', filters: {} });
     }
 }
 
@@ -268,6 +370,7 @@ const editSubcategory = async (req, res) => {
     try {
         console.log('=== EDIT SUBCATEGORY CALLED ===');
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-subcategory';
         console.log('Subcategory ID:', id);
         
         const editData = await Subcategory.findById({ _id: id });
@@ -278,14 +381,14 @@ const editSubcategory = async (req, res) => {
         console.log('Categories found:', categories.length);
         
         if (editData) {
-            res.render('editSubcategory', { subcategory: editData, categories });
+            res.render('editSubcategory', { subcategory: editData, categories, returnUrl: returnUrl });
         } else {
             console.log('Subcategory not found');
-            res.render('editSubcategory', { message: 'Subcategory Not Found', categories });
+            res.render('editSubcategory', { message: 'Subcategory Not Found', categories, returnUrl: returnUrl });
         }
     } catch (error) {
         console.log('Error in editSubcategory:', error.message);
-        res.render('editSubcategory', { message: 'Error loading subcategory', categories: [] });
+        res.render('editSubcategory', { message: 'Error loading subcategory', categories: [], returnUrl: req.query.returnUrl || '/view-subcategory' });
     }
 }
 
@@ -295,6 +398,7 @@ const updateSubcategory = async (req, res) => {
         let loginData = await Admin.findById({ _id: req.session.user_id });
         if (loginData.is_admin == 1) {
             const id = req.body.id;
+            const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-subcategory';
             const currentSubcategory = await Subcategory.findById(id);
             if (req.file) {
                 if (currentSubcategory) {
@@ -309,7 +413,7 @@ const updateSubcategory = async (req, res) => {
                         categoryId: req.body.categoryId
                     }
                 });
-                res.redirect('/view-subcategory');
+                res.redirect(returnUrl);
             } else {
                 await Subcategory.findByIdAndUpdate({ _id: id }, {
                     $set: {
@@ -317,7 +421,7 @@ const updateSubcategory = async (req, res) => {
                         categoryId: req.body.categoryId
                     }
                 });
-                res.redirect('/view-subcategory');
+                res.redirect(returnUrl);
             }
         } else {
             req.flash('error', 'You have no access to edit subcategory, You are not super admin !! *');
@@ -332,6 +436,7 @@ const updateSubcategory = async (req, res) => {
 const deleteSubcategory = async (req, res) => {
     try {
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-subcategory';
         const currentSubcategory = await Subcategory.findById(id);
         if (currentSubcategory) {
             if (fs.existsSync(userimages + currentSubcategory.image)) {
@@ -339,7 +444,7 @@ const deleteSubcategory = async (req, res) => {
             }
         }
         await Subcategory.deleteOne({ _id: id });
-        res.redirect('/view-subcategory');
+        res.redirect(returnUrl);
     } catch (error) {
         console.log(error.message);
     }

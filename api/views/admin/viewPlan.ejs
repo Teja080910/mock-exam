@@ -16,91 +16,140 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-12 grid-margin stretch-card">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover" id="server-plan-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Sr No</th>
-                                                        <th>Plan ID</th>
-                                                        <th>Plan Name</th>
-                                                        <th>Category Group</th>
-                                                        <th>Validity</th>
-                                                        <th>Price</th>
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% plan.forEach(function(allPlan, i){ %>
-                                                        <tr>
-                                                            <td>
-                                                                <%= (currentPage - 1) * limit + i + 1 %>
-                                                            </td>
-                                                            <td>
-                                                                <strong>
-                                                                    <%= allPlan.planId %>
-                                                                </strong>
-                                                            </td>
-                                                            <td>
-                                                                <strong>
-                                                                    <%= allPlan.planName %>
-                                                                </strong>
-                                                            </td>
-                                                            <td>
-                                                                <strong>
-                                                                    <%= allPlan.categoryGroup ?
-                                                                        allPlan.categoryGroup.displayName
-                                                                        : 'All Category Groups' %>
-                                                                </strong>
-                                                            </td>
-                                                            <td>
-                                                                <strong>
-                                                                    <%= allPlan.planValidity %>
-                                                                </strong>
-                                                            </td>
-
-                                                            <td>
-                                                                <strong>
-                                                                    ₹ <%= allPlan.price %>
-                                                                </strong>
-                                                            </td>
-                                                            <td>
-                                                                <div class="d-flex gap-3">
-                                                                    <a href="#" class="text-info me-3 btn-view-plan" data-plan-id="<%= allPlan.planId %>" data-plan-name="<%= allPlan.planName %>" data-category-group="<%= allPlan.categoryGroup ? allPlan.categoryGroup.displayName : 'All Category Groups' %>" data-validity="<%= allPlan.planValidity %>" data-price="<%= allPlan.price %>" data-bs-toggle="modal" data-bs-target="#viewPlanModal"><i class="bx bx-show"></i></a>
-                                                                    <% if (loginData.is_admin==1) { %>
-                                                                        <a href="/edit-plan?id=<%= allPlan._id %>"
-                                                                            class="text-success me-3"><i
-                                                                                class="bx bx-edit-alt"></i></a>
-                                                                        <a href="/delete-plan?id=<%= allPlan._id %>"
-                                                                            onclick="return confirm('Are you sure want to delete this <%= allPlan.planId %> ?' )"
-                                                                            class="text-danger me-3"><i
-                                                                                class="bx bx-trash"></i></a>
-                                                                            <% } else { %>
-                                                                                <a href="/edit-plan?id=<%= allPlan._id %>"
-                                                                                    class="text-success me-3"><i
-                                                                                        class="bx bx-edit-alt"></i></a>
-                                                                                <a href=""
-                                                                                    onclick="return alert('You have no access to delete <%= allPlan.planId %>.' )"
-                                                                                    class="text-danger me-3"><i
-                                                                                        class="bx bx-trash"></i></a>
-                                                                                <% } %>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card mb-4">
+                                <div class="card-header pb-0">
+                                    <h5 class="card-title mb-0">Filter Plans</h5>
+                                </div>
+                                <div class="card-body pt-3">
+                                    <form method="get" action="/view-plan" id="planFilterForm">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-4">
+                                                <label class="form-label text-muted small fw-semibold">Category Group</label>
+                                                <select name="categoryGroup" id="filterCategoryGroup" class="form-select text-capitalize" onchange="document.getElementById('planFilterForm').submit()">
+                                                    <option value="">All Plans (Any Group)</option>
+                                                    <option value="all_groups" <%= typeof filters !== 'undefined' && filters.categoryGroup === 'all_groups' ? 'selected' : '' %>>All Category Groups</option>
+                                                    <% if (typeof categoryGroups !== 'undefined' && categoryGroups.length > 0) { %>
+                                                        <% categoryGroups.forEach(function(group){ %>
+                                                            <option value="<%= group._id %>" <%= typeof filters !== 'undefined' && filters.categoryGroup === String(group._id) ? 'selected' : '' %>><%= group.displayName %></option>
                                                         <% }); %>
-                                                </tbody>
-                                             </table>
-                                         </div>
+                                                    <% } %>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <label class="form-label text-muted small fw-semibold">Search</label>
+                                                <div class="input-group">
+                                                    <input type="text" name="search" class="form-control" placeholder="Search plan name or ID..." value="<%= typeof filters !== 'undefined' ? filters.search : '' %>" />
+                                                    <button type="submit" class="btn btn-primary"><i class="bx bx-search"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 d-flex justify-content-end gap-2">
+                                                <% if (typeof filters !== 'undefined' && (filters.categoryGroup || filters.search)) { %>
+                                                    <a href="/view-plan" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x"></i> Clear Filters</a>
+                                                <% } %>
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt"></i> Apply Filter</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="server-plan-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr No</th>
+                                                    <th>Plan ID</th>
+                                                    <th>Plan Name</th>
+                                                    <th>Category Group</th>
+                                                    <th>Validity</th>
+                                                    <th>Price</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (plan.length === 0) { %>
+                                                    <tr>
+                                                        <td colspan="7" class="text-center py-4 text-muted">
+                                                            <i class="bx bx-info-circle fs-3 d-block mb-2"></i>
+                                                            No plans found matching your filter criteria.
+                                                        </td>
+                                                    </tr>
+                                                <% } %>
+                                                <% plan.forEach(function(allPlan, i){ %>
+                                                    <tr>
+                                                        <td>
+                                                            <%= (currentPage - 1) * limit + i + 1 %>
+                                                        </td>
+                                                        <td>
+                                                            <strong>
+                                                                <%= allPlan.planId %>
+                                                            </strong>
+                                                        </td>
+                                                        <td>
+                                                            <strong>
+                                                                <%= allPlan.planName %>
+                                                            </strong>
+                                                        </td>
+                                                        <td>
+                                                            <strong>
+                                                                <%= allPlan.categoryGroup ?
+                                                                    allPlan.categoryGroup.displayName
+                                                                    : 'All Category Groups' %>
+                                                            </strong>
+                                                        </td>
+                                                        <td>
+                                                            <strong>
+                                                                <%= allPlan.planValidity %>
+                                                            </strong>
+                                                        </td>
 
-                                     <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
-
+                                                        <td>
+                                                            <strong>
+                                                                ₹ <%= allPlan.price %>
+                                                            </strong>
+                                                        </td>
+                                                        <td>
+                                                            <% const currentViewUrl = '/view-plan?page=' + currentPage + (typeof extraParams !== 'undefined' ? extraParams : ''); %>
+                                                            <div class="d-flex gap-3">
+                                                                <a href="#" class="text-info me-3 btn-view-plan" data-plan-id="<%= allPlan.planId %>" data-plan-name="<%= allPlan.planName %>" data-category-group="<%= allPlan.categoryGroup ? allPlan.categoryGroup.displayName : 'All Category Groups' %>" data-validity="<%= allPlan.planValidity %>" data-price="<%= allPlan.price %>" data-bs-toggle="modal" data-bs-target="#viewPlanModal"><i class="bx bx-show"></i></a>
+                                                                <% if (loginData.is_admin==1) { %>
+                                                                    <a href="/edit-plan?id=<%= allPlan._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>"
+                                                                        class="text-success me-3"><i
+                                                                            class="bx bx-edit-alt"></i></a>
+                                                                    <a href="/delete-plan?id=<%= allPlan._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>"
+                                                                        onclick="return confirm('Are you sure want to delete this <%= allPlan.planId %> ?' )"
+                                                                        class="text-danger me-3"><i
+                                                                            class="bx bx-trash"></i></a>
+                                                                        <% } else { %>
+                                                                            <a href="/edit-plan?id=<%= allPlan._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>"
+                                                                                class="text-success me-3"><i
+                                                                                    class="bx bx-edit-alt"></i></a>
+                                                                            <a href=""
+                                                                                onclick="return alert('You have no access to delete <%= allPlan.planId %>.' )"
+                                                                                class="text-danger me-3"><i
+                                                                                    class="bx bx-trash"></i></a>
+                                                                            <% } %>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                            </tbody>
+                                         </table>
                                      </div>
+
+                                 <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeof extraParams !== 'undefined' ? extraParams : '' }) %>
+
                                  </div>
                              </div>
                          </div>
+                     </div>
 
                      </div>
                  </div>

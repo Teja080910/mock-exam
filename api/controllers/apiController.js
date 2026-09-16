@@ -33,6 +33,18 @@ const admin = require("../config/firebase");
 const SMTP = require("../models/smtpModel");
 const CategoryGroup = require("../models/categoryGroupModel");
 
+const normalizeQuizDescription = (desc) => {
+  if (!desc) return "";
+  const strip = (s) => String(s || "").replace(/<p><br><\/p>/g, "");
+  if (typeof desc === "object") {
+    return {
+      en: strip(desc.en),
+      hi: strip(desc.hi),
+    };
+  }
+  return strip(desc);
+};
+
 // Firebase Push Notification
 function sendPushNotification(registrationToken, title, body) {
   const message = {
@@ -1152,9 +1164,7 @@ const GetBanner = async (req, res) => {
             image: banners.image,
             quizId: {
               ...banners.quizId._doc,
-              description: banners.quizId.description
-                ? banners.quizId.description.replace(/<p><br><\/p>/g, "")
-                : "",
+              description: normalizeQuizDescription(banners.quizId?.description),
               totalQuestions: totalQuestions,
             },
           };
@@ -1255,9 +1265,7 @@ const GetQuizzes = async (req, res) => {
             points_require_to_play: quiz.points_require_to_play,
             timer_status: quiz.timer_status,
             minutes_per_quiz: quiz.minutes_per_quiz,
-            description: quiz.description
-              ? quiz.description.replace(/<p><br><\/p>/g, "")
-              : "",
+            description: normalizeQuizDescription(quiz.description),
             total_questions: totalQuestions,
             correct_ans_reward_per_question:
               quiz.correct_ans_reward_per_question,
@@ -1339,9 +1347,7 @@ const GetQuizByCategory = async (req, res) => {
             points_require_to_play: quiz.points_require_to_play,
             timer_status: quiz.timer_status,
             minutes_per_quiz: quiz.minutes_per_quiz,
-            description: quiz.description
-              ? quiz.description.replace(/<p><br><\/p>/g, "")
-              : "",
+            description: normalizeQuizDescription(quiz.description),
             total_questions: totalQuestions,
             correct_ans_reward_per_question:
               quiz.correct_ans_reward_per_question,
@@ -1494,9 +1500,7 @@ const GetQuestionsByQuizId = async (req, res) => {
           penalty_per_question: question.quizId?.penalty_per_question,
           name: question.quizId?.name,
           image: question.quizId?.image,
-          description: question.quizId?.description
-            ? String(question.quizId.description).replace(/<p><br><\/p>/g, "")
-            : "",
+          description: normalizeQuizDescription(question.quizId?.description),
         },
         question_type: question.question_type,
         image: question.image,
@@ -1632,9 +1636,7 @@ const GetFeaturedCategory = async (req, res) => {
                 points_require_to_play: quiz.points_require_to_play,
                 timer_status: quiz.timer_status,
                 minutes_per_quiz: quiz.minutes_per_quiz,
-                description: quiz.description
-                  ? quiz.description.replace(/<p><br><\/p>/g, "")
-                  : "",
+                description: normalizeQuizDescription(quiz.description),
                 total_questions: totalQuestions,
                 correct_ans_reward_per_question:
                   quiz.correct_ans_reward_per_question,
@@ -1918,9 +1920,7 @@ const StartQuiz = async (req, res) => {
           image: populatedQuiz.quizId.image,
           timer_status: populatedQuiz.quizId.timer_status,
           minutes_per_quiz: populatedQuiz.quizId.minutes_per_quiz,
-          description: populatedQuiz.quizId.description
-            ? populatedQuiz.quizId.description.replace(/<p><br><\/p>/g, "")
-            : "",
+          description: normalizeQuizDescription(populatedQuiz.quizId?.description),
         };
 
         // Construct the response object
@@ -1988,9 +1988,7 @@ const QuizHistory = async (req, res) => {
         userId: record.userId,
         quizDetails: {
           ...record.quizId._doc,
-          description: record.quizId.description
-            ? record.quizId.description.replace(/<p><br><\/p>/g, "")
-            : "",
+          description: normalizeQuizDescription(record.quizId?.description),
         },
         questionDetails: record.questionDetails,
         total_questions: record.total_questions,
@@ -2101,7 +2099,7 @@ const LeaderBoard = async (req, res) => {
         // Keep all displayed values from the same best attempt. Grouping each
         // field with $max can combine the score from one attempt with the
         // correct-answer count from another attempt.
-        $sort: { userId: 1, score: -1, createdAt: -1 },
+        $sort: { userId: 1, correct_answers: -1, score: -1, createdAt: -1 },
       },
       {
         $group: {
@@ -2110,7 +2108,7 @@ const LeaderBoard = async (req, res) => {
         },
       },
       {
-        $sort: { "bestAttempt.score": -1 },
+        $sort: { "bestAttempt.correct_answers": -1, "bestAttempt.score": -1 },
       },
       {
         $limit: 5,
@@ -2231,7 +2229,10 @@ const GetUserRank = async (req, res) => {
         },
       },
       {
-        $group: { _id: null, bestScore: { $max: "$score" } },
+        $sort: { correct_answers: -1, score: -1 },
+      },
+      {
+        $group: { _id: null, bestCorrect: { $first: "$correct_answers" }, bestScore: { $first: "$score" } },
       },
     ]);
     if (bestScores.length === 0) {
@@ -2239,17 +2240,21 @@ const GetUserRank = async (req, res) => {
         data: { success: 0, message: "No attempt found for this quiz", error: 1 },
       });
     }
+    const userBestCorrect = bestScores.length > 0 ? bestScores[0].bestCorrect : 0;
     const userBestScore = bestScores.length > 0 ? bestScores[0].bestScore : 0;
     const participantScores = await UserQuiz.aggregate([
       { $match: { quizId: quizObjectId } },
-      { $group: { _id: "$userId", bestScore: { $max: "$score" } } },
+      { $sort: { correct_answers: -1, score: -1 } },
+      { $group: { _id: "$userId", bestCorrect: { $first: "$correct_answers" }, bestScore: { $first: "$score" } } },
     ]);
     const totalParticipants = participantScores.length;
     const betterParticipants = participantScores.filter(
-      (participant) => Number(participant.bestScore || 0) > Number(userBestScore || 0),
+      (p) => Number(p.bestCorrect || 0) > Number(userBestCorrect || 0) ||
+             (Number(p.bestCorrect || 0) === Number(userBestCorrect || 0) && Number(p.bestScore || 0) > Number(userBestScore || 0)),
     ).length;
     const lowerScoringParticipants = participantScores.filter(
-      (participant) => Number(participant.bestScore || 0) < Number(userBestScore || 0),
+      (p) => Number(p.bestCorrect || 0) < Number(userBestCorrect || 0) ||
+             (Number(p.bestCorrect || 0) === Number(userBestCorrect || 0) && Number(p.bestScore || 0) < Number(userBestScore || 0)),
     ).length;
     const userRank = betterParticipants + 1;
     // A percentile is not meaningful with only one participant. Return null
@@ -2330,9 +2335,7 @@ const GetFavouriteQuiz = async (req, res) => {
         userId: favourite.userId,
         quizId: {
           ...favourite.quizId._doc,
-          description: favourite.quizId.description
-            ? favourite.quizId.description.replace(/<p><br><\/p>/g, "")
-            : "",
+          description: normalizeQuizDescription(favourite.quizId?.description),
         },
       }));
       return res.json({
@@ -2502,7 +2505,12 @@ const GetQuizBySubcategory = async (req, res) => {
     const quizzes = await Quiz.find({ subcategoryId, is_active: 1 }).sort({
       createdAt: -1,
     });
-    res.json({ quizzes });
+    const normalizedQuizzes = quizzes.map((q) => {
+      const obj = q.toObject ? q.toObject() : { ...q };
+      obj.description = normalizeQuizDescription(obj.description);
+      return obj;
+    });
+    res.json({ quizzes: normalizedQuizzes });
   } catch (err) {
     res.status(500).json({ quizzes: [] });
   }

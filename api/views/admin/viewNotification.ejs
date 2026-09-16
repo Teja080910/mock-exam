@@ -16,55 +16,92 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-12 grid-margin stretch-card">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover" id="server-notification-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Sr No</th>
-                                                        <th>Title</th>
-                                                        <th>Description</th>
-                                                        <th>Image</th>
-                                                        <th>Sent At</th>
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% notifications.forEach(function(notification, i){ %>
-                                                        <tr>
-                                                            <td class="align-center">
-                                                                <strong><%= (currentPage - 1) * limit + i + 1 %></strong>
-                                                            </td>
-                                                            <td>
-                                                                <strong><%= notification.title %></strong>
-                                                            </td>
-                                                            <td>
-                                                                <%- notification.description %>
-                                                            </td>
-                                                            <td>
-                                                                <% if (notification.image) { %>
-                                                                    <img src="/assets/userImages/<%= notification.image %>" width="60" height="40" style="object-fit:cover;border-radius:6px;" />
-                                                                <% } else { %>
-                                                                    <span class="text-muted">-</span>
-                                                                <% } %>
-                                                            </td>
-                                                            <td>
-                                                                <%= notification.createdAt.toLocaleString() %>
-                                                            </td>
-                                                            <td>
-                                                                <a href="#" class="text-info me-3 btn-view-notification" data-title="<%= notification.title %>" data-description="<%= notification.description %>" data-image="<%= notification.image || '' %>" data-sent-at="<%= notification.createdAt.toLocaleString() %>" data-bs-toggle="modal" data-bs-target="#viewNotificationModal"><i class="bx bx-show"></i></a>
-                                                            </td>
-                                                        </tr>
-                                                    <% }); %>
-                                        </tbody>
-                                    </table>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card mb-4">
+                                <div class="card-header pb-0">
+                                    <h5 class="card-title mb-0">Filter Notifications</h5>
                                 </div>
+                                <div class="card-body pt-3">
+                                    <form method="get" action="/view-notification" id="notificationFilterForm">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-12">
+                                                <label class="form-label text-muted small fw-semibold">Search</label>
+                                                <div class="input-group">
+                                                    <input type="text" name="search" class="form-control" placeholder="Search notification title or description..." value="<%= typeof filters !== 'undefined' ? filters.search : '' %>" />
+                                                    <button type="submit" class="btn btn-primary"><i class="bx bx-search"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 d-flex justify-content-end gap-2">
+                                                <% if (typeof filters !== 'undefined' && filters.search) { %>
+                                                    <a href="/view-notification" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x"></i> Clear Filters</a>
+                                                <% } %>
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt"></i> Apply Filter</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="server-notification-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr No</th>
+                                                    <th>Title</th>
+                                                    <th>Description</th>
+                                                    <th>Image</th>
+                                                    <th>Sent At</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (notifications.length === 0) { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center py-4 text-muted">
+                                                            <i class="bx bx-info-circle fs-3 d-block mb-2"></i>
+                                                            No notifications found matching your filter criteria.
+                                                        </td>
+                                                    </tr>
+                                                <% } %>
+                                                <% notifications.forEach(function(notification, i){ %>
+                                                    <tr>
+                                                        <td class="align-center">
+                                                            <strong><%= (currentPage - 1) * limit + i + 1 %></strong>
+                                                        </td>
+                                                        <td>
+                                                            <strong><%= notification.title %></strong>
+                                                        </td>
+                                                        <td>
+                                                            <%- notification.description %>
+                                                        </td>
+                                                        <td>
+                                                            <% if (notification.image) { %>
+                                                                <img src="/assets/userImages/<%= notification.image %>" width="60" height="40" style="object-fit:cover;border-radius:6px;" />
+                                                            <% } else { %>
+                                                                <span class="text-muted">-</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <%= notification.createdAt.toLocaleString() %>
+                                                        </td>
+                                                        <td>
+                                                            <a href="#" class="text-info me-3 btn-view-notification" data-title="<%= notification.title %>" data-description="<%= notification.description %>" data-image="<%= notification.image || '' %>" data-sent-at="<%= notification.createdAt.toLocaleString() %>" data-bs-toggle="modal" data-bs-target="#viewNotificationModal"><i class="bx bx-show"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+                                    <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeof extraParams !== 'undefined' ? extraParams : '' }) %>
 
+                                </div>
                             </div>
                         </div>
                     </div>

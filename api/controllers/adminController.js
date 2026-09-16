@@ -147,13 +147,51 @@ const viewUsers = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({ _id: req.session.user_id });
-            const page = parseInt(req.query.page) || 1;
+            const page = Math.max(1, parseInt(req.query.page, 10) || 1);
             const limit = 20;
             const skip = (page - 1) * limit;
-            const totalItems = await User.countDocuments();
-            const totalPages = Math.ceil(totalItems / limit);
-            const users = await User.find().populate('referred_by', 'username email').sort({ updatedAt: -1 }).skip(skip).limit(limit);
-            res.render("viewUsers", { users: users, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
+
+            const filter = {};
+            if (req.query.active !== undefined && req.query.active !== '') {
+                filter.active = req.query.active === '1' || req.query.active === 'true';
+            }
+            if (req.query.is_verified !== undefined && req.query.is_verified !== '') {
+                filter.is_verified = req.query.is_verified;
+            }
+            if (req.query.search && String(req.query.search).trim() !== '') {
+                const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                filter.$or = [
+                    { username: { $regex: term, $options: 'i' } },
+                    { email: { $regex: term, $options: 'i' } },
+                    { phone: { $regex: term, $options: 'i' } },
+                    { referral_code: { $regex: term, $options: 'i' } }
+                ];
+            }
+
+            const totalItems = await User.countDocuments(filter);
+            const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+            const users = await User.find(filter).populate('referred_by', 'username email').sort({ updatedAt: -1 }).skip(skip).limit(limit);
+
+            const params = [];
+            if (req.query.active !== undefined && req.query.active !== '') params.push(`active=${encodeURIComponent(req.query.active)}`);
+            if (req.query.is_verified !== undefined && req.query.is_verified !== '') params.push(`is_verified=${encodeURIComponent(req.query.is_verified)}`);
+            if (req.query.search) params.push(`search=${encodeURIComponent(req.query.search)}`);
+            const extraParams = params.length > 0 ? '&' + params.join('&') : '';
+
+            res.render("viewUsers", {
+                users: users,
+                loginData: loginData,
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalItems,
+                limit: limit,
+                extraParams: extraParams,
+                filters: {
+                    active: req.query.active !== undefined ? req.query.active : '',
+                    is_verified: req.query.is_verified !== undefined ? req.query.is_verified : '',
+                    search: req.query.search || ''
+                }
+            });
         });
     } catch (error) {
         console.log(error.message);

@@ -211,23 +211,13 @@ class _SubscriptionRequiredDialogWidgetState
                             borderRadius: BorderRadius.circular(11.0),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              '👑',
-                              style: TextStyle(fontSize: FFFont.f14),
-                            ),
-                            SizedBox(width: 5.0),
-                            Text(
-                              'View Plans',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: FFFont.f12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: const Text(
+                          'View Plans',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: FFFont.f12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

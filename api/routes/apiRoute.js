@@ -11,6 +11,7 @@ const CarouselBanner = require("../models/carouselBannerModel");
 const googleAuthController = require("../controllers/googleAuthController");
 const Subcategory = require("../models/subcategoryModel");
 const News = require("../models/newsModel");
+const Note = require("../models/noteModel");
 // Multer for file uploads
 const multer = require("multer");
 
@@ -247,6 +248,100 @@ api_route.post("/getallnews", async (req, res) => {
     res.json({
       data: { success: 0, message: "Error retrieving news.", error: 1 },
     });
+  }
+});
+
+// Get all note subjects (grouped case-insensitively)
+api_route.post("/getnotesubjects", async (req, res) => {
+  try {
+    const subjects = await Note.aggregate([
+      { $match: { is_active: 1 } },
+      { 
+        $group: { 
+          _id: { $toLower: { $trim: { input: "$subject" } } },
+          subjectName: { $first: "$subject" },
+          topics: { $addToSet: { $toLower: { $trim: { input: "$topic" } } } },
+          image: { $first: "$image" }
+        } 
+      },
+      {
+        $project: {
+          _id: 0,
+          subject: "$subjectName",
+          topicCount: { $size: "$topics" },
+          image: { $ifNull: ["$image", ""] }
+        }
+      },
+      { $sort: { subject: 1 } }
+    ]);
+    res.json({ data: { success: 1, message: "Subjects retrieved.", error: 0, subjects } });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ data: { success: 0, message: "Error retrieving subjects.", error: 1, subjects: [] } });
+  }
+});
+
+// Get topics for a subject (case-insensitive match)
+api_route.post("/getnotetopics", async (req, res) => {
+  try {
+    const { subject } = req.body;
+    const matchFilter = { is_active: 1 };
+    if (subject && subject.trim()) {
+      matchFilter.subject = { $regex: new RegExp(`^${subject.trim()}$`, 'i') };
+    }
+    const topics = await Note.aggregate([
+      { $match: matchFilter },
+      { 
+        $group: { 
+          _id: { $toLower: { $trim: { input: "$topic" } } },
+          topicName: { $first: "$topic" },
+          noteCount: { $sum: 1 }, 
+          image: { $first: "$image" } 
+        } 
+      },
+      {
+        $project: {
+          _id: 0,
+          topic: "$topicName",
+          noteCount: "$noteCount",
+          image: { $ifNull: ["$image", ""] }
+        }
+      },
+      { $sort: { topic: 1 } }
+    ]);
+    res.json({ data: { success: 1, message: "Topics retrieved.", error: 0, topics } });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ data: { success: 0, message: "Error retrieving topics.", error: 1, topics: [] } });
+  }
+});
+
+// Get notes for a topic (case-insensitive match)
+api_route.post("/getnotes", async (req, res) => {
+  try {
+    const { subject, topic } = req.body;
+    const filter = { is_active: 1 };
+    if (subject && subject.trim()) {
+      filter.subject = { $regex: new RegExp(`^${subject.trim()}$`, 'i') };
+    }
+    if (topic && topic.trim()) {
+      filter.topic = { $regex: new RegExp(`^${topic.trim()}$`, 'i') };
+    }
+    const notes = await Note.find(filter).sort({ updatedAt: -1 });
+    const notesData = notes.map(n => ({
+      _id: n._id,
+      title: n.title,
+      subject: n.subject,
+      topic: n.topic,
+      description: n.description || '',
+      image: n.image || '',
+      file: n.file || '',
+      createdAt: n.createdAt
+    }));
+    res.json({ data: { success: 1, message: "Notes retrieved.", error: 0, notes: notesData } });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ data: { success: 0, message: "Error retrieving notes.", error: 1, notes: [] } });
   }
 });
 

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
+import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'books_screen_model.dart';
@@ -41,6 +42,12 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final hasAccess = FFAppState().planStatus == 'active' &&
+        (FFAppState().subsIsSelectedAll ||
+            FFAppState().allowedCategoryIds.any((id) =>
+                id.toLowerCase() == 'ebook' ||
+                id.toLowerCase() == 'ebooks'));
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -51,7 +58,8 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
             backIcon: true,
           ),
           Expanded(
-            child: FutureBuilder<ApiCallResponse>(
+            child: hasAccess
+                ? FutureBuilder<ApiCallResponse>(
               future: _ebooksFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -248,6 +256,51 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                   },
                 );
               },
+            )
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 64,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Subscription Required',
+                    style: TextStyle(
+                      fontSize: FFFont.f18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Subscribe to access eBooks',
+                    style: TextStyle(
+                      fontSize: FFFont.f14,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => showSubscriptionDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('View Plans'),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

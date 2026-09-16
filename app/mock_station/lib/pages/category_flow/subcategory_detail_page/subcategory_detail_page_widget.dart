@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -148,26 +149,24 @@ class _SubcategoryDetailPageWidgetState
       'quiz_questions_screen',
       queryParameters: {
         'quizID': quiz['_id'],
-        'title': quiz['name'],
+        'title': quiz['name'] is Map
+            ? jsonEncode(quiz['name'])
+            : quiz['name']?.toString(),
         'image': quiz['image'] != null && quiz['image'].toString().isNotEmpty
             ? (quiz['image'].toString().startsWith('http')
                 ? quiz['image'].toString()
                 : '${FFAppConstants.imageBaseURL}${quiz['image']}')
             : '',
         'quizTime': quiz['minutes_per_quiz'].toString(),
-        'description': quiz['description'],
+        'description': quiz['description'] is Map
+            ? jsonEncode(quiz['description'])
+            : quiz['description']?.toString(),
       },
     );
   }
 
   Widget _buildQuizCard(Map quiz) {
-    return InkWell(
-      splashColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: () async => _openQuiz(quiz),
-      child: Container(
+    return Container(
         width: double.infinity,
         constraints: const BoxConstraints(minHeight: 176.0),
         decoration: BoxDecoration(
@@ -329,7 +328,6 @@ class _SubcategoryDetailPageWidgetState
             ],
           ),
         ),
-      ),
     );
   }
 

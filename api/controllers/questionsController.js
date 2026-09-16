@@ -632,17 +632,17 @@ const viewQuestions = async (req, res) => {
 // Edit questions
 const editQuestions = async (req, res) => {
     try {
-
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-questions';
         const category = await Category.find();
         const quizzes = await Quiz.find({});
         const editData = await Questions.findById({ _id: id }).populate('categoryId');
 
         if (editData) {
-            res.render('editQuestions', { editdata: editData,category:category,quiz:quizzes});
+            res.render('editQuestions', { editdata: editData, category: category, quiz: quizzes, returnUrl: returnUrl });
         }
         else {
-            res.render('editQuestions', { message: 'Questions Not Added' });
+            res.render('editQuestions', { message: 'Questions Not Added', returnUrl: returnUrl });
         }
 
     } catch (error) {
@@ -656,6 +656,7 @@ const UpdateQuestions = async(req,res)=> {
         let loginData = await Admin.findById({_id:req.session.user_id});
         if (loginData.is_admin == 1) {
             const id = req.body.id;
+            const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-questions';
             let optionData = {};
             let optionType;
             if (req.body.question_type == "text_only") {
@@ -728,7 +729,7 @@ const UpdateQuestions = async(req,res)=> {
                         }
                     });
                 const saveQuestions = await UpdateQuestions.save();
-                res.redirect('/view-questions');
+                res.redirect(returnUrl);
             }
             else{
                 const UpdateQuestions = await Questions.findByIdAndUpdate({ _id: id },
@@ -739,7 +740,7 @@ const UpdateQuestions = async(req,res)=> {
                         }
                     });
                 const saveQuestions = await UpdateQuestions.save();
-                res.redirect('/view-questions');
+                res.redirect(returnUrl);
             }
         }
         else {
@@ -755,11 +756,12 @@ const UpdateQuestions = async(req,res)=> {
 const deleteQuestions = async(req,res)=> {
     try {
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-questions';
         const deleteQuestions = await Questions.deleteOne({_id:id});
         if (req.query.ajax === '1') {
             return res.json({ success: deleteQuestions.deletedCount > 0 });
         }
-        res.redirect('back');
+        res.redirect(returnUrl);
         
     } catch (error) {
         console.log(error.message); 
@@ -770,6 +772,7 @@ const deleteQuestions = async(req,res)=> {
 const activeStatus = async (req, res) => {
     try {
         const { id } = req.params;
+        const returnUrl = req.body.returnUrl || req.get('Referrer') || '/view-questions';
         const status = await Questions.findById(id);
         const is_active = req.body.is_active ? req.body.is_active : "false";
         if (!status) {
@@ -777,7 +780,7 @@ const activeStatus = async (req, res) => {
         }
         status.is_active = !status.is_active;
         await status.save();
-        res.redirect('/view-questions');
+        res.redirect(returnUrl);
 
     } catch (err) {
 

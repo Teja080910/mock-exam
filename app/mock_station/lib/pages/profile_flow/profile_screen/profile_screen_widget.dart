@@ -1,5 +1,5 @@
 import '/backend/api_requests/api_calls.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
+import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -367,7 +367,16 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     icon: Icons.menu_book_outlined,
                     label: 'eBook',
                     color: const Color(0xFF6366F1),
-                    onTap: () {
+                    onTap: () async {
+                      final hasAccess = FFAppState().planStatus == 'active' &&
+                          (FFAppState().subsIsSelectedAll ||
+                              FFAppState().allowedCategoryIds.any((id) =>
+                                  id.toLowerCase() == 'ebook' ||
+                                  id.toLowerCase() == 'ebooks'));
+                      if (!hasAccess) {
+                        await showSubscriptionDialog(context);
+                        return;
+                      }
                       context.pushNamed(BooksScreenWidget.routeName);
                     },
                   ),
@@ -376,7 +385,15 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     icon: Icons.sticky_note_2_outlined,
                     label: 'Notes',
                     color: const Color(0xFF06B6D4),
-                    onTap: () {
+                    onTap: () async {
+                      final hasAccess = FFAppState().planStatus == 'active' &&
+                          (FFAppState().subsIsSelectedAll ||
+                              FFAppState().allowedCategoryIds.any(
+                                  (id) => id.toLowerCase() == 'notes'));
+                      if (!hasAccess) {
+                        await showSubscriptionDialog(context);
+                        return;
+                      }
                       context.pushNamed(NotesScreenWidget.routeName);
                     },
                   ),

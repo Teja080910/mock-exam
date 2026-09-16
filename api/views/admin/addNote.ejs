@@ -1,0 +1,95 @@
+<%- include('../layout/header.ejs') %>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../layout/sidebar.ejs') %>
+        <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="py-3 mb-4">
+                            <span class="text-muted fw-light">Notes /</span> Add Note
+                        </h4>
+                        <div class="card mb-4">
+                            <form action="/add-note" method="post" enctype="multipart/form-data">
+                                <div class="card-body">
+                                    <% if (typeof message !== 'undefined' && message) { %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert"><%= message %>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                                    <% } %>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="subject">Subject</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="subject" list="subjectList" placeholder="e.g. Maths, GK, Science" required autocomplete="off" />
+                                            <datalist id="subjectList">
+                                                <% if (typeof subjects !== 'undefined' && subjects) { %>
+                                                    <% subjects.forEach(s => { %>
+                                                        <option value="<%= s %>"></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </datalist>
+                                            <small class="form-text text-muted">Select an existing subject or type a new one.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="topic">Topic</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="topic" list="topicList" placeholder="e.g. Number System, Percentage" required autocomplete="off" />
+                                            <datalist id="topicList">
+                                                <% if (typeof topics !== 'undefined' && topics) { %>
+                                                    <% topics.forEach(t => { %>
+                                                        <option value="<%= t %>"></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </datalist>
+                                            <small class="form-text text-muted">Select an existing topic or type a new one.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="title">Title</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="title" placeholder="Enter Note Title" required />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="description">Description</label>
+                                        <div class="col-sm-9">
+                                            <textarea class="form-control" name="description" rows="4" placeholder="Note content (supports HTML)"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="image">Topic Icon</label>
+                                        <div class="col-sm-9">
+                                            <input class="form-control" type="file" name="image" accept="image/*" />
+                                            <small class="form-text text-muted">Icon/image shown for this topic in the app.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="file">Note File</label>
+                                        <div class="col-sm-9">
+                                            <input class="form-control" type="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" />
+                                            <small class="form-text text-muted">PDF, document, or any file for the note content.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="is_active">Active</label>
+                                        <div class="col-sm-9">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pt-3">
+                                        <button type="submit" class="btn btn-primary me-2">Submit</button>
+                                        <a href="/view-notes" class="btn btn-outline-secondary">Back</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%- include('../layout/footer.ejs') %>
+        </div>
+    </div>
+</div>
+<%- include('../layout/footer.ejs') %>

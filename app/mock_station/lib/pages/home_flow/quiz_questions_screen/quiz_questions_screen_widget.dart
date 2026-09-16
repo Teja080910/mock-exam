@@ -262,26 +262,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     );
 
     final chapterLabel = chapter.trim();
-    final result = chapterLabel.isEmpty
-        ? htmlWidget
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  'Chapter: $chapterLabel',
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: FFFont.f12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              htmlWidget,
-            ],
-          );
+    final result = htmlWidget;
 
     _questionHtmlCache[cacheKey] = result;
     return result;
@@ -966,6 +947,31 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     return ((_questionTimeMilliseconds[index] ?? 0) / 1000).round();
   }
 
+  void _syncQuesListForResult() {
+    final apiQuestions = QuizGroup.getquestionsbyquizidApiCall
+            .questionDetailsList((_model.quizRes?.jsonBody ?? ''))
+            ?.toList() ??
+        [];
+    if (apiQuestions.isEmpty) return;
+    final rebuilt = apiQuestions.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final q = entry.value;
+      final userAns = userAnswersPerQuestion[idx];
+      return {
+        'question': q,
+        'user_answer': userAns ?? 'skipped',
+        'correct_answer': getJsonField(q, r'''$.answer'''),
+        'subcategoryName': getJsonField(q, r'''$.subcategoryName'''),
+        'subject': getJsonField(q, r'''$.subject'''),
+        'chapter': getJsonField(q, r'''$.chapter'''),
+        'markedForReview': _markedForReview.contains(idx),
+        'time_taken': _questionTimeSeconds(idx),
+      };
+    }).toList();
+    FFAppState().quesList = rebuilt;
+    FFAppState().quesReviewList = rebuilt.toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1078,6 +1084,106 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     }
     if (option is Map && option['text'] is String) {
       return option['text'] as String;
+    }
+    return '';
+  }
+
+  String _resolveBilingualString(String? raw, String lang) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    final trimmed = raw.trim();
+
+    // 1. Try standard JSON decode
+    try {
+      final decoded = jsonDecode(trimmed);
+      if (decoded is Map) {
+        final en = decoded['en']?.toString() ?? '';
+        final hi = decoded['hi']?.toString() ?? '';
+        final picked = biPick(en, hi, lang);
+        if (picked.trim().isNotEmpty) return picked;
+      }
+    } catch (_) {}
+
+    // 2. Try regex extraction for Dart Map.toString() e.g. {en: ..., hi: ...}
+    if (trimmed.startsWith('{') && (trimmed.contains('en:') || trimmed.contains('hi:'))) {
+      if (lang == 'hi') {
+        final hiMatch = RegExp(r'hi:\s*(.*?)(?:,\s*en:|\}$)', dotAll: true).firstMatch(trimmed);
+        if (hiMatch != null && hiMatch.group(1)!.trim().isNotEmpty) {
+          return hiMatch.group(1)!.trim();
+        }
+      }
+      final enMatch = RegExp(r'en:\s*(.*?)(?:,\s*hi:|\}$)', dotAll: true).firstMatch(trimmed);
+      if (enMatch != null && enMatch.group(1)!.trim().isNotEmpty) {
+        return enMatch.group(1)!.trim();
+      }
+    }
+
+    // 3. Try regex extraction for JSON with escaped quotes or lenient match
+    if (trimmed.contains('"en"') || trimmed.contains('"hi"')) {
+      final pattern = lang == 'hi'
+          ? RegExp(r'"hi"\s*:\s*"(.*?)(?<!\\)"', dotAll: true)
+          : RegExp(r'"en"\s*:\s*"(.*?)(?<!\\)"', dotAll: true);
+      final match = pattern.firstMatch(trimmed);
+      if (match != null && match.group(1)!.trim().isNotEmpty) {
+        return match.group(1)!
+            .replaceAll(r'\"', '"')
+            .replaceAll(r'\n', '\n')
+            .replaceAll(r'\r', '')
+            .replaceAll(r'\/', '/');
+      }
+      final fallbackPattern = lang == 'hi'
+          ? RegExp(r'"en"\s*:\s*"(.*?)(?<!\\)"', dotAll: true)
+          : RegExp(r'"hi"\s*:\s*"(.*?)(?<!\\)"', dotAll: true);
+      final fallbackMatch = fallbackPattern.firstMatch(trimmed);
+      if (fallbackMatch != null && fallbackMatch.group(1)!.trim().isNotEmpty) {
+        return fallbackMatch.group(1)!
+            .replaceAll(r'\"', '"')
+            .replaceAll(r'\n', '\n')
+            .replaceAll(r'\r', '')
+            .replaceAll(r'\/', '/');
+      }
+    }
+
+    return trimmed;
+  }
+
+  /// Resolves the quiz title dynamically according to the selected language.
+  String _getQuizTitle(dynamic questions) {
+    if (questions is List && questions.isNotEmpty) {
+      final quizIdObj = getJsonField(questions[0], r'$.quizId');
+      final nameObj = getJsonField(quizIdObj, r'$.name');
+      if (nameObj is Map) {
+        final en = nameObj['en']?.toString() ?? '';
+        final hi = nameObj['hi']?.toString() ?? '';
+        final picked = biPick(en, hi, _selectedLang);
+        if (picked.trim().isNotEmpty) return picked;
+      } else if (nameObj != null) {
+        final res = _resolveBilingualString(nameObj.toString(), _selectedLang);
+        if (res.trim().isNotEmpty) return res;
+      }
+    }
+    if (widget.title != null && widget.title!.isNotEmpty) {
+      return _resolveBilingualString(widget.title, _selectedLang);
+    }
+    return '';
+  }
+
+  /// Resolves the quiz description dynamically according to the selected language.
+  String _getQuizDescription(dynamic questions) {
+    if (questions is List && questions.isNotEmpty) {
+      final quizIdObj = getJsonField(questions[0], r'$.quizId');
+      final desc = getJsonField(quizIdObj, r'$.description');
+      if (desc is Map) {
+        final en = desc['en']?.toString() ?? '';
+        final hi = desc['hi']?.toString() ?? '';
+        final picked = biPick(en, hi, _selectedLang);
+        if (picked.trim().isNotEmpty) return picked;
+      } else if (desc != null) {
+        final res = _resolveBilingualString(desc.toString(), _selectedLang);
+        if (res.trim().isNotEmpty) return res;
+      }
+    }
+    if (widget.description != null && widget.description!.isNotEmpty) {
+      return _resolveBilingualString(widget.description, _selectedLang);
     }
     return '';
   }
@@ -1303,7 +1409,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                   const SizedBox(width: 8.0),
                                   Expanded(
                                     child: Text(
-                                      widget.title ?? '',
+                                      _getQuizTitle(questions),
                                       style: const TextStyle(
                                         color: Color(0xFF111827),
                                         fontSize: FFFont.f20,
@@ -1348,7 +1454,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                               custom_widgets.HtmlConverterExp(
                                 width: double.infinity,
                                 height: null,
-                                text: widget.description!,
+                                text: _getQuizDescription(questions),
                               ),
                               const SizedBox(height: 16.0),
                               const Divider(
@@ -1768,10 +1874,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                                     FocusManager.instance.primaryFocus?.unfocus();
                                                                                                                   },
                                                                                                                   child: TimeoutDialogWidget(
-                                                                                                                    istimeout: () async {
-                                                                                                                      FFAppState().clearCoinsCache();
-                                                                                                                      context.pushNamed(
-                                                                                                                        QuizResultWidget.routeName,
+                                                                                                                     istimeout: () async {
+                                                                                                                       FFAppState().clearCoinsCache();
+                                                                                                                       _syncQuesListForResult();
+                                                                                                                       context.pushNamed(
+                                                                                                                         QuizResultWidget.routeName,
                                                                                                                         queryParameters: {
                                                                                                                           'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
                                                                                                                           'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
@@ -2124,10 +2231,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           FocusManager.instance.primaryFocus?.unfocus();
                                                                                                         },
                                                                                                         child: TimeoutDialogWidget(
-                                                                                                          istimeout: () async {
-                                                                                                            FFAppState().clearCoinsCache();
-                                                                                                            context.pushNamed(
-                                                                                                              QuizResultWidget.routeName,
+                                                                                                           istimeout: () async {
+                                                                                                             FFAppState().clearCoinsCache();
+                                                                                                             _syncQuesListForResult();
+                                                                                                             context.pushNamed(
+                                                                                                               QuizResultWidget.routeName,
                                                                                                               queryParameters: {
                                                                                                                 'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
                                                                                                                 'wrongAnswer': serializeParam(FFAppState().wrongQues, ParamType.int),
@@ -3031,8 +3139,10 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                             .wrongQues += 1;
                                                                       }
                                                                     } else {
-                                                                      FFAppState()
-                                                                          .notAnswerQues += 1;
+                                                                      if (!_markedForReview.contains(_model.pageViewCurrentIndex)) {
+                                                                        FFAppState()
+                                                                            .notAnswerQues += 1;
+                                                                      }
                                                                       FFAppState()
                                                                           .addToNotAnswerQuestion({
                                                                         'question_title':
@@ -3095,13 +3205,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           quesList =
                                                                           [];
 
-                                                                      // Recalculate correct/wrong counts to ensure accuracy
-                                                                      int correctCount =
-                                                                          0;
-                                                                      int wrongCount =
-                                                                          0;
-                                                                      int skippedCount =
-                                                                          0;
+                                                                       // Recalculate correct/wrong counts to ensure accuracy
+                                                                       int correctCount =
+                                                                           0;
+                                                                       int wrongCount =
+                                                                           0;
+                                                                       int skippedCount =
+                                                                           0;
 
                                                                       // Helper function to normalize answer for comparison
                                                                       String normalizeAnswer(
@@ -3195,11 +3305,14 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                         final correctAnswer =
                                                                             _answerText(q);
 
-                                                                        // Count correct/wrong/skipped
-                                                                        if (userAnswer ==
-                                                                            'skipped') {
-                                                                          skippedCount++;
-                                                                        } else {
+                                                                         // Count correct/wrong/skipped/markedReview
+                                                                         final isMarkedForReview = _markedForReview.contains(i);
+                                                                         if (isMarkedForReview) {
+                                                                           // Marked for review questions are not counted as answered
+                                                                         } else if (userAnswer ==
+                                                                             'skipped') {
+                                                                           skippedCount++;
+                                                                         } else {
                                                                           final userKeyNormalized =
                                                                               normalizeAnswer(userAnswer);
                                                                           final correctAnswerNormalized =

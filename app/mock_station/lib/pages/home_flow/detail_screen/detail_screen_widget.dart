@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -56,10 +57,73 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
+  String _selectedLang = 'en';
+
+  String _resolveBilingualText(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    final trimmed = raw.trim();
+
+    // 1. Try standard JSON decode
+    try {
+      final decoded = jsonDecode(trimmed);
+      if (decoded is Map) {
+        final en = decoded['en']?.toString() ?? '';
+        final hi = decoded['hi']?.toString() ?? '';
+        final picked = _selectedLang == 'hi'
+            ? (hi.trim().isNotEmpty ? hi : en)
+            : (en.trim().isNotEmpty ? en : hi);
+        if (picked.trim().isNotEmpty) return picked;
+      }
+    } catch (_) {}
+
+    // 2. Try regex extraction for Dart Map.toString() e.g. {en: ..., hi: ...}
+    if (trimmed.startsWith('{') && (trimmed.contains('en:') || trimmed.contains('hi:'))) {
+      if (_selectedLang == 'hi') {
+        final hiMatch = RegExp(r'hi:\s*(.*?)(?:,\s*en:|\}$)', dotAll: true).firstMatch(trimmed);
+        if (hiMatch != null && hiMatch.group(1)!.trim().isNotEmpty) {
+          return hiMatch.group(1)!.trim();
+        }
+      }
+      final enMatch = RegExp(r'en:\s*(.*?)(?:,\s*hi:|\}$)', dotAll: true).firstMatch(trimmed);
+      if (enMatch != null && enMatch.group(1)!.trim().isNotEmpty) {
+        return enMatch.group(1)!.trim();
+      }
+    }
+
+    // 3. Try regex extraction for JSON with escaped quotes or lenient match
+    if (trimmed.contains('"en"') || trimmed.contains('"hi"')) {
+      final pattern = _selectedLang == 'hi'
+          ? RegExp(r'"hi"\s*:\s*"(.*?)(?<!\\)"', dotAll: true)
+          : RegExp(r'"en"\s*:\s*"(.*?)(?<!\\)"', dotAll: true);
+      final match = pattern.firstMatch(trimmed);
+      if (match != null && match.group(1)!.trim().isNotEmpty) {
+        return match.group(1)!
+            .replaceAll(r'\"', '"')
+            .replaceAll(r'\n', '\n')
+            .replaceAll(r'\r', '')
+            .replaceAll(r'\/', '/');
+      }
+      final fallbackPattern = _selectedLang == 'hi'
+          ? RegExp(r'"en"\s*:\s*"(.*?)(?<!\\)"', dotAll: true)
+          : RegExp(r'"hi"\s*:\s*"(.*?)(?<!\\)"', dotAll: true);
+      final fallbackMatch = fallbackPattern.firstMatch(trimmed);
+      if (fallbackMatch != null && fallbackMatch.group(1)!.trim().isNotEmpty) {
+        return fallbackMatch.group(1)!
+            .replaceAll(r'\"', '"')
+            .replaceAll(r'\n', '\n')
+            .replaceAll(r'\r', '')
+            .replaceAll(r'\/', '/');
+      }
+    }
+
+    return trimmed;
+  }
 
   @override
   void initState() {
     super.initState();
+    _selectedLang =
+        FFAppState().quizLang.isNotEmpty ? FFAppState().quizLang : 'en';
     _model = createModel(context, () => DetailScreenModel());
 
     // On page load action.
@@ -178,6 +242,71 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                           ),
                         ),
                       ),
+                      Align(
+                        alignment: AlignmentDirectional(1.0, 0.0),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              0.0, 68.0, 16.0, 0.0),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20.0),
+                              onTap: () {
+                                setState(() {
+                                  _selectedLang =
+                                      _selectedLang == 'en' ? 'hi' : 'en';
+                                  FFAppState().quizLang = _selectedLang;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0, vertical: 8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 6.0,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 20.0,
+                                      height: 20.0,
+                                      child: SvgPicture.asset(
+                                        'assets/images/google_translate_icon.svg',
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6.0),
+                                    Text(
+                                      _selectedLang == 'hi'
+                                          ? 'हिन्दी'
+                                          : 'English',
+                                      style: const TextStyle(
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4.0),
+                                    const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 18.0,
+                                      color: Color(0xFF2563EB),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   Expanded(
@@ -237,7 +366,7 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       16.0, 0.0, 0.0, 0.0),
                                   child: Text(
-                                    widget.name!,
+                                    _resolveBilingualText(widget.name),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -563,8 +692,7 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                                       .addToEnd(SizedBox(width: 16.0)),
                                 ),
                               ),
-                              if (widget.description != null &&
-                                  widget.description != '')
+                              if (_resolveBilingualText(widget.description).isNotEmpty)
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       16.0, 16.0, 16.0, 0.0),
@@ -584,18 +712,87 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
                                                   16.0, 0.0, 16.0, 0.0),
-                                          child: Text(
-                                            'Description',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Roboto',
-                                                  fontSize: FFFont.f18,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.bold,
-                                                  useGoogleFonts: false,
-                                                  lineHeight: 1.5,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Description',
+                                                style: FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .override(
+                                                      fontFamily: 'Roboto',
+                                                      fontSize: FFFont.f18,
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: FontWeight.bold,
+                                                      useGoogleFonts: false,
+                                                      lineHeight: 1.5,
+                                                    ),
+                                              ),
+                                              Material(
+                                                color: Colors.transparent,
+                                                child: InkWell(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8.0),
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _selectedLang =
+                                                          _selectedLang == 'en'
+                                                              ? 'hi'
+                                                              : 'en';
+                                                      FFAppState().quizLang =
+                                                          _selectedLang;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8.0,
+                                                        vertical: 4.0),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                      border: Border.all(
+                                                          color: const Color(
+                                                              0xFFD1D5DB)),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        SizedBox(
+                                                          width: 16.0,
+                                                          height: 16.0,
+                                                          child:
+                                                              SvgPicture.asset(
+                                                            'assets/images/google_translate_icon.svg',
+                                                            fit: BoxFit.contain,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 4.0),
+                                                        Text(
+                                                          _selectedLang == 'hi'
+                                                              ? 'हिन्दी'
+                                                              : 'English',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize:
+                                                                FFFont.f12,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Color(
+                                                                0xFF2563EB),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
                                                 ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                         Padding(
@@ -605,8 +802,8 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                                           child:
                                               custom_widgets.HtmlConverterExp(
                                             width: double.infinity,
-                                            height: 50.0,
-                                            text: widget.description!,
+                                            height: null,
+                                            text: _resolveBilingualText(widget.description),
                                           ),
                                         ),
                                       ].addToStart(SizedBox(height: 16.0)),

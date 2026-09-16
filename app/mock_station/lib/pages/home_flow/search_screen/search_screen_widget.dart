@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '/backend/api_requests/api_calls.dart';
@@ -421,11 +422,15 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       QuizQuestionsScreenWidget.routeName,
       queryParameters: {
         'quizID': quizId,
-        'title': _firstValue([quiz['name'], quiz['title']]),
+        'title': _firstValue([quiz['name'], quiz['title']]) is Map
+            ? jsonEncode(_firstValue([quiz['name'], quiz['title']]))
+            : _firstValue([quiz['name'], quiz['title']]),
         'catId': categoryId,
         'image': _value(quiz['image']),
         'quizTime': _value(quiz['minutes_per_quiz']),
-        'description': _value(quiz['description']),
+        'description': quiz['description'] is Map
+            ? jsonEncode(quiz['description'])
+            : _value(quiz['description']),
       },
     );
   }

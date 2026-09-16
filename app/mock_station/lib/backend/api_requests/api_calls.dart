@@ -98,6 +98,9 @@ class QuizGroup {
   static GetReferralCashbacksCall getReferralCashbacksCall = GetReferralCashbacksCall();
   static ApplyReferralCodeCall applyReferralCodeCall = ApplyReferralCodeCall();
   static GetAllNewsApiCall getAllNewsApiCall = GetAllNewsApiCall();
+  static GetNoteSubjectsCall getNoteSubjectsCall = GetNoteSubjectsCall();
+  static GetNoteTopicsCall getNoteTopicsCall = GetNoteTopicsCall();
+  static GetNotesCall getNotesCall = GetNotesCall();
 }
 
 class CheckregistereduserApiCall {
@@ -2828,4 +2831,75 @@ class GetAllNewsApiCall {
 
   List? newsList(dynamic response) =>
       response != null && response['news'] is List ? response['news'] as List : [];
+}
+
+class GetNoteSubjectsCall {
+  Future<ApiCallResponse> call() async {
+    final baseUrl = QuizGroup.getBaseUrl();
+    return ApiManager.instance.makeApiCall(
+      callName: 'GetNoteSubjects',
+      apiUrl: '${baseUrl}getnotesubjects',
+      callType: ApiCallType.POST,
+      headers: {'Content-Type': 'application/json'},
+      params: {},
+      bodyType: BodyType.NONE,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  List? subjects(dynamic response) =>
+      getJsonField(response, r'$.data.subjects', true) as List?;
+}
+
+class GetNoteTopicsCall {
+  Future<ApiCallResponse> call({String? subject = ''}) async {
+    final baseUrl = QuizGroup.getBaseUrl();
+    return ApiManager.instance.makeApiCall(
+      callName: 'GetNoteTopics',
+      apiUrl: '${baseUrl}getnotetopics',
+      callType: ApiCallType.POST,
+      headers: {'Content-Type': 'application/json'},
+      params: {},
+      body: '{\"subject\": \"$subject\"}',
+      bodyType: BodyType.JSON,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  List? topics(dynamic response) =>
+      getJsonField(response, r'$.data.topics', true) as List?;
+}
+
+class GetNotesCall {
+  Future<ApiCallResponse> call({String? subject = '', String? topic = ''}) async {
+    final baseUrl = QuizGroup.getBaseUrl();
+    return ApiManager.instance.makeApiCall(
+      callName: 'GetNotes',
+      apiUrl: '${baseUrl}getnotes',
+      callType: ApiCallType.POST,
+      headers: {'Content-Type': 'application/json'},
+      params: {},
+      body: '{\"subject\": \"$subject\", \"topic\": \"$topic\"}',
+      bodyType: BodyType.JSON,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  List? notes(dynamic response) =>
+      getJsonField(response, r'$.data.notes', true) as List?;
 }

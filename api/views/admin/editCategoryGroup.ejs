@@ -13,6 +13,11 @@
                             <form action="/edit-category-group" method="post" enctype="multipart/form-data">
                                 <div class="card-body">
                                     <input type="hidden" name="id" value="<%= group._id %>" />
+                                    <input type="hidden" name="returnUrl" value="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '' %>" />
+                                    <% if (typeof error !== 'undefined' && error) { %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert"><%= error %>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                                    <% } %>
                                     <div class="row mb-3">
                                         <label class="col-sm-3 col-form-label" for="displayName">Display Name</label>
                                         <div class="col-sm-9">
@@ -69,7 +74,7 @@
                                         <div class="col-sm-3"></div>
                                         <div class="col-sm-9">
                                             <button type="submit" class="btn btn-primary">Save</button>
-                                            <a href="/view-category-groups" class="ms-3 btn btn-dark">Back</a>
+                                            <a href="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '/view-category-groups' %>" class="ms-3 btn btn-dark">Back</a>
                                         </div>
                                     </div>
                                 </div>

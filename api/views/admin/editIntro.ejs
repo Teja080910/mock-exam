@@ -29,6 +29,7 @@
                                                             <div class="input-group input-group-merge">
                                                                 <input type="text" class="form-control" name="title" value="<%=intro.title %>" placeholder="Enter Title"  pattern="^[A-Za-z0-9 ]+$" required/>
                                                                 <input type="hidden" name="id" value="<%= intro._id %>" >
+                                                                <input type="hidden" name="returnUrl" value="<%= typeof returnUrl !== 'undefined' ? returnUrl : '' %>">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -65,6 +66,7 @@
                                                     <div class="col-sm-2 mt-2"></div>
                                                     <div class="col-sm-10 mt-5">
                                                         <button type="submit" class="btn btn-primary" onclick="myFunction();">Save</button>
+                                                        <a href="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '/view-intro' %>" class="ms-3 btn btn-dark">Back</a>
                                                     </div>
                                                 </div>
                                             </div>

@@ -46,13 +46,39 @@ const loadNotification = async (req, res) => {
 const viewNotification = async (req, res) => {
     try {
         const loginData = await Admin.findById({ _id: req.session.user_id });
-        const page = parseInt(req.query.page) || 1;
+        const page = Math.max(1, parseInt(req.query.page, 10) || 1);
         const limit = 20;
         const skip = (page - 1) * limit;
-        const totalItems = await common_Notification.countDocuments();
-        const totalPages = Math.ceil(totalItems / limit);
-        const notifications = await common_Notification.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-        res.render('viewNotification', { notifications: notifications, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
+
+        const filter = {};
+        if (req.query.search && String(req.query.search).trim() !== '') {
+            const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { title: { $regex: term, $options: 'i' } },
+                { description: { $regex: term, $options: 'i' } }
+            ];
+        }
+
+        const totalItems = await common_Notification.countDocuments(filter);
+        const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+        const notifications = await common_Notification.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
+
+        const params = [];
+        if (req.query.search) params.push(`search=${encodeURIComponent(req.query.search)}`);
+        const extraParams = params.length > 0 ? '&' + params.join('&') : '';
+
+        res.render('viewNotification', {
+            notifications: notifications,
+            loginData: loginData,
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            limit: limit,
+            extraParams: extraParams,
+            filters: {
+                search: req.query.search || ''
+            }
+        });
     } catch (error) {
         console.log(error.message);
     }

@@ -8,6 +8,50 @@
                     </h4>
                     <div class="row">
                         <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card mb-4">
+                                <div class="card-header pb-0">
+                                    <h5 class="card-title mb-0">Filter Users</h5>
+                                </div>
+                                <div class="card-body pt-3">
+                                    <form method="get" action="/view-users" id="userFilterForm">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-3">
+                                                <label class="form-label text-muted small fw-semibold">Status</label>
+                                                <select name="active" class="form-select" onchange="document.getElementById('userFilterForm').submit()">
+                                                    <option value="">All Status</option>
+                                                    <option value="1" <%= typeof filters !== 'undefined' && (filters.active === '1' || filters.active === 'true' || filters.active === true) ? 'selected' : '' %>>Active</option>
+                                                    <option value="0" <%= typeof filters !== 'undefined' && (filters.active === '0' || filters.active === 'false' || filters.active === false) ? 'selected' : '' %>>Deactivated</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label text-muted small fw-semibold">Verification</label>
+                                                <select name="is_verified" class="form-select" onchange="document.getElementById('userFilterForm').submit()">
+                                                    <option value="">All Verification</option>
+                                                    <option value="1" <%= typeof filters !== 'undefined' && filters.is_verified === '1' ? 'selected' : '' %>>Verified</option>
+                                                    <option value="0" <%= typeof filters !== 'undefined' && filters.is_verified === '0' ? 'selected' : '' %>>Unverified</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-muted small fw-semibold">Search</label>
+                                                <div class="input-group">
+                                                    <input type="text" name="search" class="form-control" placeholder="Search by name, email, phone, referral code..." value="<%= typeof filters !== 'undefined' ? filters.search : '' %>" />
+                                                    <button type="submit" class="btn btn-primary"><i class="bx bx-search"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 d-flex justify-content-end gap-2">
+                                                <% if (typeof filters !== 'undefined' && (filters.active !== '' || filters.is_verified !== '' || filters.search)) { %>
+                                                    <a href="/view-users" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x"></i> Clear Filters</a>
+                                                <% } %>
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt"></i> Apply Filter</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -27,6 +71,14 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                <% if (users.length === 0) { %>
+                                                    <tr>
+                                                        <td colspan="10" class="text-center py-4 text-muted">
+                                                            <i class="bx bx-info-circle fs-3 d-block mb-2"></i>
+                                                            No users found matching your filter criteria.
+                                                        </td>
+                                                    </tr>
+                                                <% } %>
                                                 <% if(users.length> 0) {
                                                     for(let i=0; i < users.length; i++) { %>
                                                         <tr>
@@ -98,7 +150,7 @@
                                                 </table>
                                             </div>
 
-                                            <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+                                            <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeof extraParams !== 'undefined' ? extraParams : '' }) %>
 
                                         </div>
                                     </div>

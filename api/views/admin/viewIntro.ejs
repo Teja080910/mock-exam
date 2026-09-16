@@ -14,86 +14,132 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-12 grid-margin stretch-card">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover" id="server-intro-table">
-                                                <thead>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card mb-4">
+                                <div class="card-header pb-0">
+                                    <h5 class="card-title mb-0">Filter Intro</h5>
+                                </div>
+                                <div class="card-body pt-3">
+                                    <form method="get" action="/view-intro" id="introFilterForm">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-3">
+                                                <label class="form-label text-muted small fw-semibold">Status</label>
+                                                <select name="is_active" class="form-select" onchange="document.getElementById('introFilterForm').submit()">
+                                                    <option value="">All Status</option>
+                                                    <option value="1" <%= typeof filters !== 'undefined' && filters.is_active === '1' ? 'selected' : '' %>>Enabled</option>
+                                                    <option value="0" <%= typeof filters !== 'undefined' && filters.is_active === '0' ? 'selected' : '' %>>Disabled</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <label class="form-label text-muted small fw-semibold">Search</label>
+                                                <div class="input-group">
+                                                    <input type="text" name="search" class="form-control" placeholder="Search intro title or description..." value="<%= typeof filters !== 'undefined' ? filters.search : '' %>" />
+                                                    <button type="submit" class="btn btn-primary"><i class="bx bx-search"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 d-flex justify-content-end gap-2">
+                                                <% if (typeof filters !== 'undefined' && (filters.is_active !== '' || filters.search)) { %>
+                                                    <a href="/view-intro" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x"></i> Clear Filters</a>
+                                                <% } %>
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt"></i> Apply Filter</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="server-intro-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr No</th>
+                                                    <th>Image</th>
+                                                    <th>Title</th>
+                                                    <th>Created At</th>
+                                                    <th>Updated At</th>
+                                                    <th>Is Enable</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (intro.length === 0) { %>
                                                     <tr>
-                                                        <th>Sr No</th>
-                                                        <th>Image</th>
-                                                        <th>Title</th>
-                                                        <th>Created At</th>
-                                                        <th>Updated At</th>
-                                                        <th>Is Enable</th>
-                                                        <th>Action</th>
+                                                        <td colspan="7" class="text-center py-4 text-muted">
+                                                            <i class="bx bx-info-circle fs-3 d-block mb-2"></i>
+                                                            No intro items found matching your filter criteria.
+                                                        </td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% intro.forEach(function(allIntro, i){ %>
-                                                        <tr>
-                                                            <td><%= (currentPage - 1) * limit + i + 1 %></td>
-                                                            <td>
-                                                                <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
-                                                                    <li data-bs-toggle="tooltip"
-                                                                        data-popup="tooltip-custom"
-                                                                        data-bs-placement="top"
-                                                                        class="avatar def-avatar avatar-xs pull-up" title="<%= allIntro.title %>"
-                                                                        data-bs-original-title="">
-                                                                        <img src="./assets/userImages/<%= allIntro.image %>"
-                                                                            alt="Avatar" class="rounded-circle">
-                                                                    </li>
-                                                                </ul>
+                                                <% } %>
+                                                <% const currentViewUrl = '/view-intro?page=' + currentPage + (typeof extraParams !== 'undefined' ? extraParams : ''); %>
+                                                <% intro.forEach(function(allIntro, i){ %>
+                                                    <tr>
+                                                        <td><%= (currentPage - 1) * limit + i + 1 %></td>
+                                                        <td>
+                                                            <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                                                                <li data-bs-toggle="tooltip"
+                                                                    data-popup="tooltip-custom"
+                                                                    data-bs-placement="top"
+                                                                    class="avatar def-avatar avatar-xs pull-up" title="<%= allIntro.title %>"
+                                                                    data-bs-original-title="">
+                                                                    <img src="./assets/userImages/<%= allIntro.image %>"
+                                                                        alt="Avatar" class="rounded-circle">
+                                                                </li>
+                                                            </ul>
+                                                        </td>
+                                                        <td>
+                                                            <strong> <%= allIntro.title %></strong>
+                                                        </td>
+                                                        <td>
+                                                            <strong><%= new Date(allIntro.createdAt).toLocaleDateString('en-GB', {day: '2-digit',month: '2-digit',year: 'numeric'}).replace(/\//g, '-') %></strong>
+                                                        </td>
+                                                        <td>
+                                                            <strong><%= new Date(allIntro.updatedAt).toLocaleDateString('en-GB', {day: '2-digit',month: '2-digit',year: 'numeric'}).replace(/\//g, '-') %></strong>                                                            </td>
+                                                        </td>
+                                                        <% if (loginData.is_admin == 1) { %>
+                                                            <td class="pe-0">
+                                                                <form action="/intro-is-active/<%= allIntro._id %>/toggle" id="featureForm" method="POST">
+                                                                    <input type="hidden" name="returnUrl" value="<%= currentViewUrl %>"/>
+                                                                    <a id="toggleButton" >
+                                                                        <div class="form-check form-switch mb-0">
+                                                                            <input type="hidden" name="title" value="<%= allIntro.title %>"/>
+                                                                            <input class="form-check-input" type="checkbox" name="is_active"  <% if(allIntro.is_active == 1) { %> checked <% }else{} %>>
+                                                                        </div>
+                                                                    </a>
+                                                                </form>                   
                                                             </td>
                                                             <td>
-                                                                <strong> <%= allIntro.title %></strong>
+                                                                <div class="d-flex gap-3">
+                                                                    <a href="#" class="text-info me-3 btn-view-intro" data-title="<%= allIntro.title %>" data-description="<%= allIntro.description %>" data-image="<%= allIntro.image %>" data-is-active="<%= allIntro.is_active %>" data-bs-toggle="modal" data-bs-target="#viewIntroModal"><i class="bx bx-show"></i></a>
+                                                                    <a href="/edit-intro?id=<%= allIntro._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
+                                                                    <a href="/delete-intro?id=<%= allIntro._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" onclick="return confirm('Are you sure want to delete this <%= allIntro.title %> ?' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
+                                                                </div>
+                                                            </td>
+                                                        <% } else { %>
+                                                            <td>
+                                                                <div class="form-check form-switch" onclick="alert('You have no access to change status..!!')">
+                                                                    <input class="form-check-input" type="checkbox" name="is_active"  <% if(allIntro.is_active==1) { %> checked <% }else{} %>disabled>
+                                                                </div>
                                                             </td>
                                                             <td>
-                                                                <strong><%= new Date(allIntro.createdAt).toLocaleDateString('en-GB', {day: '2-digit',month: '2-digit',year: 'numeric'}).replace(/\//g, '-') %></strong>
+                                                                <div class="d-flex gap-3">
+                                                                    <a href="#" class="text-info me-3 btn-view-intro" data-title="<%= allIntro.title %>" data-description="<%= allIntro.description %>" data-image="<%= allIntro.image %>" data-is-active="<%= allIntro.is_active %>" data-bs-toggle="modal" data-bs-target="#viewIntroModal"><i class="bx bx-show"></i></a>
+                                                                    <a href="/edit-intro?id=<%= allIntro._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a><a href="" onclick="return alert('You have no access to delete <%= allIntro.title %>.' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
+                                                                </div>
                                                             </td>
-                                                            <td>
-                                                                <strong><%= new Date(allIntro.updatedAt).toLocaleDateString('en-GB', {day: '2-digit',month: '2-digit',year: 'numeric'}).replace(/\//g, '-') %></strong>                                                            </td>
-                                                            </td>
-                                                            <% if (loginData.is_admin == 1) { %>
-                                                                <td class="pe-0">
-                                                                    <form action="/intro-is-active/<%= allIntro._id %>/toggle" id="featureForm" method="POST">
-                                                                        <a id="toggleButton" >
-                                                                            <div class="form-check form-switch mb-0">
-                                                                                <input type="hidden" name="title" value="<%= allIntro.title %>"/>
-                                                                                <input class="form-check-input" type="checkbox" name="is_active"  <% if(allIntro.is_active == 1) { %> checked <% }else{} %>>
-                                                                            </div>
-                                                                        </a>
-                                                                    </form>                   
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex gap-3">
-                                                                        <a href="#" class="text-info me-3 btn-view-intro" data-title="<%= allIntro.title %>" data-description="<%= allIntro.description %>" data-image="<%= allIntro.image %>" data-is-active="<%= allIntro.is_active %>" data-bs-toggle="modal" data-bs-target="#viewIntroModal"><i class="bx bx-show"></i></a>
-                                                                        <a href="/edit-intro?id=<%= allIntro._id %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
-                                                                        <a href="/delete-intro?id=<%= allIntro._id %>" onclick="return confirm('Are you sure want to delete this <%= allIntro.title %> ?' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
-                                                                    </div>
-                                                                </td>
-                                                            <% } else { %>
-                                                                <td>
-                                                                    <div class="form-check form-switch" onclick="alert('You have no access to change status..!!')">
-                                                                        <input class="form-check-input" type="checkbox" name="is_active"  <% if(allIntro.is_active==1) { %> checked <% }else{} %>disabled>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex gap-3">
-                                                                        <a href="#" class="text-info me-3 btn-view-intro" data-title="<%= allIntro.title %>" data-description="<%= allIntro.description %>" data-image="<%= allIntro.image %>" data-is-active="<%= allIntro.is_active %>" data-bs-toggle="modal" data-bs-target="#viewIntroModal"><i class="bx bx-show"></i></a>
-                                                                        <a href="/edit-intro?id=<%= allIntro._id %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a><a href="" onclick="return alert('You have no access to delete <%= allIntro.title %>.' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
-                                                                    </div>
-                                                                </td>
-                                                            <%  }  %>
-                                                        </tr>
-                                                    <% }); %>
-                                                </tbody>
-                                             </table>
-                                         </div>
+                                                        <%  }  %>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                         </table>
+                                     </div>
 
-                                         <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+                                     <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeof extraParams !== 'undefined' ? extraParams : '' }) %>
 
                                      </div>
                                  </div>

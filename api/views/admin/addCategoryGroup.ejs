@@ -12,6 +12,10 @@
                         <div class="card mb-4">
                             <form action="/add-category-group" method="post" enctype="multipart/form-data">
                                 <div class="card-body">
+                                    <% if (typeof error !== 'undefined' && error) { %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert"><%= error %>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                                    <% } %>
                                     <div class="row mb-3">
                                         <label class="col-sm-3 col-form-label" for="displayName">Display Name</label>
                                         <div class="col-sm-9">

@@ -59,6 +59,7 @@ const CarouselBannerController = require('../controllers/carouselBannerControlle
 const SubcategoryController = CategoryController;
 const categoryGroupController = require('../controllers/categoryGroupController');
 const NewsController = require('../controllers/newsController');
+const NoteController = require('../controllers/noteController');
 
 // Login
 admin_route.get('/', adminController.loginLoad);
@@ -226,6 +227,21 @@ admin_route.get('/edit-news', NewsController.editNews);
 admin_route.post('/edit-news', upload.single('image'), NewsController.updateNews);
 admin_route.get('/delete-news', NewsController.deleteNews);
 admin_route.post('/news-is-active/:id/toggle', NewsController.activeStatus);
+
+// Notes
+admin_route.get('/add-note', NoteController.loadNote);
+admin_route.post('/add-note', upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'file', maxCount: 1 }
+]), NoteController.addNote);
+admin_route.get('/view-notes', NoteController.viewNotes);
+admin_route.get('/edit-note', NoteController.editNote);
+admin_route.post('/edit-note', upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'file', maxCount: 1 }
+]), NoteController.updateNote);
+admin_route.get('/delete-note', NoteController.deleteNote);
+admin_route.post('/note-is-active/:id/toggle', NoteController.activeStatus);
 
 admin_route.get('*', function (req, res) {
   res.redirect('/');

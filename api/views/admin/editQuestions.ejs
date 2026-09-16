@@ -47,6 +47,7 @@
                                                                 </div>
                                                             </div>
                                                             <input type="hidden" name="id" value="<%= editdata._id %>">
+                                                            <input type="hidden" name="returnUrl" value="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '' %>">
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
@@ -496,6 +497,7 @@
                                             <div class="col-sm-1"></div>
                                             <div class="col-sm-11">
                                                 <button type="submit" class="btn btn-primary" onclick="myFunction();">Save</button>
+                                                <a href="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '/view-questions' %>" class="ms-3 btn btn-dark">Back</a>
                                             </div>
                                         </div>
                                     </div>

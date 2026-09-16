@@ -1,0 +1,154 @@
+<%- include('../layout/header.ejs') %>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../layout/sidebar.ejs') %>
+        <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="py-3 mb-4">
+                                <span class="text-muted fw-light">Notes /</span> View Notes
+                            </h4>
+                            <div class="btnwrap mb-4">
+                                <a href="/add-note" class="btn btn-primary"><i class="bx bx-plus"></i>Add New Note</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h5 class="card-title mb-0">Filter Notes</h5>
+                    </div>
+                    <div class="card-body pt-3">
+                        <form method="get" action="/view-notes" id="notesFilterForm">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small fw-semibold">Subject</label>
+                                    <select class="form-select" name="subject" onchange="document.getElementById('notesFilterForm').submit()">
+                                        <option value="">All Subjects</option>
+                                        <% if (typeof subjects !== 'undefined' && subjects.length > 0) { %>
+                                            <% subjects.forEach(function(s) { %>
+                                                <option value="<%= s %>" <%= filters.subject === s ? 'selected' : '' %>><%= s %></option>
+                                            <% }); %>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small fw-semibold">Topic</label>
+                                    <input type="text" class="form-control" name="topic" placeholder="Filter by topic..." value="<%= filters.topic %>" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small fw-semibold">Status</label>
+                                    <select name="is_active" class="form-select" onchange="document.getElementById('notesFilterForm').submit()">
+                                        <option value="">All Status</option>
+                                        <option value="1" <%= filters.is_active === '1' ? 'selected' : '' %>>Enabled</option>
+                                        <option value="0" <%= filters.is_active === '0' ? 'selected' : '' %>>Disabled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small fw-semibold">Search</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="search" placeholder="Search title..." value="<%= filters.search %>" />
+                                        <button type="submit" class="btn btn-primary"><i class="bx bx-search"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex justify-content-end gap-2">
+                                    <% if (filters.subject || filters.topic || filters.is_active !== '' || filters.search) { %>
+                                        <a href="/view-notes" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x"></i> Clear Filters</a>
+                                    <% } %>
+                                    <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt"></i> Apply Filter</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Subject</th>
+                                        <th>Topic</th>
+                                        <th>Title</th>
+                                        <th>Icon</th>
+                                        <th>File</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (notes.length === 0) { %>
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4 text-muted">
+                                                <i class="bx bx-info-circle fs-3 d-block mb-2"></i>
+                                                No notes found matching your filter criteria.
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                    <% var cnt = (currentPage - 1) * limit + 1; %>
+                                    <% notes.forEach(function(note) { %>
+                                        <tr>
+                                            <td><%= cnt++ %></td>
+                                            <td><%= note.subject %></td>
+                                            <td><%= note.topic %></td>
+                                            <td><%= note.title %></td>
+                                            <td>
+                                                <% if (note.image) { %>
+                                                    <img src="/assets/userImages/<%= note.image %>" alt="icon" width="40" height="40" style="object-fit:cover; border-radius:6px;" />
+                                                <% } else { %>
+                                                    <span class="text-muted">-</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (note.file) { %>
+                                                    <a href="/assets/userImages/<%= note.file %>" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+                                                <% } else { %>
+                                                    <span class="text-muted">-</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input toggle-status" type="checkbox" data-id="<%= note._id %>" <%= note.is_active === 1 ? 'checked' : '' %> />
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <% const currentViewUrl = '/view-notes?page=' + currentPage + (typeof extraParams !== 'undefined' ? extraParams : ''); %>
+                                                <a class="text-success me-2" href="/edit-note?id=<%= note._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>"><i class="bx bx-edit-alt"></i></a>
+                                                <a class="text-danger btn-delete" href="/delete-note?id=<%= note._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" data-id="<%= note._id %>"><i class="bx bx-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                    <% if (notes.length === 0) { %>
+                                        <tr><td colspan="8" class="text-center text-muted">No notes found</td></tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeof extraParams !== 'undefined' ? extraParams : '' }) %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.querySelectorAll('.toggle-status').forEach(function(el) {
+    el.addEventListener('change', function() {
+        var id = this.getAttribute('data-id');
+        fetch('/note-is-active/' + id + '/toggle', { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(d) { if (!d.success) alert('Failed to update status'); });
+    });
+});
+document.querySelectorAll('.btn-delete').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to delete this note?')) {
+            window.location.href = this.getAttribute('href');
+        }
+    });
+});
+</script>
+<%- include('../layout/footer.ejs') %>

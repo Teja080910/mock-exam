@@ -67,18 +67,50 @@ const viewPlan = async (req, res) => {
     try {
         await verifyAdminAccess(req, res, async () => {
             let loginData = await Admin.findById({ _id: req.session.user_id });
-            const page = parseInt(req.query.page) || 1;
+            const page = Math.max(1, parseInt(req.query.page, 10) || 1);
             const limit = 20;
             const skip = (page - 1) * limit;
-            const totalItems = await Plan.countDocuments();
-            const totalPages = Math.ceil(totalItems / limit);
-            const allPlan = await Plan.find({}).populate('categoryGroup').sort({ updatedAt: -1 }).skip(skip).limit(limit);
-            if (allPlan) {
-                res.render('viewPlan', { plan: allPlan, loginData: loginData, currentPage: page, totalPages: totalPages, totalItems: totalItems, limit: limit });
+
+            const filter = {};
+            if (req.query.categoryGroup) {
+                if (req.query.categoryGroup === 'all_groups') {
+                    filter.categoryGroup = null;
+                } else {
+                    filter.categoryGroup = req.query.categoryGroup;
+                }
             }
-            else {
-                console.log(error.message);
+            if (req.query.search && String(req.query.search).trim() !== '') {
+                const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                filter.$or = [
+                    { planName: { $regex: term, $options: 'i' } },
+                    { planId: { $regex: term, $options: 'i' } }
+                ];
             }
+
+            const categoryGroups = await CategoryGroup.find({}).sort({ displayName: 1 });
+            const totalItems = await Plan.countDocuments(filter);
+            const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+            const allPlan = await Plan.find(filter).populate('categoryGroup').sort({ updatedAt: -1 }).skip(skip).limit(limit);
+
+            const params = [];
+            if (req.query.categoryGroup) params.push(`categoryGroup=${encodeURIComponent(req.query.categoryGroup)}`);
+            if (req.query.search) params.push(`search=${encodeURIComponent(req.query.search)}`);
+            const extraParams = params.length > 0 ? '&' + params.join('&') : '';
+
+            res.render('viewPlan', {
+                plan: allPlan,
+                categoryGroups: categoryGroups,
+                loginData: loginData,
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalItems,
+                limit: limit,
+                extraParams: extraParams,
+                filters: {
+                    categoryGroup: req.query.categoryGroup || '',
+                    search: req.query.search || ''
+                }
+            });
         });
     } catch (error) {
         console.log(error.message);
@@ -89,13 +121,14 @@ const viewPlan = async (req, res) => {
 const editPlan = async (req, res) => {
     try {
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-plan';
         const editData = await Plan.findById({ _id: id });
         const categoryGroups = await CategoryGroup.find({});
         if (editData) {
-            res.render('editPlan', { plan: editData, categoryGroups: categoryGroups });
+            res.render('editPlan', { plan: editData, categoryGroups: categoryGroups, returnUrl: returnUrl });
         }
         else {
-            res.render('editPlan', { message: 'Plan Not Found', categoryGroups: categoryGroups });
+            res.render('editPlan', { message: 'Plan Not Found', categoryGroups: categoryGroups, returnUrl: returnUrl });
         }
     } catch (error) {
         console.log(error.message);
@@ -108,6 +141,7 @@ const updatePlan = async (req, res) => {
         let loginData = await Admin.findById({ _id: req.session.user_id });
         if (loginData.is_admin == 1) {
             const id = req.body.id;
+            const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-plan';
             const categoryGroupVal = req.body.categoryGroup === 'all' ? null : req.body.categoryGroup;
 
             const existingPlan = await Plan.findOne({ categoryGroup: categoryGroupVal, _id: { $ne: id } });
@@ -126,7 +160,7 @@ const updatePlan = async (req, res) => {
                         categoryGroup: categoryGroupVal
                     }
                 });
-            res.redirect('/view-plan');
+            res.redirect(returnUrl);
         }
         else {
             req.flash('error', 'You have no access to edit plan , You are not super admin !! *');
@@ -141,8 +175,9 @@ const updatePlan = async (req, res) => {
 const deletePlan = async (req, res) => {
     try {
         const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-plan';
         const delPlan = await Plan.deleteOne({ _id: id });
-        res.redirect('/view-plan');
+        res.redirect(returnUrl);
     } catch (error) {
         console.log(error.message);
     }

@@ -156,6 +156,13 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
             ?.toList() ??
         [];
     users.sort((a, b) {
+      final aCorrect = int.tryParse(
+              (getJsonField(a, r'''$.correct_answers''') ?? 0).toString()) ??
+          0;
+      final bCorrect = int.tryParse(
+              (getJsonField(b, r'''$.correct_answers''') ?? 0).toString()) ??
+          0;
+      if (bCorrect != aCorrect) return bCorrect.compareTo(aCorrect);
       final aPoints = double.tryParse(
               (getJsonField(a, r'''$.points''') ?? 0).toString()) ??
           0.0;
@@ -197,7 +204,13 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
     return v.toString();
   }
 
+  bool _isMarkedForReview(dynamic item) {
+    final value = getJsonField(item, r'''$.markedForReview''');
+    return value == true || value.toString().toLowerCase() == 'true';
+  }
+
   bool _isAnsweredQuestion(dynamic item) {
+    if (_isMarkedForReview(item)) return false;
     final userAnswer = _cleanText(getJsonField(item, r'''$.user_answer'''));
     return userAnswer.isNotEmpty && userAnswer.toLowerCase() != 'skipped';
   }
@@ -302,6 +315,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(width: 4.0),
           Container(
             width: 30.0,
             height: 30.0,
@@ -1251,8 +1265,13 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
           );
 
     final answered = list.where(_isAnsweredQuestion).toList();
-    final skipped = list.where((item) => !_isAnsweredQuestion(item)).toList();
-    final visibleList = _answerKeyFilterIndex == 0 ? answered : skipped;
+    final skipped = list.where((item) => !_isAnsweredQuestion(item) && !_isMarkedForReview(item)).toList();
+    final review = list.where(_isMarkedForReview).toList();
+    final visibleList = _answerKeyFilterIndex == 0
+        ? answered
+        : _answerKeyFilterIndex == 1
+            ? skipped
+            : review;
 
     return Column(
       children: [
@@ -1275,6 +1294,11 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
                   label: 'Skipped',
                   selected: _answerKeyFilterIndex == 1,
                   onTap: () => setState(() => _answerKeyFilterIndex = 1),
+                ),
+                _answerKeyTabChip(
+                  label: 'Review',
+                  selected: _answerKeyFilterIndex == 2,
+                  onTap: () => setState(() => _answerKeyFilterIndex = 2),
                 ),
               ],
             ),

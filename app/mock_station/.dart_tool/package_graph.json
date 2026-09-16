@@ -96,6 +96,7 @@
         "sqflite_common",
         "stop_watch_timer",
         "stream_transform",
+        "syncfusion_flutter_pdfviewer",
         "timeago",
         "timer_count_down",
         "url_launcher",
@@ -197,6 +198,29 @@
         "json_annotation",
         "path",
         "yaml"
+      ]
+    },
+    {
+      "name": "syncfusion_flutter_pdfviewer",
+      "version": "31.1.21",
+      "dependencies": [
+        "async",
+        "device_info_plus",
+        "flutter",
+        "http",
+        "intl",
+        "syncfusion_flutter_core",
+        "syncfusion_flutter_pdf",
+        "syncfusion_flutter_signaturepad",
+        "syncfusion_pdfviewer_linux",
+        "syncfusion_pdfviewer_macos",
+        "syncfusion_pdfviewer_platform_interface",
+        "syncfusion_pdfviewer_web",
+        "syncfusion_pdfviewer_windows",
+        "url_launcher",
+        "uuid",
+        "vector_math",
+        "web"
       ]
     },
     {
@@ -1379,6 +1403,77 @@
       "dependencies": []
     },
     {
+      "name": "syncfusion_flutter_signaturepad",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter",
+        "syncfusion_flutter_core",
+        "web"
+      ]
+    },
+    {
+      "name": "syncfusion_flutter_pdf",
+      "version": "31.2.18",
+      "dependencies": [
+        "convert",
+        "crypto",
+        "flutter",
+        "http",
+        "intl",
+        "syncfusion_flutter_core",
+        "xml"
+      ]
+    },
+    {
+      "name": "syncfusion_flutter_core",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "syncfusion_pdfviewer_linux",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "syncfusion_pdfviewer_windows",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "syncfusion_pdfviewer_macos",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter",
+        "syncfusion_pdfviewer_platform_interface"
+      ]
+    },
+    {
+      "name": "syncfusion_pdfviewer_web",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter",
+        "flutter_web_plugins",
+        "syncfusion_pdfviewer_platform_interface",
+        "web"
+      ]
+    },
+    {
+      "name": "syncfusion_pdfviewer_platform_interface",
+      "version": "31.2.18",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
+      ]
+    },
+    {
       "name": "google_api_headers",
       "version": "4.6.2",
       "dependencies": [
@@ -1980,6 +2075,13 @@
       ]
     },
     {
+      "name": "convert",
+      "version": "3.1.2",
+      "dependencies": [
+        "typed_data"
+      ]
+    },
+    {
       "name": "package_info_plus_platform_interface",
       "version": "3.2.1",
       "dependencies": [
@@ -2003,13 +2105,6 @@
         "flutter",
         "meta",
         "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "convert",
-      "version": "3.1.2",
-      "dependencies": [
-        "typed_data"
       ]
     },
     {

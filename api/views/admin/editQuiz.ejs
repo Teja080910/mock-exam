@@ -24,6 +24,7 @@
                                                 </div>
                                             <% } %>
                                             <input type="hidden" name="id" value="<%= editquiz._id %>">
+                                            <input type="hidden" name="returnUrl" value="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '' %>">
                                             <div class="row mb-3">
                                                 <label class="col-sm-3 col-form-label">Quiz Name</label>
                                                 <div class="col-sm-9">
@@ -103,10 +104,17 @@
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
-                                                <label class="col-sm-3 col-form-label">Description</label>
+                                                <label class="col-sm-3 col-form-label">Description (English)</label>
                                                 <div class="col-sm-9">
-                                                    <div id="description"><%- editquiz.description %></div>
+                                                    <div id="description"><%- typeof editquiz.description === 'string' ? editquiz.description : (editquiz.description && editquiz.description.en || '') %></div>
                                                     <input name="description" type="hidden">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <label class="col-sm-3 col-form-label">Description (Hindi)</label>
+                                                <div class="col-sm-9">
+                                                    <div id="descriptionHi"><%- typeof editquiz.description === 'string' ? (editquiz.description_hi || '') : (editquiz.description && editquiz.description.hi || '') %></div>
+                                                    <input name="description_hi" type="hidden">
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
@@ -121,7 +129,7 @@
                                                 <div class="col-sm-3"></div>
                                                 <div class="col-sm-9">
                                                     <button type="submit" class="btn btn-primary" onclick="myFunction();">Save</button>
-                                                    <a href="/view-quiz" class="ms-3 btn btn-dark">Back</a>
+                                                    <a href="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '/view-quiz' %>" class="ms-3 btn btn-dark">Back</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -161,5 +169,47 @@
                 .catch(err => console.error('Error fetching subcategories:', err));
         });
         if (categorySelect.value) categorySelect.dispatchEvent(new Event('change'));
+
+        // Initialize Quill editor for Description (Hindi)
+        const descriptionHiEl = document.querySelector('#descriptionHi');
+        if (descriptionHiEl && typeof Quill !== 'undefined') {
+            new Quill('#descriptionHi', {
+                modules: {
+                    toolbar: typeof toolbarOptions !== 'undefined' ? toolbarOptions : [
+                        ['bold', 'italic', 'underline'],
+                        ['blockquote', 'code-block'],
+                        ['image'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        [{ 'font': [] }],
+                        [{ 'align': [] }]
+                    ]
+                },
+                placeholder: 'हिंदी में विवरण दर्ज करें...',
+                theme: 'snow',
+            });
+        }
+
+        // Sync both English and Hindi editors to their respective hidden inputs
+        window.myFunction = function() {
+            var descEn = document.querySelector('input[name=description]');
+            var descEnEditor = document.querySelector('#description .ql-editor');
+            if (descEn && descEnEditor) {
+                descEn.value = descEnEditor.innerHTML;
+            }
+
+            var descHi = document.querySelector('input[name=description_hi]');
+            var descHiEditor = document.querySelector('#descriptionHi .ql-editor');
+            if (descHi && descHiEditor) {
+                descHi.value = descHiEditor.innerHTML;
+            }
+        };
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                window.myFunction();
+            });
+        }
     });
 </script>

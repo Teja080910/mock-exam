@@ -33,7 +33,7 @@ const QuizSchema = mongoose.Schema({
         trim: true
     },
     description:{
-        type:String 
+        type: mongoose.Schema.Types.Mixed 
     },
     is_active:{
         type:Number,

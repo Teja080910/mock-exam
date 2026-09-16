@@ -208,7 +208,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                               const SizedBox(height: 16.0),
                                               InkWell(
                                                 onTap: () {
-                                                  launchURL('mailto:freshersfind@gmail.com');
+                                                  launchURL('mailto:support@mockstation.com');
                                                 },
                                                 borderRadius: BorderRadius.circular(8.0),
                                                 child: Container(
@@ -228,7 +228,7 @@ class _HelplineCenterScreenWidgetState extends State<HelplineCenterScreenWidget>
                                                       ),
                                                       const SizedBox(width: 8.0),
                                                       const Text(
-                                                        'freshersfind@gmail.com',
+                                                        'support@mockstation.com',
                                                         style: TextStyle(
                                                           color: Color(0xFF2563EB),
                                                           fontSize: FFFont.f14,

@@ -5,84 +5,123 @@
         <div class="content-wrapper">
             <div class="container-xxl flex-grow-1 container-p-y">
                 <div class="row">
-                    <div class="col-md-12">
-                        <h4 class="py-3 mb-4">
-                            <span class="text-muted fw-light">Category Groups</span>
-                        </h4>
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="py-3 mb-4">
+                                <span class="text-muted fw-light">Category Groups /</span> View Category Groups
+                            </h4>
+                            <div class="btnwrap mb-4">
+                                <a href="/add-category-group" class="btn btn-primary"><i class="bx bx-plus"></i>Add Category Group</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 grid-margin stretch-card">
                         <div class="card mb-4">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <a href="/add-category-group" class="btn btn-primary">Add Category Group</a>
-                                </div>
-                                <form method="get" action="/view-category-groups" class="row g-3 mb-4">
-                                    <div class="col-md-2">
-                                        <select name="scope" class="form-select" onchange="this.form.submit()">
-                                            <option value="">All Scopes</option>
-                                            <option value="central" <%= filters.scope === 'central' ? 'selected' : '' %>>Central wise</option>
-                                            <option value="state" <%= filters.scope === 'state' ? 'selected' : '' %>>State wise</option>
-                                            <option value="none" <%= filters.scope === 'none' ? 'selected' : '' %>>None</option>
-                                        </select>
+                            <div class="card-header pb-0">
+                                <h5 class="card-title mb-0">Filter Category Groups</h5>
+                            </div>
+                            <div class="card-body pt-3">
+                                <form method="get" action="/view-category-groups" id="categoryGroupFilterForm">
+                                    <div class="row g-3 align-items-center">
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted small fw-semibold">Scope</label>
+                                            <select name="scope" class="form-select" onchange="document.getElementById('categoryGroupFilterForm').submit()">
+                                                <option value="">All Scopes</option>
+                                                <option value="central" <%= typeof filters !== 'undefined' && filters.scope === 'central' ? 'selected' : '' %>>Central wise</option>
+                                                <option value="state" <%= typeof filters !== 'undefined' && filters.scope === 'state' ? 'selected' : '' %>>State wise</option>
+                                                <option value="none" <%= typeof filters !== 'undefined' && filters.scope === 'none' ? 'selected' : '' %>>None</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label text-muted small fw-semibold">Category</label>
+                                            <select name="categoryId" class="form-select text-capitalize" onchange="document.getElementById('categoryGroupFilterForm').submit()">
+                                                <option value="">All Categories</option>
+                                                <% if (typeof allCategories !== 'undefined') { %>
+                                                    <% allCategories.forEach(function(cat) { %>
+                                                        <option value="<%= cat._id %>" <%= typeof filters !== 'undefined' && filters.categoryId === String(cat._id) ? 'selected' : '' %>><%= cat.displayName || cat.name %></option>
+                                                    <% }); %>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label text-muted small fw-semibold">Search</label>
+                                            <div class="input-group">
+                                                <input type="text" name="search" class="form-control" placeholder="Search by name or code..." value="<%= typeof filters !== 'undefined' ? filters.search : '' %>">
+                                                <button type="submit" class="btn btn-primary"><i class="bx bx-search"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 d-flex justify-content-end gap-2">
+                                            <% if (typeof filters !== 'undefined' && (filters.scope || filters.categoryId || filters.search)) { %>
+                                                <a href="/view-category-groups" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x"></i> Clear Filters</a>
+                                            <% } %>
+                                            <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt"></i> Apply Filter</button>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <select name="categoryId" class="form-select" onchange="this.form.submit()">
-                                            <option value="">All Categories</option>
-                                            <% allCategories.forEach(function(cat) { %>
-                                                <option value="<%= cat._id %>" <%= filters.categoryId === String(cat._id) ? 'selected' : '' %>><%= cat.displayName || cat.name %></option>
-                                            <% }); %>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <input type="text" name="search" class="form-control" placeholder="Search by name or code..." value="<%= filters.search %>">
-                                    </div>
-                                    <div class="col-md-3 d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary btn-sm">Search</button>
-                                        <a href="/view-category-groups" class="btn btn-outline-secondary btn-sm">Reset</a>
-                                    </div>
-                                    <input type="hidden" name="page" value="1">
                                 </form>
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Image</th>
-                                            <th>Code</th>
-                                            <th>Display Name</th>
-                                            <th>Scope</th>
-                                            <th>Categories</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% groups.forEach(function(group) { %>
-                                            <% var scope = (group.scope && ['central','state','none'].indexOf(group.scope) !== -1) ? group.scope : 'none'; %>
-                                            <% var scopeLabel = scope === 'central' ? 'Central wise' : (scope === 'state' ? 'State wise' : 'None'); %>
-                                            <% var scopeClass = scope === 'central' ? 'bg-primary' : (scope === 'state' ? 'bg-success' : 'bg-secondary'); %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 grid-margin stretch-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
                                             <tr>
-                                                <td>
-                                                    <% if (group.image) { %>
-                                                        <img src="/assets/userImages/<%= group.image %>" alt="Image" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" />
-                                                    <% } else { %>
-                                                        <span class="text-muted">No image</span>
-                                                    <% } %>
-                                                </td>
-                                                <td><strong><%= group.code || '-' %></strong></td>
-                                                <td><%= group.displayName %></td>
-                                                <td><span class="badge <%= scopeClass %>"><%= scopeLabel %></span></td>
-                                                <td>
-                                                    <% group.categories.forEach(function(cat, idx) { %>
-                                                        <span class="badge bg-info"><%= cat.displayName || cat.name %></span>
-                                                        <% if (idx < group.categories.length - 1) { %>, <% } %>
-                                                    <% }) %>
-                                                </td>
-                                                <td>
-                                                    <a href="#" class="btn btn-sm btn-info me-1 btn-view-category-group" data-code="<%= group.code || '-' %>" data-display-name="<%= group.displayName %>" data-scope="<%= scope %>" data-scope-label="<%= scopeLabel %>" data-categories="<% group.categories.forEach(function(cat, idx) { %><%= cat.displayName || cat.name %><%= idx < group.categories.length - 1 ? ', ' : '' %><% }) %>" data-image="<%= group.image || '' %>" data-bs-toggle="modal" data-bs-target="#viewCategoryGroupModal"><i class="bx bx-show"></i> View</a>
-                                                    <a href="/edit-category-group?id=<%= group._id %>" class="btn btn-sm btn-warning">Edit</a>
-                                                    <a href="/delete-category-group?id=<%= group._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                                                </td>
+                                                <th>Image</th>
+                                                <th>Code</th>
+                                                <th>Display Name</th>
+                                                <th>Scope</th>
+                                                <th>Categories</th>
+                                                <th>Actions</th>
                                             </tr>
-                                        <% }) %>
-                                    </tbody>
-                                </table>
-                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit }) %>
+                                        </thead>
+                                        <tbody>
+                                            <% if (groups.length === 0) { %>
+                                                <tr>
+                                                    <td colspan="6" class="text-center py-4 text-muted">
+                                                        <i class="bx bx-info-circle fs-3 d-block mb-2"></i>
+                                                        No category groups found matching your filter criteria.
+                                                    </td>
+                                                </tr>
+                                            <% } %>
+                                            <% groups.forEach(function(group) { %>
+                                                <% var scope = (group.scope && ['central','state','none'].indexOf(group.scope) !== -1) ? group.scope : 'none'; %>
+                                                <% var scopeLabel = scope === 'central' ? 'Central wise' : (scope === 'state' ? 'State wise' : 'None'); %>
+                                                <% var scopeClass = scope === 'central' ? 'bg-primary' : (scope === 'state' ? 'bg-success' : 'bg-secondary'); %>
+                                                <tr>
+                                                    <td>
+                                                        <% if (group.image) { %>
+                                                            <img src="/assets/userImages/<%= group.image %>" alt="Image" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" />
+                                                        <% } else { %>
+                                                            <span class="text-muted">No image</span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td><strong><%= group.code || '-' %></strong></td>
+                                                    <td><%= group.displayName %></td>
+                                                    <td><span class="badge <%= scopeClass %>"><%= scopeLabel %></span></td>
+                                                    <td>
+                                                        <% group.categories.forEach(function(cat, idx) { %>
+                                                            <span class="badge bg-info"><%= cat.displayName || cat.name %></span>
+                                                            <% if (idx < group.categories.length - 1) { %>, <% } %>
+                                                        <% }) %>
+                                                    </td>
+                                                    <td>
+                                                        <% const currentViewUrl = '/view-category-groups?page=' + currentPage + (typeof extraParams !== 'undefined' ? extraParams : ''); %>
+                                                        <a href="#" class="btn btn-sm btn-info me-1 btn-view-category-group" data-code="<%= group.code || '-' %>" data-display-name="<%= group.displayName %>" data-scope="<%= scope %>" data-scope-label="<%= scopeLabel %>" data-categories="<% group.categories.forEach(function(cat, idx) { %><%= cat.displayName || cat.name %><%= idx < group.categories.length - 1 ? ', ' : '' %><% }) %>" data-image="<%= group.image || '' %>" data-bs-toggle="modal" data-bs-target="#viewCategoryGroupModal"><i class="bx bx-show"></i> View</a>
+                                                        <a href="/edit-category-group?id=<%= group._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" class="btn btn-sm btn-warning">Edit</a>
+                                                        <a href="/delete-category-group?id=<%= group._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeof extraParams !== 'undefined' ? extraParams : '' }) %>
                             </div>
                         </div>
                     </div>

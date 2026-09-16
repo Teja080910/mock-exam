@@ -265,9 +265,13 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
   }
 
   Widget _buildGridStats(List<dynamic> questions) {
-    final answered = questions.where(_isAnswered).length;
     final marked = questions.where(_isMarkedForReview).length;
-    final notAnswered = questions.length - answered;
+    final answered = questions
+        .where((q) => _isAnswered(q) && !_isMarkedForReview(q))
+        .length;
+    final notAnswered = questions
+        .where((q) => !_isAnswered(q) && !_isMarkedForReview(q))
+        .length;
 
     Widget stat(String value, Color color) {
       return Expanded(
@@ -442,6 +446,10 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 height: 46.0,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    if (FFAppState().quesReviewList.isNotEmpty) {
+                      FFAppState().quesList =
+                          FFAppState().quesReviewList.toList();
+                    }
                     context.pushNamed(
                       QuizResultWidget.routeName,
                       queryParameters: {
@@ -815,6 +823,10 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 height: 46.0,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    if (FFAppState().quesReviewList.isNotEmpty) {
+                      FFAppState().quesList =
+                          FFAppState().quesReviewList.toList();
+                    }
                     context.pushNamed(
                       QuizResultWidget.routeName,
                       queryParameters: {

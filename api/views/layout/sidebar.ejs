@@ -247,6 +247,24 @@
 				</li>
 			</ul>
 		</li>
+		<li class="<%= parentClass(['/add-note', '/view-note', '/edit-note']) %>">
+			<a href="javascript:void(0);" class="menu-link menu-toggle">
+				<i class="menu-icon tf-icons bx bx-file"></i>
+				<div data-i18n="Layouts">Notes</div>
+			</a>
+			<ul class="menu-sub">
+				<li class="<%= menuClass(['/add-note']) %>">
+					<a href="/add-note" class="<%= subMenuClass(['/add-note']) %>">
+						<div data-i18n="Account">Add Note</div>
+					</a>
+				</li>
+				<li class="<%= menuClass(['/view-note', '/edit-note']) %>">
+					<a href="/view-notes" class="<%= subMenuClass(['/view-note', '/edit-note']) %>">
+						<div data-i18n="Account">View Notes</div>
+					</a>
+				</li>
+			</ul>
+		</li>
 		<li class="menu-header small text-uppercase"><span class="menu-header-text" data-i18n="Payment">Notification</span></li>
 		<li class="<%= menuClass(['/add-notification']) %>">
 			<a href="/add-notification" class="menu-link">

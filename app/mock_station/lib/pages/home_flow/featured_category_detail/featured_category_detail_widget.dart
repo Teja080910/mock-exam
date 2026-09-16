@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -54,10 +55,9 @@ class _FeaturedCategoryDetailWidgetState
             ParamType.String,
           ),
           'name': serializeParam(
-            getJsonField(
-              quizzesItem,
-              r'''$.name''',
-            ).toString(),
+            getJsonField(quizzesItem, r'''$.name''') is Map
+                ? jsonEncode(getJsonField(quizzesItem, r'''$.name'''))
+                : getJsonField(quizzesItem, r'''$.name''').toString(),
             ParamType.String,
           ),
           'image': serializeParam(
@@ -75,10 +75,9 @@ class _FeaturedCategoryDetailWidgetState
             ParamType.String,
           ),
           'description': serializeParam(
-            getJsonField(
-              quizzesItem,
-              r'''$.description''',
-            ).toString(),
+            getJsonField(quizzesItem, r'''$.description''') is Map
+                ? jsonEncode(getJsonField(quizzesItem, r'''$.description'''))
+                : getJsonField(quizzesItem, r'''$.description''').toString(),
             ParamType.String,
           ),
           'ques': serializeParam(
@@ -252,13 +251,7 @@ class _FeaturedCategoryDetailWidgetState
     final totalQuestions =
         getJsonField(quizzesItem, r'''$.total_questions''').toString();
 
-    return InkWell(
-      splashColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: () async => _openQuiz(quizzesItem),
-      child: Container(
+    return Container(
         width: double.infinity,
         constraints: const BoxConstraints(minHeight: 176.0),
         decoration: BoxDecoration(
@@ -408,7 +401,6 @@ class _FeaturedCategoryDetailWidgetState
               ),
             ],
           ),
-        ),
       ),
     ).animateOnPageLoad(
       animationsMap['containerOnPageLoadAnimation']!,

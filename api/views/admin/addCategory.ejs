@@ -62,7 +62,20 @@
                                                                 <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_feature">
                                                             </div>
                                                         </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <label class="col-sm-2 col-form-label">Category Group <span class="text-danger">*</span></label>
+                                                    <div class="col-sm-10">
+                                                        <select class="form-select" name="categoryGroupId" required>
+                                                            <option value="">-- Select Group --</option>
+                                                            <% if (typeof groups !== 'undefined' && groups.length > 0) { %>
+                                                                <% groups.forEach(function(group) { %>
+                                                                    <option value="<%= group._id %>"><%= group.displayName %> (<%= group.scope || 'none' %>)</option>
+                                                                <% }); %>
+                                                            <% } %>
+                                                        </select>
                                                     </div>
+                                                </div>
                                                 </div>
                                             </div>
                                         <div class="row">

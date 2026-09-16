@@ -1,0 +1,97 @@
+<%- include('../layout/header.ejs') %>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../layout/sidebar.ejs') %>
+        <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="py-3 mb-4">
+                            <span class="text-muted fw-light">Notes /</span> Edit Note
+                        </h4>
+                        <div class="card mb-4">
+                            <form action="/edit-note" method="post" enctype="multipart/form-data">
+                                <div class="card-body">
+                                    <input type="hidden" name="id" value="<%= note._id %>" />
+                                    <input type="hidden" name="returnUrl" value="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '' %>" />
+                                    <% if (typeof message !== 'undefined' && message) { %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert"><%= message %>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                                    <% } %>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="subject">Subject</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="subject" list="subjectList" value="<%= note.subject %>" required autocomplete="off" />
+                                            <datalist id="subjectList">
+                                                <% if (typeof subjects !== 'undefined' && subjects) { %>
+                                                    <% subjects.forEach(s => { %>
+                                                        <option value="<%= s %>"></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </datalist>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="topic">Topic</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="topic" list="topicList" value="<%= note.topic %>" required autocomplete="off" />
+                                            <datalist id="topicList">
+                                                <% if (typeof topics !== 'undefined' && topics) { %>
+                                                    <% topics.forEach(t => { %>
+                                                        <option value="<%= t %>"></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </datalist>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="title">Title</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="title" value="<%= note.title %>" required />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="description">Description</label>
+                                        <div class="col-sm-9">
+                                            <textarea class="form-control" name="description" rows="4"><%= note.description || '' %></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="image">Topic Icon</label>
+                                        <div class="col-sm-9">
+                                            <% if (note.image) { %>
+                                                <div class="mb-2">
+                                                    <img src="/assets/userImages/<%= note.image %>" alt="icon" width="50" height="50" style="object-fit:cover; border-radius:6px;" />
+                                                    <small class="text-muted ms-2">Current icon (upload new to replace)</small>
+                                                </div>
+                                            <% } %>
+                                            <input class="form-control" type="file" name="image" accept="image/*" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-3 col-form-label" for="file">Note File</label>
+                                        <div class="col-sm-9">
+                                            <% if (note.file) { %>
+                                                <div class="mb-2">
+                                                    <a href="/assets/userImages/<%= note.file %>" target="_blank" class="btn btn-sm btn-outline-primary">Current File</a>
+                                                    <small class="text-muted ms-2">Upload new to replace</small>
+                                                </div>
+                                            <% } %>
+                                            <input class="form-control" type="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" />
+                                        </div>
+                                    </div>
+                                    <div class="pt-3">
+                                        <button type="submit" class="btn btn-primary me-2">Update</button>
+                                        <a href="<%= typeof returnUrl !== 'undefined' && returnUrl ? returnUrl : '/view-notes' %>" class="btn btn-outline-secondary">Back</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%- include('../layout/footer.ejs') %>
+        </div>
+    </div>
+</div>
+<%- include('../layout/footer.ejs') %>

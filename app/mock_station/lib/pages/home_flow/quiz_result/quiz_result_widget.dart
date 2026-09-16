@@ -63,25 +63,53 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   String _answerKeyLanguage = 'en';
   double? _percentile;
   String _strengthFilter = 'Strong';
+  int _computedCorrect = 0;
+  int _computedWrong = 0;
+  int _computedSkipped = 0;
+  int _computedReview = 0;
+
+  void _computeCountsFromQuesList() {
+    int correct = 0, wrong = 0, skipped = 0, review = 0;
+    for (final q in FFAppState().quesList) {
+      final markedForReview = q is Map
+          ? (q['markedForReview'] == true ||
+              q['markedForReview'].toString().toLowerCase() == 'true')
+          : false;
+      if (markedForReview) {
+        review++;
+        continue;
+      }
+      final userAnswer = (q is Map ? (q['user_answer'] ?? '') : '').toString().toLowerCase();
+      if (userAnswer.isEmpty || userAnswer == 'skipped') {
+        skipped++;
+      } else {
+        final status = _answerKeyStatus(q);
+        if (status == 'correct') {
+          correct++;
+        } else {
+          wrong++;
+        }
+      }
+    }
+    _computedCorrect = correct;
+    _computedWrong = wrong;
+    _computedSkipped = skipped;
+    _computedReview = review;
+  }
 
   double get _score {
-    return (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) -
-        ((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0)));
+    return (((_computedCorrect) * (widget.correctAnsReward ?? 0.0)) -
+        ((_computedWrong) * (widget.penaltyPerQuestion ?? 0.0)));
   }
 
-  int get _skippedQuestions {
-    return FFAppState()
-        .quesList
-        .where((q) => (q['user_answer'] == 'skipped'))
-        .length;
-  }
+  int get _skippedQuestions => _computedSkipped;
 
   double get _accuracy {
     final total = widget.totalQuestion ?? 0;
     if (total <= 0) {
       return 0;
     }
-    return ((widget.correctAnswer ?? 0) / total) * 100;
+    return ((_computedCorrect) / total) * 100;
   }
 
   Future<void> _loadPercentile() async {
@@ -550,6 +578,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           'correct': 0,
           'wrong': 0,
           'skipped': 0,
+          'review': 0,
           'questions': <Map<String, dynamic>>[],
         },
       );
@@ -558,6 +587,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         group['correct'] = (group['correct'] as int) + 1;
       } else if (status == 'incorrect') {
         group['wrong'] = (group['wrong'] as int) + 1;
+      } else if (status == 'review') {
+        group['review'] = (group['review'] as int) + 1;
       } else {
         group['skipped'] = (group['skipped'] as int) + 1;
       }
@@ -771,22 +802,38 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   : isWrong
                                       ? const Color(0xFFEF4444)
                                       : const Color(0xFFD1D5DB);
-                              return Container(
-                                width: 26.0,
-                                height: 26.0,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: circleColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${question['number']}',
-                                  style: TextStyle(
-                                    color: isCorrect || isWrong
-                                        ? Colors.white
-                                        : const Color(0xFF374151),
-                                    fontSize: FFFont.f10,
-                                    fontWeight: FontWeight.w800,
+                              return GestureDetector(
+                                onTap: () {
+                                  final qIndex =
+                                      (question['number'] as int) - 1;
+                                  final entries = _answerKeyEntries();
+                                  final matchIdx = entries.indexWhere(
+                                      (e) => e['index'] == qIndex);
+                                  if (matchIdx >= 0) {
+                                    safeSetState(() {
+                                      _answerKeyFilter = 'all';
+                                      _selectedAnswerKeyIndex = matchIdx;
+                                    });
+                                    _tabController.animateTo(1);
+                                  }
+                                },
+                                child: Container(
+                                  width: 26.0,
+                                  height: 26.0,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: circleColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${question['number']}',
+                                    style: TextStyle(
+                                      color: isCorrect || isWrong
+                                          ? Colors.white
+                                          : const Color(0xFF374151),
+                                      fontSize: FFFont.f10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
                               );
@@ -1069,9 +1116,18 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     var correct = 0;
     var wrong = 0;
     var skipped = 0;
+    var review = 0;
 
     for (final item in items) {
       final questionData = item is Map && item['question'] is Map ? item['question'] as Map : <String, dynamic>{};
+      final markedForReview = item is Map
+          ? (item['markedForReview'] == true ||
+              item['markedForReview'].toString().toLowerCase() == 'true')
+          : false;
+      if (markedForReview) {
+        review++;
+        continue;
+      }
       final options = _optionMap(item);
       final userAnswer = _cleanText((item is Map ? item['user_answer'] : null) ?? questionData['user_answer']).toLowerCase();
       final correctAnswer = _cleanText(
@@ -1103,6 +1159,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       'correct': correct,
       'wrong': wrong,
       'skipped': skipped,
+      'review': review,
       'total': total,
       'marks': marks,
     };
@@ -1244,6 +1301,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       _buildMetricCard(title: 'Correct Answers', value: correct.toString(), icon: Icons.check_circle_rounded, accentColor: const Color(0xFF16A34A), backgroundColor: const Color(0xFFF0FBF4), badge: accuracyLabel),
                       _buildMetricCard(title: 'Incorrect Answers', value: wrong.toString(), icon: Icons.cancel_rounded, accentColor: const Color(0xFFEF4444), backgroundColor: const Color(0xFFFFF3F3), badge: '${(total <= 0 ? 0 : (wrong / total) * 100).toStringAsFixed(0)}%'),
                       _buildMetricCard(title: 'Skipped Questions', value: skipped.toString(), icon: Icons.timer_rounded, accentColor: const Color(0xFFF59E0B), backgroundColor: const Color(0xFFFFFAEE), badge: '${(total <= 0 ? 0 : (skipped / total) * 100).toStringAsFixed(0)}%'),
+                      _buildMetricCard(title: 'Marked for Review', value: _computedReview.toString(), icon: Icons.star_rounded, accentColor: const Color(0xFFEC4899), backgroundColor: const Color(0xFFFDF2F8), badge: '${(total <= 0 ? 0 : (_computedReview / total) * 100).toStringAsFixed(0)}%'),
                       _buildMetricCard(title: 'Accuracy', value: accuracyLabel, icon: Icons.track_changes_rounded, accentColor: const Color(0xFF0B84FF), backgroundColor: const Color(0xFFF1F6FF), badge: _accuracy >= 60 ? 'Good' : 'Low'),
                     ],
                   ),
@@ -1395,6 +1453,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   String _answerKeyStatus(dynamic question) {
+    final markedForReview = question is Map
+        ? (question['markedForReview'] == true ||
+            question['markedForReview'].toString().toLowerCase() == 'true')
+        : false;
+    if (markedForReview) return 'review';
+
     final userAnswer = _cleanText(
       _answerKeyValue(question, 'user_answer'),
     ).toLowerCase();
@@ -1450,6 +1514,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   ('correct', 'Correct', const Color(0xFF16A34A)),
                   ('incorrect', 'Incorrect', const Color(0xFFDC2626)),
                   ('skip', 'Skip', const Color(0xFF9CA3AF)),
+                  ('review', 'Marked for Review', const Color(0xFFF59E0B)),
                 ].map((filter) {
                   final isSelected = _answerKeyFilter == filter.$1;
                   return InkWell(
@@ -1619,34 +1684,42 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final yourTime = _answerKeyTime(question);
     final avgTime = _averageAnswerKeyTime(source.length);
 
-    Widget metric(String label, String value, {IconData? icon}) {
+    Widget metric(String label, String value, {Widget? icon, int flex = 1}) {
       return Expanded(
+        flex: flex,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, color: const Color(0xFF2563EB), size: 18.0),
-              const SizedBox(width: 4.0),
+              icon,
+              const SizedBox(width: 5.0),
             ],
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF374151),
-                      fontSize: FFFont.f9,
-                      fontWeight: FontWeight.w500,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: FFFont.f10,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 2.0),
                   Text(
                     value,
+                    maxLines: 1,
                     style: const TextStyle(
                       color: Color(0xFF111827),
-                      fontSize: FFFont.f10,
+                      fontSize: FFFont.f12,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1660,20 +1733,61 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
     return Container(
       margin: const EdgeInsets.only(top: 14.0),
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: const Color(0xFF2563EB)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2563EB), Color(0xFFEC4899)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(12.0),
       ),
-      child: Row(
-        children: [
-          metric('Your time', yourTime, icon: Icons.access_time_rounded),
-          Container(width: 1.0, height: 26.0, color: const Color(0xFFE5E7EB)),
-          metric('Avg. time', avgTime),
-          Container(width: 1.0, height: 26.0, color: const Color(0xFFE5E7EB)),
-          metric('Answered correctly', '$correctPercentage%', icon: Icons.check_circle_outline_rounded),
-        ],
+      padding: const EdgeInsets.all(1.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(11.0),
+        ),
+        child: Row(
+          children: [
+            metric(
+              'Your time',
+              yourTime,
+              icon: const Icon(Icons.access_time_rounded, color: Color(0xFF2563EB), size: 20.0),
+              flex: 10,
+            ),
+            Container(width: 1.0, height: 30.0, color: const Color(0xFFE5E7EB)),
+            metric(
+              'Avg. time',
+              avgTime,
+              icon: Container(
+                width: 24.0,
+                height: 24.0,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3E8FF),
+                  borderRadius: BorderRadius.circular(6.0),
+                ),
+                child: const Icon(Icons.bar_chart_rounded, color: Color(0xFF9333EA), size: 14.0),
+              ),
+              flex: 10,
+            ),
+            Container(width: 1.0, height: 30.0, color: const Color(0xFFE5E7EB)),
+            metric(
+              'Answered correctly',
+              '$correctPercentage%',
+              icon: Container(
+                width: 24.0,
+                height: 24.0,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(6.0),
+                ),
+                child: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF16A34A), size: 14.0),
+              ),
+              flex: 14,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1839,6 +1953,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 ),
                 child: Row(
                   children: [
+                    const SizedBox(width: 4.0),
                     Icon(
                       isUserCorrect || isCorrect
                           ? Icons.check_circle
@@ -2139,6 +2254,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       ),
                       child: Row(
                         children: [
+                          const SizedBox(width: 4.0),
                           Container(
                             width: 24.0,
                             height: 24.0,
@@ -2489,6 +2605,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       ),
                       child: Row(
                         children: [
+                          const SizedBox(width: 4.0),
                           Container(
                             width: 24.0,
                             height: 24.0,
@@ -2815,6 +2932,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   List<dynamic> _sortedLeaderboard(ApiCallResponse response) {
     final users = QuizGroup.leaderboardApiCall.userList(response.jsonBody)?.toList() ?? [];
     users.sort((a, b) {
+      final aCorrect = int.tryParse((getJsonField(a, r'''$.correct_answers''') ?? 0).toString()) ?? 0;
+      final bCorrect = int.tryParse((getJsonField(b, r'''$.correct_answers''') ?? 0).toString()) ?? 0;
+      if (bCorrect != aCorrect) return bCorrect.compareTo(aCorrect);
       final aPoints = double.tryParse((getJsonField(a, r'''$.points''') ?? 0).toString()) ?? 0.0;
       final bPoints = double.tryParse((getJsonField(b, r'''$.points''') ?? 0).toString()) ?? 0.0;
       return bPoints.compareTo(aPoints);
@@ -3127,9 +3247,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
   Widget _buildResultContent() {
     final total = widget.totalQuestion ?? 0;
-    final correct = widget.correctAnswer ?? 0;
-    final wrong = widget.wrongAnswer ?? 0;
-    final skipped = widget.notAnswer ?? 0;
+    final correct = _computedCorrect;
+    final wrong = _computedWrong;
+    final skipped = _computedSkipped;
     final percent = total <= 0 ? 0.0 : (correct / total).clamp(0.0, 1.0).toDouble();
 
     return Container(
@@ -3206,16 +3326,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     _tabController = TabController(vsync: this, length: 3)
       ..addListener(() => safeSetState(() {}));
 
-    // DEBUG PRINTS
-    print('RESULT DEBUG: correctAnswer=' + (widget.correctAnswer?.toString() ?? 'null'));
-    print('RESULT DEBUG: wrongAnswer=' + (widget.wrongAnswer?.toString() ?? 'null'));
-    print('RESULT DEBUG: correctAnsReward=' + (widget.correctAnsReward?.toString() ?? 'null'));
-    print('RESULT DEBUG: penaltyPerQuestion=' + (widget.penaltyPerQuestion?.toString() ?? 'null'));
-    print('RESULT DEBUG: Calculated score=' + (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) - ((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0))).toString());
-
-    // LOG SKIPPED QUESTIONS
-    final skippedCount = FFAppState().quesList.where((q) => (q['user_answer'] == 'skipped')).length;
-    print('RESULT DEBUG: Skipped questions count = ' + skippedCount.toString());
+    _computeCountsFromQuesList();
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -3227,9 +3338,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         quizId: widget.quizID,
         questionsJson: FFAppState().quesList,
         totalQuestions: widget.totalQuestion,
-        correctAnswers: widget.correctAnswer,
-        wrongAnswers: widget.wrongAnswer,
-        score: (((widget.correctAnswer ?? 0) * (widget.correctAnsReward ?? 0.0)) - ((widget.wrongAnswer ?? 0) * (widget.penaltyPerQuestion ?? 0.0))),
+        correctAnswers: _computedCorrect,
+        wrongAnswers: _computedWrong,
+        score: (((_computedCorrect) * (widget.correctAnsReward ?? 0.0)) - ((_computedWrong) * (widget.penaltyPerQuestion ?? 0.0))),
         token: FFAppState().loginToken,
       );
       await _loadPercentile();
