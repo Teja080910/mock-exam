@@ -93,6 +93,10 @@ async function migrate() {
   console.log('13. Intros');
   await migrateCollection('intros');
 
+  // 13. Notes
+  console.log('14. Notes');
+  await migrateCollection('notes');
+
   console.log('\n✅ Local → Production migration complete!');
   await localConn.close();
   await prodConn.close();
