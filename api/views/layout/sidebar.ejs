@@ -181,6 +181,42 @@
 				</li>
 			</ul>
 		</li>
+		<li class="<%= parentClass(['/add-note', '/view-notes', '/view-note', '/edit-note']) %>">
+			<a href="javascript:void(0);" class="menu-link menu-toggle">
+				<i class="menu-icon tf-icons bx bx-file"></i>
+				<div data-i18n="Layouts">Notes</div>
+			</a>
+			<ul class="menu-sub">
+				<li class="<%= menuClass(['/add-note']) %>">
+					<a href="/add-note" class="<%= subMenuClass(['/add-note']) %>">
+						<div data-i18n="Account">Add Note</div>
+					</a>
+				</li>
+				<li class="<%= menuClass(['/view-notes', '/view-note', '/edit-note']) %>">
+					<a href="/view-notes" class="<%= subMenuClass(['/view-notes', '/view-note', '/edit-note']) %>">
+						<div data-i18n="Account">View Notes</div>
+					</a>
+				</li>
+			</ul>
+		</li>
+		<li class="<%= parentClass(['/add-news', '/view-news', '/edit-news']) %>">
+			<a href="javascript:void(0);" class="menu-link menu-toggle">
+				<i class="menu-icon tf-icons bx bx-news"></i>
+				<div data-i18n="Layouts">News</div>
+			</a>
+			<ul class="menu-sub">
+				<li class="<%= menuClass(['/add-news']) %>">
+					<a href="/add-news" class="<%= subMenuClass(['/add-news']) %>">
+						<div data-i18n="Account">Add New</div>
+					</a>
+				</li>
+				<li class="<%= menuClass(['/view-news', '/edit-news']) %>">
+					<a href="/view-news" class="<%= subMenuClass(['/view-news', '/edit-news']) %>">
+						<div data-i18n="Account">View News</div>
+					</a>
+				</li>
+			</ul>
+		</li>
 		<li class="<%= parentClass(['/add-plan', '/view-plan', '/edit-plan']) %>">
 			<a href="javascript:void(0);" class="menu-link menu-toggle">
 				<span class="menu-icon bx bx-notepad"></span>
@@ -228,42 +264,6 @@
 				<i class="menu-icon tf-icons bx bx-envelope"></i>
 				<div data-i18n="Analytics">SMTP</div>
 			</a>
-		</li>
-		<li class="<%= parentClass(['/add-news', '/view-news', '/edit-news']) %>">
-			<a href="javascript:void(0);" class="menu-link menu-toggle">
-				<i class="menu-icon tf-icons bx bx-news"></i>
-				<div data-i18n="Layouts">News</div>
-			</a>
-			<ul class="menu-sub">
-				<li class="<%= menuClass(['/add-news']) %>">
-					<a href="/add-news" class="<%= subMenuClass(['/add-news']) %>">
-						<div data-i18n="Account">Add New</div>
-					</a>
-				</li>
-				<li class="<%= menuClass(['/view-news', '/edit-news']) %>">
-					<a href="/view-news" class="<%= subMenuClass(['/view-news', '/edit-news']) %>">
-						<div data-i18n="Account">View News</div>
-					</a>
-				</li>
-			</ul>
-		</li>
-		<li class="<%= parentClass(['/add-note', '/view-note', '/edit-note']) %>">
-			<a href="javascript:void(0);" class="menu-link menu-toggle">
-				<i class="menu-icon tf-icons bx bx-file"></i>
-				<div data-i18n="Layouts">Notes</div>
-			</a>
-			<ul class="menu-sub">
-				<li class="<%= menuClass(['/add-note']) %>">
-					<a href="/add-note" class="<%= subMenuClass(['/add-note']) %>">
-						<div data-i18n="Account">Add Note</div>
-					</a>
-				</li>
-				<li class="<%= menuClass(['/view-note', '/edit-note']) %>">
-					<a href="/view-notes" class="<%= subMenuClass(['/view-note', '/edit-note']) %>">
-						<div data-i18n="Account">View Notes</div>
-					</a>
-				</li>
-			</ul>
 		</li>
 		<li class="menu-header small text-uppercase"><span class="menu-header-text" data-i18n="Payment">Notification</span></li>
 		<li class="<%= menuClass(['/add-notification']) %>">
