@@ -391,6 +391,17 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     );
   }
 
+  String _formatPlanCategorySubtitle(String planName, String? groupDisplayName) {
+    final target = (groupDisplayName != null && groupDisplayName.trim().isNotEmpty)
+        ? groupDisplayName.trim()
+        : planName.trim();
+    if (target.isEmpty) return 'Full Access Category';
+    if (target.toLowerCase().contains('category')) {
+      return target.toLowerCase().startsWith('full access') ? target : 'Full Access $target';
+    }
+    return 'Full Access $target Category';
+  }
+
   Widget _buildPlanCard({
     required int index,
     required String price,
@@ -412,7 +423,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
         ? features
         : (theme['features'] as List<String>? ??
             <String>[
-              'Full access to $categoryName',
+              categoryName,
               '$planValidity validity',
               'Plan ID: $planId',
             ]);
@@ -465,7 +476,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       ),
                       const SizedBox(height: 2.0),
                       Text(
-                        planType.isNotEmpty ? planType : categoryName,
+                        categoryName,
                         style: TextStyle(
                           fontSize: FFFont.f12,
                           fontWeight: FontWeight.w600,
@@ -706,11 +717,14 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                   getJsonField(plan, r'''$.planValidity''')
                                           ?.toString() ??
                                       '1 year';
-                              final categoryName = getJsonField(
+                              final rawGroupDisplayName = getJsonField(
                                     plan,
                                     r'''$.categoryGroup.displayName''',
-                                  )?.toString() ??
-                                  'Full Access (All Categories)';
+                                  )?.toString();
+                              final categoryName = _formatPlanCategorySubtitle(
+                                planName,
+                                rawGroupDisplayName,
+                              );
                               final categoryGroupId = getJsonField(
                                 plan,
                                 r'''$.categoryGroup._id''',

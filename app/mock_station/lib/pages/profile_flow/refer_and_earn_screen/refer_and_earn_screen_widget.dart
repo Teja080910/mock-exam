@@ -42,11 +42,24 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
       return;
     }
 
+    final localCode = getJsonField(
+      FFAppState().userDetils,
+      r'''$.referral_code''',
+    )?.toString() ?? '';
+    if (localCode.isNotEmpty && referralCode.isEmpty) {
+      setState(() {
+        referralCode = localCode;
+      });
+    }
+
     final infoRes = await QuizGroup.getReferralInfoCall.call(token: token);
     final infoBody = infoRes.jsonBody;
     if (infoBody != null) {
+      final code = QuizGroup.getReferralInfoCall.referralCode(infoBody) ?? '';
       setState(() {
-        referralCode = QuizGroup.getReferralInfoCall.referralCode(infoBody) ?? '';
+        if (code.isNotEmpty) {
+          referralCode = code;
+        }
         cashbackPercent =
             QuizGroup.getReferralInfoCall.cashbackPercent(infoBody) ?? 20;
         discountPercent =
@@ -462,10 +475,12 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                     fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(height: 4.0),
-                              Row(
+                               Row(
                                 children: [
                                   Text(
-                                    referralCode,
+                                    referralCode.isNotEmpty
+                                        ? referralCode
+                                        : (_loading ? 'Loading...' : '--------'),
                                     style: const TextStyle(
                                       fontSize: FFFont.f16,
                                       fontWeight: FontWeight.w900,
@@ -476,13 +491,15 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                   const SizedBox(width: 10.0),
                                   InkWell(
                                     onTap: () {
-                                      Clipboard.setData(
-                                          ClipboardData(text: referralCode));
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Referral code copied to clipboard!')),
-                                      );
+                                      if (referralCode.isNotEmpty) {
+                                        Clipboard.setData(
+                                            ClipboardData(text: referralCode));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Referral code copied to clipboard!')),
+                                        );
+                                      }
                                     },
                                     child: const Icon(Icons.copy_rounded,
                                         size: 18.0, color: Color(0xFF059669)),
@@ -505,10 +522,17 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                   borderRadius: BorderRadius.circular(14.0)),
                             ),
                             onPressed: () {
-                              Share.share(
-                                'Use my referral code *$referralCode* to join Mock Station App and get up to $discountPercent% discount on your purchase! Download now: https://play.google.com/store/apps/details?id=com.mock.exam.app',
-                                subject: 'Mock Station Referral',
-                              );
+                              if (referralCode.isNotEmpty) {
+                                Share.share(
+                                  'Use my referral code *$referralCode* to join Mock Station App and get up to $discountPercent% discount on your purchase! Download now: https://play.google.com/store/apps/details?id=com.mock.exam.app',
+                                  subject: 'Mock Station Referral',
+                                );
+                              } else {
+                                Share.share(
+                                  'Join Mock Station App and get exciting test series and mock exams! Download now: https://play.google.com/store/apps/details?id=com.mock.exam.app',
+                                  subject: 'Mock Station Referral',
+                                );
+                              }
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,

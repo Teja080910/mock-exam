@@ -37,7 +37,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
           onPressed: () => context.safePop(),
         ),
         title: Text(
-          widget.groupName ?? '',
+          (widget.groupName ?? '').toUpperCase(),
           style: const TextStyle(
             color: Color(0xFF111827),
             fontSize: FFFont.f18,
@@ -123,7 +123,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -176,7 +176,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    displayTitle,
+                                    displayTitle.toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: FFFont.f16,
                                       fontWeight: FontWeight.w700,
@@ -230,7 +230,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.55),
+              color: Colors.white.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,

@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const sendinBlue = require("sendinblue-api");
 var randomstring = require("randomstring");
+const { generateUniqueReferralCode, ensureReferralCode } = require("../utils/referralHelper");
 const User = require("../models/userModel");
 const UserOTP = require("../models/userOtpModel");
 const PasswordOTP = require("../models/passwordOTPModel");
@@ -201,18 +202,8 @@ const Signup = async (req, res) => {
   try {
     const pass = sha256.x2(req.body.password);
 
-    let referralCode = "";
+    let referralCode = await generateUniqueReferralCode();
     let referredBy = null;
-
-    const generateReferralCode = () => randomstring.generate({ length: 8, charset: "alphanumeric", capitalization: "uppercase" });
-
-    // Generate unique referral code
-    let isUnique = false;
-    while (!isUnique) {
-      referralCode = generateReferralCode();
-      const existingCode = await User.findOne({ referral_code: referralCode });
-      if (!existingCode) isUnique = true;
-    }
 
     // Handle referral
     if (req.body.referralCode) {
@@ -538,7 +529,8 @@ const SignIn = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
-    console.log("token", token);
+    const referralCode = await ensureReferralCode(user);
+
     return res.json({
       data: {
         success: 1,
@@ -555,6 +547,7 @@ const SignIn = async (req, res) => {
           active: user.active,
           image: user.image || "",
           points: user.points,
+          referral_code: referralCode,
         },
         error: "0",
       },
@@ -1031,6 +1024,7 @@ const GetUser = async (req, res) => {
     const user = await User.findOne({ _id: req.body.userId });
 
     if (user) {
+      const referralCode = await ensureReferralCode(user);
       res.json({
         data: {
           success: 1,
@@ -1052,7 +1046,7 @@ const GetUser = async (req, res) => {
             total_wrong_answers: user.total_wrong_answers
               ? user.total_wrong_answers
               : 0,
-            referral_code: user.referral_code ? user.referral_code : "",
+            referral_code: referralCode || "",
           },
           error: 0,
         },
@@ -2916,9 +2910,11 @@ const getReferralInfo = async (req, res) => {
       });
     }
 
+    const referralCode = await ensureReferralCode(user);
+
     res.json({
       success: true,
-      referralCode: user.referral_code || "",
+      referralCode: referralCode || "",
       rewardPoints: settings.rewardPoints,
       discountPercent: settings.discountPercent,
       cashbackPercent: settings.cashbackPercent,

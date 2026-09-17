@@ -72,7 +72,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
               const SizedBox(width: 14.0),
               Expanded(
                 child: Text(
-                  widget.title ?? '',
+                  (widget.title ?? '').toUpperCase(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF111827),
@@ -211,7 +211,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    getJsonField(subcategory, r'$.name').toString(),
+                    getJsonField(subcategory, r'$.name').toString().toUpperCase(),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: FFFont.f16,

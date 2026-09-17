@@ -168,7 +168,7 @@ class _FeaturedCategoryDetailWidgetState
               const SizedBox(width: 14.0),
               Expanded(
                 child: Text(
-                  widget.title ?? '',
+                  (widget.title ?? '').toUpperCase(),
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: FFFont.f18,
@@ -305,7 +305,7 @@ class _FeaturedCategoryDetailWidgetState
                           child: Padding(
                             padding: const EdgeInsets.only(top: 2.0, right: 6.0),
                             child: Text(
-                              name,
+                              name.toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFF111827),
                                 fontSize: FFFont.f18,

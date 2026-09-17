@@ -101,7 +101,7 @@ class _CompletedquizzesScreenDetailWidgetState
                     model: _model.appBarModel,
                     updateCallback: () => safeSetState(() {}),
                     child: AppBarWidget(
-                      title: widget.title!,
+                      title: widget.title!.toUpperCase(),
                       backIcon: true,
                     ),
                   ),

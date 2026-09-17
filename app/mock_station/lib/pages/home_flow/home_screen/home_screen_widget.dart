@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '/backend/api_requests/api_calls.dart';
-import '/componants/email_verification_dialog/email_verification_dialog_widget.dart';
-import '/componants/referral_prompt/referral_prompt.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/shimmer/blank_component/blank_component_widget.dart';
-import '/shimmer/shimmer_banner/shimmer_banner_widget.dart';
-import '/shimmer/shimmer_container/shimmer_container_widget.dart';
-import '/shimmer/shimmer_home_list/shimmer_home_list_widget.dart';
-import '/custom_code/actions/index.dart' as actions;
-import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/pages/home_flow/all_group_list_page/all_group_list_page_widget.dart';
 import '/pages/home_flow/search_screen/search_screen_widget.dart';
@@ -23,13 +12,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'home_screen_model.dart';
-import 'dart:ui';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 export 'home_screen_model.dart';
 
@@ -52,15 +36,37 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   // Banner carousel current index
   int _bannerCurrentIndex = 0;
   bool _showDisclaimerBanner = true;
+  Future<_HomeData>? _homeDataFuture;
 
   // Max groups shown per scope section before a "View All" button appears
   // (4 columns x 3 rows = 12 slots; last slot is View All)
   static const int _maxGroupsPerSection = 11;
 
+  Future<_HomeData> _fetchHomeData() async {
+    final results = await Future.wait([
+      QuizGroup.getCarouselBannersCall.call(),
+      fetchCategoryGroups(),
+    ]);
+
+    final bannerRes = results[0] as ApiCallResponse;
+    final categoryGroups = results[1] as List<CategoryGroup>;
+
+    final banners = QuizGroup.getCarouselBannersCall
+            .bannersList(bannerRes.jsonBody)
+            ?.toList() ??
+        [];
+
+    return _HomeData(
+      banners: banners,
+      categoryGroups: categoryGroups,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => HomeScreenModel());
+    _homeDataFuture = _fetchHomeData();
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -359,7 +365,15 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Text(
-                group.code.isNotEmpty ? group.code : group.displayName.replaceAll(RegExp(r'\s*Mock\s*Test[s]?\s*', caseSensitive: false), '').trim(),
+                (group.code.isNotEmpty
+                        ? group.code
+                        : group.displayName
+                            .replaceAll(
+                                RegExp(r'\s*Mock\s*Test[s]?\s*',
+                                    caseSensitive: false),
+                                '')
+                            .trim())
+                    .toUpperCase(),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -448,220 +462,210 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
             return RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  _model.bannersFuture = null;
-                  _model.categoryGroupsFuture = null;
+                  _homeDataFuture = _fetchHomeData();
                 });
+                await _homeDataFuture;
               },
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  // Banner Carousel
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(0, 12, 0, 0),
-                      child: FutureBuilder<ApiCallResponse>(
-                        future: _model.bannersFuture ??=
-                            QuizGroup.getCarouselBannersCall.call(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return const SizedBox(
-                              height: 180.0,
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                          final banners = QuizGroup.getCarouselBannersCall
-                                  .bannersList(snapshot.data!.jsonBody)
-                                  ?.toList() ??
-                                [];
-                          if (banners.isEmpty) return const SizedBox(height: 8);
-                          return SizedBox(
-                            height: 140.0,
-                            child: CarouselSlider(
-                              options: CarouselOptions(
-                                height: 140.0,
-                                viewportFraction: 0.9,
-                                autoPlay: banners.length > 1,
-                                enlargeCenterPage: true,
-                                enableInfiniteScroll: banners.length > 1,
-                                onPageChanged: (index, reason) =>
-                                    setState(() => _bannerCurrentIndex = index),
+              child: FutureBuilder<_HomeData>(
+                future: _homeDataFuture ??= _fetchHomeData(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
+                          const SizedBox(height: 12),
+                          Text('Failed to load data', style: FlutterFlowTheme.of(context).bodyLarge),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _homeDataFuture = _fetchHomeData();
+                              });
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  if (!snapshot.hasData) {
+                    return const Center(child: Text('No data available'));
+                  }
+
+                  final data = snapshot.data!;
+                  final banners = data.banners;
+                  final categoryGroups = data.categoryGroups;
+                  final centralGroups = categoryGroups.where((g) => g.scope == 'central').toList();
+                  final stateGroups = categoryGroups.where((g) => g.scope == 'state').toList();
+                  final otherGroups = categoryGroups.where((g) => g.scope != 'central' && g.scope != 'state').toList();
+
+                  return CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      // Banner Carousel
+                      if (banners.isNotEmpty) ...[
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 12, 0, 0),
+                            child: SizedBox(
+                              height: 140.0,
+                              child: CarouselSlider(
+                                options: CarouselOptions(
+                                  height: 140.0,
+                                  viewportFraction: 0.9,
+                                  autoPlay: banners.length > 1,
+                                  enlargeCenterPage: true,
+                                  enableInfiniteScroll: banners.length > 1,
+                                  onPageChanged: (index, reason) =>
+                                      setState(() => _bannerCurrentIndex = index),
+                                ),
+                                items: banners.map((banner) {
+                                  final rawImg =
+                                      getJsonField(banner, r'''$.image''')
+                                          .toString();
+                                  final imgUrl = rawImg.startsWith('http')
+                                      ? rawImg
+                                      : '${FFAppConstants.imageBaseURL}$rawImg';
+                                  return Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2.0,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: 12.0,
+                                          spreadRadius: 2.0,
+                                          color: Colors.black.withValues(alpha: 0.2),
+                                          offset: const Offset(0.0, 6.0),
+                                        )
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      child: CachedNetworkImage(
+                                        imageUrl: imgUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
-                              items: banners.map((banner) {
-                                final rawImg =
-                                    getJsonField(banner, r'''$.image''')
-                                        .toString();
-                                final imgUrl = rawImg.startsWith('http')
-                                    ? rawImg
-                                    : '${FFAppConstants.imageBaseURL}$rawImg';
-                                return Container(
-                                  width: double.infinity,
+                            ),
+                          ),
+                        ),
+
+                        // Carousel Dots Indicator
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(banners.length, (index) {
+                                final isSelected = _bannerCurrentIndex == index;
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4.0),
+                                  width: isSelected ? 24.0 : 8.0,
+                                  height: 8.0,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2.0,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 12.0,
-                                        spreadRadius: 2.0,
-                                        color: Colors.black.withOpacity(0.2),
-                                        offset: const Offset(0.0, 6.0),
-                                      )
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    child: CachedNetworkImage(
-                                      imageUrl: imgUrl,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error),
-                                    ),
+                                    borderRadius: BorderRadius.circular(4.0),
+                                    color: isSelected
+                                        ? FlutterFlowTheme.of(context).primary
+                                        : FlutterFlowTheme.of(context)
+                                            .secondaryText
+                                            .withValues(alpha: 0.3),
                                   ),
                                 );
-                              }).toList(),
+                              }),
                             ),
-                          );
-                        },
+                          ),
+                        ),
+                      ],
+
+                      // Category Groups (Central wise + State wise + Other)
+                      SliverToBoxAdapter(
+                        child: categoryGroups.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.all(40.0),
+                                child: Center(child: Text('No categories found')),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildScopeSection(context, 'Central Government Exam Mock Test', centralGroups),
+                                  _buildScopeSection(context, 'State Wise Government Exam Mock Test', stateGroups),
+                                  if (otherGroups.isNotEmpty) _buildScopeSection(context, 'Other', otherGroups),
+                                ],
+                              ),
                       ),
-                    ),
-                  ),
 
-                  // Carousel Dots Indicator
-                  SliverToBoxAdapter(
-                    child: FutureBuilder<ApiCallResponse>(
-                      future: _model.bannersFuture ??=
-                          QuizGroup.getCarouselBannersCall.call(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) return const SizedBox(height: 4);
-                        final banners = QuizGroup.getCarouselBannersCall
-                                .bannersList(snapshot.data!.jsonBody)
-                                ?.toList() ??
-                            [];
-                        if (banners.isEmpty) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(banners.length, (index) {
-                              final isSelected = _bannerCurrentIndex == index;
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                width: isSelected ? 24.0 : 8.0,
-                                height: 8.0,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(4.0),
-                                  color: isSelected
-                                      ? FlutterFlowTheme.of(context).primary
-                                      : FlutterFlowTheme.of(context)
-                                          .secondaryText
-                                          .withOpacity(0.3),
-                                ),
-                              );
-                            }),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Category Groups (Central wise + State wise + Other)
-                  SliverToBoxAdapter(
-                    child: FutureBuilder<List<CategoryGroup>>(
-                      future: _model.categoryGroupsFuture ??= fetchCategoryGroups(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Padding(
-                            padding: EdgeInsets.all(40.0),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        if (snapshot.hasError) {
-                          return const Padding(
-                            padding: EdgeInsets.all(24.0),
-                            child: Center(child: Text('Failed to load categories')),
-                          );
-                        }
-                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                           return const Padding(
-                            padding: EdgeInsets.all(40.0),
-                            child: Center(child: Text('No categories found')),
-                          );
-                        }
-
-                        final centralGroups = snapshot.data!.where((g) => g.scope == 'central').toList();
-                        final stateGroups = snapshot.data!.where((g) => g.scope == 'state').toList();
-                        final otherGroups = snapshot.data!.where((g) => g.scope != 'central' && g.scope != 'state').toList();
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildScopeSection(context, 'Central Government Exam Mock Test', centralGroups),
-                            _buildScopeSection(context, 'State Wise Government Exam Mock Test', stateGroups),
-                            if (otherGroups.isNotEmpty) _buildScopeSection(context, 'Other', otherGroups),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(
-                    child: StatefulBuilder(
-                      builder: (context, setBannerState) {
-                        if (!_showDisclaimerBanner) return const SizedBox.shrink();
-                        return Container(
-                          margin: const EdgeInsets.all(16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3CD),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFFFEEBA), width: 1),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(Icons.info, color: Color(0xFF0D6EFD), size: 20),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  "Disclaimer: This app is not affiliated with or represents any government entity.",
-                                  style: TextStyle(
-                                    color: Color(0xFF664D03),
-                                    fontSize: FFFont.f12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                      SliverToBoxAdapter(
+                        child: StatefulBuilder(
+                          builder: (context, setBannerState) {
+                            if (!_showDisclaimerBanner) return const SizedBox.shrink();
+                            return Container(
+                              margin: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF3CD),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFFFEEBA), width: 1),
                               ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () {
-                                  setBannerState(() {
-                                    _showDisclaimerBanner = false;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2B3A67),
-                                    borderRadius: BorderRadius.circular(4),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.info, color: Color(0xFF0D6EFD), size: 20),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Text(
+                                      "Disclaimer: This app is not affiliated with or represents any government entity.",
+                                      style: TextStyle(
+                                        color: Color(0xFF664D03),
+                                        fontSize: FFFont.f12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
-                                  child: const Icon(Icons.close, color: Colors.white, size: 16),
-                                ),
+                                  const SizedBox(width: 8),
+                                  InkWell(
+                                    onTap: () {
+                                      setBannerState(() {
+                                        _showDisclaimerBanner = false;
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2B3A67),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        );
-                      }
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 12)),
-                  
-
-                ],
+                            );
+                          }
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                    ],
+                  );
+                },
               ),
             );
           },
@@ -669,6 +673,16 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
       ),
     );
   }
+}
+
+class _HomeData {
+  final List<dynamic> banners;
+  final List<CategoryGroup> categoryGroups;
+
+  _HomeData({
+    required this.banners,
+    required this.categoryGroups,
+  });
 }
 
 class Category {

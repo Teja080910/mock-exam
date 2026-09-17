@@ -92,7 +92,7 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -147,7 +147,7 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              group.displayName,
+                              group.displayName.toUpperCase(),
                               style: const TextStyle(
                                 fontSize: FFFont.f16,
                                 fontWeight: FontWeight.w700,

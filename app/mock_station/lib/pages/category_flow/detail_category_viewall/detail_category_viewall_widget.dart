@@ -388,7 +388,8 @@ class _DetailCategoryViewallWidgetState
                                                               getJsonField(
                                                                 categoryListItem,
                                                                 r'''$.name''',
-                                                              ).toString(),
+                                                              ).toString()
+                                                                  .toUpperCase(),
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,

@@ -291,64 +291,68 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     String? badge,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(10.0),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 28.0,
-            height: 28.0,
+            width: 22.0,
+            height: 22.0,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(9.0),
+              borderRadius: BorderRadius.circular(6.0),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x0D0F172A),
-                  blurRadius: 6.0,
-                  offset: Offset(0, 2),
+                  blurRadius: 4.0,
+                  offset: Offset(0, 1),
                 ),
               ],
             ),
-            child: Icon(icon, color: accentColor, size: 16.0),
+            child: Icon(icon, color: accentColor, size: 13.0),
           ),
-          const SizedBox(height: 8.0),
+          const SizedBox(height: 4.0),
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: FFFont.f10,
+              fontSize: FFFont.f9,
               fontWeight: FontWeight.w700,
               height: 1.1,
             ),
           ),
-          const SizedBox(height: 4.0),
+          const SizedBox(height: 2.0),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: accentColor,
-              fontSize: FFFont.f16,
+              fontSize: FFFont.f14,
               fontWeight: FontWeight.w800,
             ),
           ),
           if (badge != null) ...[
-            const SizedBox(height: 4.0),
+            const SizedBox(height: 2.0),
             Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+                  const EdgeInsets.symmetric(horizontal: 4.0, vertical: 1.0),
               decoration: BoxDecoration(
                 color: accentColor.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(6.0),
+                borderRadius: BorderRadius.circular(4.0),
               ),
               child: Text(
                 badge,
                 style: TextStyle(
                   color: accentColor,
-                  fontSize: FFFont.f10,
+                  fontSize: FFFont.f9,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -359,62 +363,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     );
   }
 
-  Widget _buildInsightCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color accentColor,
-    required Color backgroundColor,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14.0),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40.0,
-            height: 40.0,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: Icon(icon, color: accentColor, size: 24.0),
-          ),
-          const SizedBox(width: 10.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF374151),
-                    fontSize: FFFont.f10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: accentColor,
-                    fontSize: FFFont.f20,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSectionSummaryRow({
     required IconData icon,
@@ -632,15 +580,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final analysis = _chapterAnalysisItems();
     if (analysis.isEmpty) return const SizedBox.shrink();
 
-    // Collect all unique subjects
-    final subjects = analysis
-        .map((item) => (item['subject'] ?? '').toString().trim())
-        .where((s) => s.isNotEmpty)
-        .toSet()
-        .toList();
-    final showSubject = _isSubjectWiseTest(_resultQuestionSource()) && subjects.isNotEmpty;
-    final subjectLabel = subjects.join(', ');
-
     final filtered = analysis
         .where((item) => item['category'] == _strengthFilter)
         .toList();
@@ -665,17 +604,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               letterSpacing: 0.4,
             ),
           ),
-          if (showSubject) ...[
-            const SizedBox(height: 4.0),
-            Text(
-              'Subjects: $subjectLabel',
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: FFFont.f11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
           const SizedBox(height: 10.0),
           Container(
             padding: const EdgeInsets.all(3.0),
@@ -797,11 +725,14 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                               final status = question['status'] as String;
                               final isCorrect = status == 'correct';
                               final isWrong = status == 'incorrect';
+                              final isReview = status == 'review';
                               final circleColor = isCorrect
                                   ? const Color(0xFF16A34A)
                                   : isWrong
                                       ? const Color(0xFFEF4444)
-                                      : const Color(0xFFD1D5DB);
+                                      : isReview
+                                          ? const Color(0xFFF59E0B)
+                                          : const Color(0xFFD1D5DB);
                               return GestureDetector(
                                 onTap: () {
                                   final qIndex =
@@ -828,7 +759,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   child: Text(
                                     '${question['number']}',
                                     style: TextStyle(
-                                      color: isCorrect || isWrong
+                                      color: isCorrect || isWrong || isReview
                                           ? Colors.white
                                           : const Color(0xFF374151),
                                       fontSize: FFFont.f10,
@@ -1292,44 +1223,19 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                    mainAxisExtent: 125.0,
+                    crossAxisSpacing: 6.0,
+                    mainAxisSpacing: 6.0,
+                    mainAxisExtent: 78.0,
                     children: [
                       _buildMetricCard(title: 'Total Questions', value: total.toString(), icon: Icons.article_rounded, accentColor: const Color(0xFF0B84FF), backgroundColor: const Color(0xFFF1F6FF)),
                       _buildMetricCard(title: 'Total Marks', value: _score.toStringAsFixed(_score.truncateToDouble() == _score ? 0 : 2), icon: Icons.emoji_events_rounded, accentColor: const Color(0xFF7C3AED), backgroundColor: const Color(0xFFF7F1FF)),
-                      _buildMetricCard(title: 'Correct Answers', value: correct.toString(), icon: Icons.check_circle_rounded, accentColor: const Color(0xFF16A34A), backgroundColor: const Color(0xFFF0FBF4), badge: accuracyLabel),
-                      _buildMetricCard(title: 'Incorrect Answers', value: wrong.toString(), icon: Icons.cancel_rounded, accentColor: const Color(0xFFEF4444), backgroundColor: const Color(0xFFFFF3F3), badge: '${(total <= 0 ? 0 : (wrong / total) * 100).toStringAsFixed(0)}%'),
-                      _buildMetricCard(title: 'Skipped Questions', value: skipped.toString(), icon: Icons.timer_rounded, accentColor: const Color(0xFFF59E0B), backgroundColor: const Color(0xFFFFFAEE), badge: '${(total <= 0 ? 0 : (skipped / total) * 100).toStringAsFixed(0)}%'),
-                      _buildMetricCard(title: 'Marked for Review', value: _computedReview.toString(), icon: Icons.star_rounded, accentColor: const Color(0xFFEC4899), backgroundColor: const Color(0xFFFDF2F8), badge: '${(total <= 0 ? 0 : (_computedReview / total) * 100).toStringAsFixed(0)}%'),
-                      _buildMetricCard(title: 'Accuracy', value: accuracyLabel, icon: Icons.track_changes_rounded, accentColor: const Color(0xFF0B84FF), backgroundColor: const Color(0xFFF1F6FF), badge: _accuracy >= 60 ? 'Good' : 'Low'),
-                    ],
-                  ),
-                  const SizedBox(height: 14.0),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildInsightCard(
-                          title: 'Total Time Taken',
-                          value: timeLabel,
-                          icon: Icons.timer_outlined,
-                          accentColor: const Color(0xFFA855F7),
-                          backgroundColor: const Color(0xFFF7F1FF),
-                        ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: _buildInsightCard(
-                          title: 'Percentile',
-                          value: _percentile == null
-                              ? '--'
-                              : '${_percentile!.toStringAsFixed(1)}%',
-                          icon: Icons.insights_rounded,
-                          accentColor: const Color(0xFFF59E0B),
-                          backgroundColor: const Color(0xFFFFF7E8),
-                        ),
-                      ),
+                      _buildMetricCard(title: 'Correct Answers', value: correct.toString(), icon: Icons.check_circle_rounded, accentColor: const Color(0xFF16A34A), backgroundColor: const Color(0xFFF0FBF4)),
+                      _buildMetricCard(title: 'Incorrect Answers', value: wrong.toString(), icon: Icons.cancel_rounded, accentColor: const Color(0xFFEF4444), backgroundColor: const Color(0xFFFFF3F3)),
+                      _buildMetricCard(title: 'Skipped Questions', value: skipped.toString(), icon: Icons.timer_rounded, accentColor: const Color(0xFFF59E0B), backgroundColor: const Color(0xFFFFFAEE)),
+                      _buildMetricCard(title: 'Marked for Review', value: _computedReview.toString(), icon: Icons.star_rounded, accentColor: const Color(0xFFEC4899), backgroundColor: const Color(0xFFFDF2F8)),
+                      _buildMetricCard(title: 'Accuracy', value: accuracyLabel, icon: Icons.track_changes_rounded, accentColor: const Color(0xFF0B84FF), backgroundColor: const Color(0xFFF1F6FF)),
+                      _buildMetricCard(title: 'Total Time Taken', value: timeLabel, icon: Icons.timer_outlined, accentColor: const Color(0xFFA855F7), backgroundColor: const Color(0xFFF7F1FF)),
+                      _buildMetricCard(title: 'Percentile', value: _percentile == null ? '--' : '${_percentile!.toStringAsFixed(1)}%', icon: Icons.insights_rounded, accentColor: const Color(0xFFF59E0B), backgroundColor: const Color(0xFFFFF7E8)),
                     ],
                   ),
                   const SizedBox(height: 18.0),
@@ -1453,10 +1359,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   String _answerKeyStatus(dynamic question) {
-    final markedForReview = question is Map
-        ? (question['markedForReview'] == true ||
-            question['markedForReview'].toString().toLowerCase() == 'true')
-        : false;
+    final reviewVal = _answerKeyValue(question, 'markedForReview');
+    final markedForReview = reviewVal == true ||
+        reviewVal.toString().toLowerCase() == 'true';
     if (markedForReview) return 'review';
 
     final userAnswer = _cleanText(
@@ -1603,7 +1508,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       ? const Color(0xFF16C784)
                       : status == 'incorrect'
                           ? const Color(0xFFFF5A64)
-                          : const Color(0xFFD1D5DB);
+                          : status == 'review'
+                              ? const Color(0xFFF59E0B)
+                              : const Color(0xFFD1D5DB);
                   final selected = visibleIndex == _selectedAnswerKeyIndex;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
@@ -1692,7 +1599,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           children: [
             if (icon != null) ...[
               icon,
-              const SizedBox(width: 5.0),
+              const SizedBox(width: 4.0),
             ],
             Flexible(
               child: Column(
@@ -1708,18 +1615,18 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       softWrap: false,
                       style: const TextStyle(
                         color: Color(0xFF6B7280),
-                        fontSize: FFFont.f10,
+                        fontSize: FFFont.f9,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 2.0),
+                  const SizedBox(height: 1.0),
                   Text(
                     value,
                     maxLines: 1,
                     style: const TextStyle(
                       color: Color(0xFF111827),
-                      fontSize: FFFont.f12,
+                      fontSize: FFFont.f11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1732,57 +1639,57 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     }
 
     return Container(
-      margin: const EdgeInsets.only(top: 14.0),
+      margin: const EdgeInsets.only(top: 8.0),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF2563EB), Color(0xFFEC4899)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(8.0),
       ),
       padding: const EdgeInsets.all(1.0),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 5.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(11.0),
+          borderRadius: BorderRadius.circular(7.0),
         ),
         child: Row(
           children: [
             metric(
               'Your time',
               yourTime,
-              icon: const Icon(Icons.access_time_rounded, color: Color(0xFF2563EB), size: 20.0),
+              icon: const Icon(Icons.access_time_rounded, color: Color(0xFF2563EB), size: 15.0),
               flex: 10,
             ),
-            Container(width: 1.0, height: 30.0, color: const Color(0xFFE5E7EB)),
+            Container(width: 1.0, height: 18.0, color: const Color(0xFFE5E7EB)),
             metric(
               'Avg. time',
               avgTime,
               icon: Container(
-                width: 24.0,
-                height: 24.0,
+                width: 18.0,
+                height: 18.0,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF3E8FF),
-                  borderRadius: BorderRadius.circular(6.0),
+                  borderRadius: BorderRadius.circular(4.0),
                 ),
-                child: const Icon(Icons.bar_chart_rounded, color: Color(0xFF9333EA), size: 14.0),
+                child: const Icon(Icons.bar_chart_rounded, color: Color(0xFF9333EA), size: 11.0),
               ),
               flex: 10,
             ),
-            Container(width: 1.0, height: 30.0, color: const Color(0xFFE5E7EB)),
+            Container(width: 1.0, height: 18.0, color: const Color(0xFFE5E7EB)),
             metric(
               'Answered correctly',
               '$correctPercentage%',
               icon: Container(
-                width: 24.0,
-                height: 24.0,
+                width: 18.0,
+                height: 18.0,
                 decoration: BoxDecoration(
                   color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(6.0),
+                  borderRadius: BorderRadius.circular(4.0),
                 ),
-                child: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF16A34A), size: 14.0),
+                child: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF16A34A), size: 11.0),
               ),
               flex: 14,
             ),
@@ -1840,7 +1747,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       _answerKeyValue(question, 'description') ??
           _answerKeyValue(question, 'explanation'),
     );
-    final chapter = biText(_answerKeyValue(question, 'chapter')).trim();
     final questionImage = _answerKeyValue(question, 'image');
 
     return Container(
@@ -1887,18 +1793,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               ),
             ],
           ),
-          if (chapter.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                'Chapter: $chapter',
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: FFFont.f12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
           if (questionImage != null && questionImage.toString().isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 14.0, 0.0, 8.0),

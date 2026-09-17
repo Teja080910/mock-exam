@@ -10,7 +10,7 @@ import '/pages/category_flow/category_detail_page/category_detail_page_widget.da
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/pages/home_flow/news_screen/news_screen_widget.dart';
 import '/pages/home_flow/quiz_questions_screen/quiz_questions_screen_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
 
 enum _SearchResultType { group, category, quiz, news, ebook }
 
@@ -383,16 +383,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       case _SearchResultType.ebook:
         final link = _value(result.data['link']);
         if (link.isEmpty) return;
-        final uri = Uri.tryParse(link);
-        if (uri == null || !await canLaunchUrl(uri)) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Could not open the e-book link.')),
-            );
-          }
-          return;
-        }
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        await openNotePdf(context, link, title: result.title);
         return;
     }
   }
@@ -456,7 +447,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
         child: Icon(result.icon, color: Color(0xFF2563EB), size: 24.0),
       ),
       title: Text(
-        result.title,
+        result.title.toUpperCase(),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(

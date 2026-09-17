@@ -4,6 +4,8 @@ const User = require('../models/userModel');
 const Notification = require('../models/notificationModel');
 const randomstring = require('randomstring');
 
+const { generateUniqueReferralCode, ensureReferralCode } = require('../utils/referralHelper');
+
 let firebaseApp = admin.apps.length > 0 ? admin.apps[0] : null;
 
 const googleSignIn = async (req, res) => {
@@ -43,13 +45,7 @@ const googleSignIn = async (req, res) => {
             if (!user) {
                 console.log('Creating new user for email:', email);
                 // Generate unique referral code
-                let referralCode = '';
-                let isUnique = false;
-                while (!isUnique) {
-                    referralCode = randomstring.generate({ length: 8, charset: 'alphanumeric', capitalization: 'uppercase' });
-                    const existingCode = await User.findOne({ referral_code: referralCode });
-                    if (!existingCode) isUnique = true;
-                }
+                const referralCode = await generateUniqueReferralCode();
 
                 // Handle referral code from signup flow
                 let referredBy = null;
@@ -74,6 +70,7 @@ const googleSignIn = async (req, res) => {
                 console.log('New user created:', user._id);
             } else {
                 console.log('Existing user found:', user._id);
+                await ensureReferralCode(user);
             }
 
             // Handle device registration
@@ -120,6 +117,7 @@ const googleSignIn = async (req, res) => {
                 active: user.active || 'true',
                 image: user.profile_pic || '',
                 points: user.points || 0,
+                referral_code: user.referral_code || '',
                 is_verified: user.is_verified || 0,
                 created_at: user.createdAt || '',
                 updated_at: user.updatedAt || ''

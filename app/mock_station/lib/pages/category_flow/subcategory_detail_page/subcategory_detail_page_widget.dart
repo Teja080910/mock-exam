@@ -61,7 +61,7 @@ class _SubcategoryDetailPageWidgetState
               const SizedBox(width: 14.0),
               Expanded(
                 child: Text(
-                  title,
+                  title.toUpperCase(),
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: FFFont.f18,
@@ -228,7 +228,7 @@ class _SubcategoryDetailPageWidgetState
                               Padding(
                                 padding: const EdgeInsets.only(top: 2.0, right: 6.0),
                                 child: Text(
-                                  quiz['name'] ?? '',
+                                  (quiz['name'] ?? '').toString().toUpperCase(),
                                   style: const TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: FFFont.f18,

@@ -394,7 +394,7 @@ class _CategoryViewallWidgetState extends State<CategoryViewallWidget>
                                                               getJsonField(
                                                                 categoryListItem,
                                                                 r'''$.name''',
-                                                              ).toString(),
+                                                              ).toString().toUpperCase(),
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,

@@ -170,7 +170,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
             final subjectName = getJsonField(s, r'$.subject').toString();
             final image = getJsonField(s, r'$.image').toString();
             return _buildCard(
-              name: subjectName,
+              name: subjectName.toUpperCase(),
               subtitle: 'Click to view notes',
               image: image,
               onTap: () {
@@ -302,7 +302,7 @@ class _TopicsScreen extends StatelessWidget {
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: Column(
         children: [
-          AppBarWidget(title: subject, backIcon: true),
+          AppBarWidget(title: subject.toUpperCase(), backIcon: true),
           Expanded(child: _buildTopicsList(context)),
         ],
       ),
@@ -333,7 +333,7 @@ class _TopicsScreen extends StatelessWidget {
             final image = getJsonField(t, r'$.image').toString();
             return _buildCard(
               context: context,
-              name: topicName,
+              name: topicName.toUpperCase(),
               subtitle: 'Click to view notes',
               image: image,
               onTap: () {
@@ -467,7 +467,7 @@ class _NotesDetailScreen extends StatelessWidget {
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: Column(
         children: [
-          AppBarWidget(title: topic, backIcon: true),
+          AppBarWidget(title: topic.toUpperCase(), backIcon: true),
           Expanded(child: _buildNotesList(context)),
         ],
       ),
@@ -610,7 +610,7 @@ class _NotesDetailScreen extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    title,
+                                    title.toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w700,
@@ -698,7 +698,6 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final fullImageUrl = _cleanNoteUrl(widget.noteImage);
     final fullFileUrl = _cleanNoteUrl(widget.fileUrl);
     final hasFile = fullFileUrl.trim().isNotEmpty && fullFileUrl.trim() != 'null';
     final isPdf = hasFile &&
@@ -714,7 +713,7 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
       children: [
         if (widget.showAppBar)
           AppBarWidget(
-            title: widget.title,
+            title: widget.title.toUpperCase(),
             backIcon: true,
           ),
         Expanded(
@@ -723,27 +722,6 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (fullImageUrl.isNotEmpty) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(
-                      imageUrl: fullImageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        height: 200,
-                        color: Colors.grey.shade200,
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        height: 200,
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
                 if (hasFile) ...[
                   Container(
                     width: double.infinity,
@@ -784,7 +762,7 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    widget.title,
+                                    widget.title.toUpperCase(),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 15,

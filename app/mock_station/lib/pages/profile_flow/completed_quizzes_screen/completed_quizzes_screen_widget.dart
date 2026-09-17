@@ -311,7 +311,7 @@ class _CompletedQuizzesScreenWidgetState
                                                                 getJsonField(
                                                                   completedQuizItem,
                                                                   r'''$.quizDetails.name''',
-                                                                ).toString(),
+                                                                ).toString().toUpperCase(),
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .bodyMedium

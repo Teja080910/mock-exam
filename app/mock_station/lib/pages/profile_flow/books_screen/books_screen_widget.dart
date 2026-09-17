@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
 import 'books_screen_model.dart';
 export 'books_screen_model.dart';
 
@@ -121,19 +121,9 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                       borderRadius: BorderRadius.circular(12.0),
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
-                        onTap: () async {
+                        onTap: () {
                           if (ebookLink.isNotEmpty) {
-                            final Uri url = Uri.parse(ebookLink);
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url,
-                                  mode: LaunchMode.externalApplication);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Could not open the link.'),
-                                ),
-                              );
-                            }
+                            openNotePdf(context, ebookLink, title: ebookName);
                           }
                         },
                         child: Stack(
@@ -208,7 +198,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          ebookName,
+                                          ebookName.toUpperCase(),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: FlutterFlowTheme.of(context)
