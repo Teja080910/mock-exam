@@ -143,6 +143,7 @@ api_route.post("/getallebooks", async (req, res) => {
     const ebooksWithUrls = ebooks.map((ebook) => ({
       ...ebook.toObject(),
       imageUrl: `/assets/userImages/${ebook.image}`,
+      fileUrl: ebook.file ? `/assets/userImages/${ebook.file}` : '',
     }));
     res.json({
       data: {

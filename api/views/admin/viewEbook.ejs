@@ -104,7 +104,15 @@
                                                             <img src="./assets/userImages/<%= allEbook.image %>" alt="Ebook Cover" style="max-width: 100px; height: auto;">
                                                         </td>
                                                         <td>
-                                                            <a href="<%= allEbook.link %>" target="_blank" class="btn btn-primary btn-sm">Open Link</a>
+                                                            <% if (allEbook.file) { %>
+                                                                <a href="./assets/userImages/<%= allEbook.file %>" target="_blank" class="btn btn-primary btn-sm">View PDF</a>
+                                                            <% } %>
+                                                            <% if (allEbook.link) { %>
+                                                                <a href="<%= allEbook.link %>" target="_blank" class="btn btn-outline-primary btn-sm">Open Link</a>
+                                                            <% } %>
+                                                            <% if (!allEbook.file && !allEbook.link) { %>
+                                                                <span class="text-muted">-</span>
+                                                            <% } %>
                                                         </td>
                                                         <% const currentViewUrl = '/view-ebook?page=' + currentPage + (typeof extraParams !== 'undefined' ? extraParams : ''); %>
                                                         <% if (loginData.is_admin == 1) { %>
@@ -121,7 +129,7 @@
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex gap-3">
-                                                                    <a href="#" class="text-info me-3 btn-view-ebook" data-name="<%= allEbook.name %>" data-language="<%= allEbook.language %>" data-image="<%= allEbook.image %>" data-link="<%= allEbook.link %>" data-is-active="<%= allEbook.is_active %>" data-bs-toggle="modal" data-bs-target="#viewEbookModal"><i class="bx bx-show"></i></a>
+                                                                    <a href="#" class="text-info me-3 btn-view-ebook" data-name="<%= allEbook.name %>" data-language="<%= allEbook.language %>" data-image="<%= allEbook.image %>" data-link="<%= allEbook.link %>" data-file="<%= allEbook.file || '' %>" data-is-active="<%= allEbook.is_active %>" data-bs-toggle="modal" data-bs-target="#viewEbookModal"><i class="bx bx-show"></i></a>
                                                                     <a href="/edit-ebook?id=<%= allEbook._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
                                                                     <a href="/delete-ebook?id=<%= allEbook._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" onclick="return confirm('Are you sure want to delete this <%= allEbook.name %>' )" class="text-danger me-3"><i class="bx bx-trash"></i></a>
                                                                 </div>
@@ -134,7 +142,7 @@
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex gap-3">
-                                                                    <a href="#" class="text-info me-3 btn-view-ebook" data-name="<%= allEbook.name %>" data-language="<%= allEbook.language %>" data-image="<%= allEbook.image %>" data-link="<%= allEbook.link %>" data-is-active="<%= allEbook.is_active %>" data-bs-toggle="modal" data-bs-target="#viewEbookModal"><i class="bx bx-show"></i></a>
+                                                                    <a href="#" class="text-info me-3 btn-view-ebook" data-name="<%= allEbook.name %>" data-language="<%= allEbook.language %>" data-image="<%= allEbook.image %>" data-link="<%= allEbook.link %>" data-file="<%= allEbook.file || '' %>" data-is-active="<%= allEbook.is_active %>" data-bs-toggle="modal" data-bs-target="#viewEbookModal"><i class="bx bx-show"></i></a>
                                                                     <a href="/edit-ebook?id=<%= allEbook._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>" class="text-success me-3"><i class="bx bx-edit-alt"></i></a>
                                                                     <a href="" onclick="return alert('You have no access to delete <%= allEbook.name %>.' )" class="text-danger"><i class="bx bx-trash"></i></a>
                                                                 </div>
@@ -198,7 +206,10 @@
             document.getElementById('viewEbookImage').src = './assets/userImages/' + this.dataset.image;
             document.getElementById('viewEbookName').textContent = this.dataset.name;
             document.getElementById('viewEbookLanguage').textContent = this.dataset.language;
-            document.getElementById('viewEbookLink').innerHTML = '<a href="' + this.dataset.link + '" target="_blank">' + this.dataset.link + '</a>';
+            var link = this.dataset.link || '';
+            document.getElementById('viewEbookLink').innerHTML = link ? '<a href="' + link + '" target="_blank">' + link + '</a>' : '-';
+            var file = this.dataset.file || '';
+            document.getElementById('viewEbookFile').innerHTML = file ? '<a href="./assets/userImages/' + file + '" target="_blank">' + file + '</a>' : '-';
             document.getElementById('viewEbookStatus').innerHTML = this.dataset.isActive == '1' ? '<span class="badge bg-success">Enabled</span>' : '<span class="badge bg-danger">Disabled</span>';
         });
     });
@@ -219,6 +230,7 @@
                     <tr><td class="fw-bold text-muted" style="width:120px;">Name</td><td id="viewEbookName"></td></tr>
                     <tr><td class="fw-bold text-muted">Language</td><td id="viewEbookLanguage"></td></tr>
                     <tr><td class="fw-bold text-muted">Link</td><td id="viewEbookLink"></td></tr>
+                    <tr><td class="fw-bold text-muted">File</td><td id="viewEbookFile"></td></tr>
                     <tr><td class="fw-bold text-muted">Status</td><td id="viewEbookStatus"></td></tr>
                 </table>
             </div>

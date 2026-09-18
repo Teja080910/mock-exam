@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
-import '/custom_code/utils/test_paper_helper.dart';
+import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'books_screen_model.dart';
@@ -111,9 +111,17 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                     final ebookImage =
                         getJsonField(ebook, r'''$.image''').toString();
                     final ebookLink =
-                        getJsonField(ebook, r'''$.link''').toString();
+                        (getJsonField(ebook, r'''$.link''') ?? '').toString();
+                    final ebookFile =
+                        (getJsonField(ebook, r'''$.file''') ?? '').toString();
+                    final ebookFileUrl =
+                        (getJsonField(ebook, r'''$.fileUrl''') ?? '')
+                            .toString();
                     final imageUrl =
                         '${FFAppConstants.baseURL}/assets/userImages/$ebookImage';
+                    final openUrl = ebookFileUrl.isNotEmpty
+                        ? ebookFileUrl
+                        : (ebookFile.isNotEmpty ? ebookFile : ebookLink);
 
                     return Material(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -122,12 +130,8 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
                         onTap: () {
-                          if (ebookLink.isNotEmpty) {
-                            TestPaperHelper.downloadPdfFromUrl(
-                              context,
-                              ebookLink,
-                              title: ebookName,
-                            );
+                          if (openUrl.isNotEmpty) {
+                            openNotePdf(context, openUrl, title: ebookName);
                           }
                         },
                         child: Stack(
@@ -218,7 +222,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                         ),
                                         const SizedBox(height: 4.0),
                                         Text(
-                                          'Tap to download PDF',
+                                          'Tap to view PDF',
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(

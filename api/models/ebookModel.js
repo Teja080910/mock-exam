@@ -11,7 +11,11 @@ const EbookSchema = mongoose.Schema({
     },
     link: {
         type: String,
-        required: true
+        default: ''
+    },
+    file: {
+        type: String,
+        default: ''
     },
     image: {
         type: String,

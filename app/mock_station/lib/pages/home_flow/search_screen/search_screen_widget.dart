@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '/backend/api_requests/api_calls.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
-import '/custom_code/utils/test_paper_helper.dart';
+import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -379,13 +379,13 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
         );
         return;
       case _SearchResultType.ebook:
-        final link = _value(result.data['link']);
-        if (link.isEmpty) return;
-        await TestPaperHelper.downloadPdfFromUrl(
-          context,
-          link,
-          title: result.title,
-        );
+        final openUrl = _firstValue([
+          result.data['fileUrl'],
+          result.data['file'],
+          result.data['link'],
+        ]);
+        if (openUrl.isEmpty) return;
+        await openNotePdf(context, openUrl, title: result.title);
         return;
     }
   }

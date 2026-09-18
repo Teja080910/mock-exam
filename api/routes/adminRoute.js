@@ -201,12 +201,14 @@ admin_route.post('/revoke', SettingController.revokeKey);
 // Ebook Routes
 admin_route.get('/add-ebook', EbookController.loadEbook);
 admin_route.post('/add-ebook', upload.fields([
-    { name: 'image', maxCount: 1 }
+    { name: 'image', maxCount: 1 },
+    { name: 'file', maxCount: 1 }
 ]), EbookController.addEbook);
 admin_route.get('/view-ebook', EbookController.viewEbook);
 admin_route.get('/edit-ebook', EbookController.editEbook);
 admin_route.post('/edit-ebook', upload.fields([
-    { name: 'image', maxCount: 1 }
+    { name: 'image', maxCount: 1 },
+    { name: 'file', maxCount: 1 }
 ]), EbookController.updateEbook);
 admin_route.get('/delete-ebook', EbookController.deleteEbook);
 admin_route.post('/ebook-is-active/:id/toggle', EbookController.activeStatus);

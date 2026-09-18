@@ -160,104 +160,6 @@ class TestPaperHelper {
     await _executeDownload(context, quiz, quizId, chosenLang);
   }
 
-  /// Downloads a remote PDF (e.g. an ebook link) and saves it to the device
-  /// using the same save + open flow as test papers.
-  static Future<void> downloadPdfFromUrl(
-    BuildContext context,
-    String url, {
-    String? title,
-  }) async {
-    final trimmedUrl = url.trim();
-    if (trimmedUrl.isEmpty) return;
-
-    final targetUrl = _resolveRemoteUrl(trimmedUrl);
-    final rawName =
-        (title != null && title.trim().isNotEmpty) ? title.trim() : 'Ebook';
-    final safeName = _sanitizeFileName(rawName);
-    final downloadKey = 'url:$safeName';
-
-    if (_activeDownloads.contains(downloadKey)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Download is already in progress...'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-      }
-      return;
-    }
-    _activeDownloads.add(downloadKey);
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text('Downloading $rawName PDF...'),
-              ),
-            ],
-          ),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-    }
-
-    try {
-      final res = await http
-          .get(Uri.parse(targetUrl))
-          .timeout(const Duration(seconds: 90));
-
-      if (res.statusCode != 200 || res.bodyBytes.isEmpty) {
-        throw Exception('Server returned ${res.statusCode}');
-      }
-
-      final bytes = res.bodyBytes;
-      final isPdf = bytes.length >= 4 &&
-          bytes[0] == 0x25 &&
-          bytes[1] == 0x50 &&
-          bytes[2] == 0x44 &&
-          bytes[3] == 0x46;
-      if (!isPdf) {
-        throw Exception('The link does not point to a valid PDF file');
-      }
-
-      final savedFile = await _savePdfToDevice(safeName, bytes);
-      _activeDownloads.remove(downloadKey);
-
-      if (context.mounted) {
-        _showDownloadedSnackBar(
-          context,
-          savedFile: savedFile,
-          safeName: safeName,
-          displayName: rawName,
-        );
-      }
-    } catch (e) {
-      _activeDownloads.remove(downloadKey);
-      debugPrint('PDF download error: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFFDC2626),
-            content: Text('Download failed: $e'),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
-
   static Widget _buildLanguageCard({
     required String title,
     required String badgeChar,
@@ -645,33 +547,6 @@ class TestPaperHelper {
         ),
       ),
     );
-  }
-
-  static String _resolveRemoteUrl(String url) {
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    var clean = url.replaceAll('\\', '/');
-    while (clean.startsWith('/')) {
-      clean = clean.substring(1);
-    }
-    if (clean.startsWith('assets/userImages/')) {
-      final base = FFAppConstants.baseURL.endsWith('/')
-          ? FFAppConstants.baseURL
-          : '${FFAppConstants.baseURL}/';
-      return '$base$clean';
-    }
-    final imgBase = FFAppConstants.imageBaseURL.endsWith('/')
-        ? FFAppConstants.imageBaseURL
-        : '${FFAppConstants.imageBaseURL}/';
-    return '$imgBase$clean';
-  }
-
-  static String _sanitizeFileName(String name) {
-    final cleaned = name
-        .replaceAll(RegExp(r'[^\p{L}\p{N}_-]+', unicode: true), '_')
-        .replaceAll(RegExp(r'_+'), '_')
-        .replaceAll(RegExp(r'^_+|_+$'), '');
-    if (cleaned.isEmpty) return 'Ebook';
-    return cleaned;
   }
 
   static String _cleanHtml(String? text) {

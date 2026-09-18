@@ -22,8 +22,9 @@ const addEbook = async (req, res) => {
             const EbookData = new Ebook({
                 name: req.body.name,
                 language: req.body.language,
-                link: req.body.link,
+                link: (req.body.link || '').trim(),
                 image: req.files.image[0].filename,
+                file: req.files && req.files.file ? req.files.file[0].filename : '',
                 is_active: req.body.is_active == "on" ? 1 : 0
             });
             const saveEbook = await EbookData.save();
@@ -117,7 +118,7 @@ const updateEbook = async (req, res) => {
             const updateData = { 
                 name: req.body.name,
                 language: req.body.language,
-                link: req.body.link
+                link: (req.body.link || '').trim()
             };
 
             // Handle image update
@@ -126,6 +127,14 @@ const updateEbook = async (req, res) => {
                     fs.unlinkSync(userimages + currentEbook.image);
                 }
                 updateData.image = req.files.image[0].filename;
+            }
+
+            // Handle pdf file update
+            if (req.files && req.files.file) {
+                if (currentEbook && currentEbook.file && fs.existsSync(userimages + currentEbook.file)) {
+                    fs.unlinkSync(userimages + currentEbook.file);
+                }
+                updateData.file = req.files.file[0].filename;
             }
 
             await Ebook.findByIdAndUpdate({ _id: id }, { $set: updateData });
@@ -148,6 +157,9 @@ const deleteEbook = async (req, res) => {
         if (currentEbook) {
             if (fs.existsSync(userimages + currentEbook.image)) {
                 fs.unlinkSync(userimages + currentEbook.image);
+            }
+            if (currentEbook.file && fs.existsSync(userimages + currentEbook.file)) {
+                fs.unlinkSync(userimages + currentEbook.file);
             }
         }
         const delEbook = await Ebook.deleteOne({ _id: id });
