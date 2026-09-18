@@ -364,107 +364,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
 
-  Widget _buildSectionSummaryRow({
-    required IconData icon,
-    required Color accentColor,
-    required Color backgroundColor,
-    required String title,
-    required String value,
-    String? trailing,
-    String? helper,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44.0,
-            height: 44.0,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withOpacity(0.18),
-                  blurRadius: 12.0,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: accentColor, size: 28.0),
-          ),
-          const SizedBox(width: 14.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      value,
-                      style: const TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: FFFont.f18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (trailing != null) ...[
-                      const SizedBox(width: 14.0),
-                      Container(
-                        width: 1.0,
-                        height: 22.0,
-                        color: const Color(0xFFD1D5DB),
-                      ),
-                      const SizedBox(width: 14.0),
-                      Text(
-                        trailing,
-                        style: const TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontSize: FFFont.f18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: FFFont.f11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (helper != null)
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 7.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF3B55),
-                borderRadius: BorderRadius.circular(6.0),
-              ),
-              child: Text(
-                helper,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: FFFont.f10,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildConfettiDot({
     double? top,
@@ -791,174 +691,236 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final sections = _sectionSummaryItems();
     if (sections.isEmpty) return const SizedBox.shrink();
 
+    int totalCorrect = 0;
+    int totalWrong = 0;
+    int totalSkip = 0;
+    int totalQuestions = 0;
+    double totalMarks = 0.0;
+    int totalSeconds = 0;
+
+    for (final sec in sections) {
+      totalCorrect += (sec['correct'] as int? ?? 0);
+      totalWrong += (sec['wrong'] as int? ?? 0);
+      totalSkip += (sec['skipped'] as int? ?? 0);
+      totalQuestions += (sec['total'] as int? ?? 0);
+      totalMarks += (sec['marks'] as double? ?? 0.0);
+      totalSeconds += (sec['seconds'] as int? ?? 0);
+    }
+
+    if (totalQuestions == 0) {
+      totalQuestions = totalCorrect + totalWrong + totalSkip;
+    }
+
+    const gridBorderColor = Color(0xFFCBD5E1);
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: gridBorderColor, width: 1.0),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 10.0),
-            child: Text(
-              'Sectional Summary',
-              style: TextStyle(
-                color: Color(0xFF111827),
-                fontSize: FFFont.f16,
-                fontWeight: FontWeight.w900,
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: Text(
+                'Sectional Summary',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: FFFont.f20,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Roboto',
+                  letterSpacing: -0.2,
+                ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Row(
-              children: const [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'Subject',
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: FFFont.f11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Correct',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF16A34A),
-                      fontSize: FFFont.f11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Wrong',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFEF4444),
-                      fontSize: FFFont.f11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Marks',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF7C3AED),
-                      fontSize: FFFont.f11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Time',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFD97706),
-                      fontSize: FFFont.f11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
+          Table(
+            border: const TableBorder(
+              top: BorderSide(color: gridBorderColor, width: 1.0),
+              horizontalInside: BorderSide(color: gridBorderColor, width: 1.0),
+              verticalInside: BorderSide(color: gridBorderColor, width: 1.0),
             ),
-          ),
-          const SizedBox(height: 8.0),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              children: sections.map((section) {
-                final correct = section['correct'] ?? 0;
-                final wrong = section['wrong'] ?? 0;
-                final total = section['total'] ?? 0;
-                final marks = section['marks'] ?? 0.0;
-                final time = section['time'] ?? '00:00';
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          section['label'] ?? '',
-                          style: const TextStyle(
-                            color: Color(0xFF111827),
-                            fontSize: FFFont.f14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '$correct/$total',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFF16A34A),
-                            fontSize: FFFont.f14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '$wrong',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFFEF4444),
-                            fontSize: FFFont.f14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          marks.toStringAsFixed(1),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFF7C3AED),
-                            fontSize: FFFont.f14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          time,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFFD97706),
-                            fontSize: FFFont.f14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+            columnWidths: const {
+              0: FlexColumnWidth(2.3),
+              1: FlexColumnWidth(1.25),
+              2: FlexColumnWidth(0.95),
+              3: FlexColumnWidth(0.95),
+              4: FlexColumnWidth(1.05),
+              5: FlexColumnWidth(1.15),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            children: [
+              // Header Row
+              TableRow(
+                children: [
+                  _buildTableCell(
+                    text: 'Subject',
+                    color: const Color(0xFF64748B),
+                    isHeader: true,
+                    alignLeft: true,
                   ),
-                );
-              }).toList(),
-            ),
+                  _buildTableCell(
+                    text: 'Correct',
+                    color: const Color(0xFF16A34A),
+                    isHeader: true,
+                  ),
+                  _buildTableCell(
+                    text: 'Wrong',
+                    color: const Color(0xFFDC2626),
+                    isHeader: true,
+                  ),
+                  _buildTableCell(
+                    text: 'Skip',
+                    color: const Color(0xFF2563EB),
+                    isHeader: true,
+                  ),
+                  _buildTableCell(
+                    text: 'Marks',
+                    color: const Color(0xFF7C3AED),
+                    isHeader: true,
+                  ),
+                  _buildTableCell(
+                    text: 'Time',
+                    color: const Color(0xFFEA580C),
+                    isHeader: true,
+                  ),
+                ],
+              ),
+              // Subject Rows
+              for (final section in sections)
+                TableRow(
+                  children: [
+                    _buildTableCell(
+                      text: section['label'] ?? '',
+                      color: const Color(0xFF0F172A),
+                      isSubject: true,
+                      alignLeft: true,
+                    ),
+                    _buildTableCell(
+                      text: '${section['correct'] ?? 0}/${section['total'] ?? 0}',
+                      color: const Color(0xFF16A34A),
+                      isBoldValue: true,
+                    ),
+                    _buildTableCell(
+                      text: '${section['wrong'] ?? 0}',
+                      color: const Color(0xFFDC2626),
+                      isBoldValue: true,
+                    ),
+                    _buildTableCell(
+                      text: '${section['skipped'] ?? 0}',
+                      color: const Color(0xFF2563EB),
+                      isBoldValue: true,
+                    ),
+                    _buildTableCell(
+                      text: (section['marks'] as double? ?? 0.0).toStringAsFixed(1),
+                      color: const Color(0xFF7C3AED),
+                      isBoldValue: true,
+                    ),
+                    _buildTableCell(
+                      text: section['time'] ?? '00:00',
+                      color: const Color(0xFFEA580C),
+                      isBoldValue: true,
+                    ),
+                  ],
+                ),
+              // Total Row
+              TableRow(
+                children: [
+                  _buildTableCell(
+                    text: 'Total',
+                    color: const Color(0xFF0F172A),
+                    isTotal: true,
+                    alignLeft: true,
+                  ),
+                  _buildTableCell(
+                    text: '$totalCorrect/$totalQuestions',
+                    color: const Color(0xFF16A34A),
+                    isTotal: true,
+                  ),
+                  _buildTableCell(
+                    text: '$totalWrong',
+                    color: const Color(0xFFDC2626),
+                    isTotal: true,
+                  ),
+                  _buildTableCell(
+                    text: '$totalSkip',
+                    color: const Color(0xFF2563EB),
+                    isTotal: true,
+                  ),
+                  _buildTableCell(
+                    text: totalMarks.toStringAsFixed(1),
+                    color: const Color(0xFF7C3AED),
+                    isTotal: true,
+                  ),
+                  _buildTableCell(
+                    text: _formatSeconds(totalSeconds),
+                    color: const Color(0xFFEA580C),
+                    isTotal: true,
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTableCell({
+    required String text,
+    required Color color,
+    bool isHeader = false,
+    bool isSubject = false,
+    bool isTotal = false,
+    bool isBoldValue = false,
+    bool alignLeft = false,
+  }) {
+    FontWeight fontWeight;
+    double fontSize;
+
+    if (isHeader) {
+      fontWeight = FontWeight.w700;
+      fontSize = FFFont.f12;
+    } else if (isTotal) {
+      fontWeight = FontWeight.w900;
+      fontSize = FFFont.f14;
+    } else if (isSubject) {
+      fontWeight = FontWeight.w800;
+      fontSize = FFFont.f14;
+    } else {
+      fontWeight = FontWeight.w800;
+      fontSize = FFFont.f14;
+    }
+
+    final textWidget = Text(
+      text,
+      textAlign: alignLeft ? TextAlign.left : TextAlign.center,
+      style: TextStyle(
+        color: color,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        fontFamily: 'Roboto',
+        height: 1.25,
+      ),
+    );
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: alignLeft ? 10.0 : 4.0,
+        vertical: 14.0,
+      ),
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.center,
+      child: alignLeft
+          ? textWidget
+          : FittedBox(
+              fit: BoxFit.scaleDown,
+              child: textWidget,
+            ),
     );
   }
 
@@ -1008,11 +970,18 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       final items = grouped[label] ?? <dynamic>[];
       final secItem = _buildSectionSummaryItem(label, items);
 
-      final secCount = items.length;
-      final secSeconds = totalQuestionsCount > 0
-          ? ((secCount / totalQuestionsCount) * totalQuizSeconds).round()
-          : (totalQuizSeconds ~/ sectionLabels.length);
+      int secSeconds = 0;
+      for (final item in items) {
+        final raw = _answerKeyValue(item, 'time_taken') ??
+            _answerKeyValue(item, 'timeTaken') ??
+            _answerKeyValue(item, 'duration');
+        secSeconds += _parseAnswerKeySeconds(raw);
+      }
+      if (secSeconds == 0 && totalQuestionsCount > 0) {
+        secSeconds = ((items.length / totalQuestionsCount) * totalQuizSeconds).round();
+      }
       secItem['time'] = _formatSeconds(secSeconds);
+      secItem['seconds'] = secSeconds;
 
       sections.add(secItem);
     }
@@ -1021,14 +990,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   bool _isSubjectWiseTest(List<dynamic> source) {
+    if (source.isEmpty) return false;
     final subjects = source
         .map((item) => _subjectName(item).trim())
         .where((subject) => subject.isNotEmpty)
         .toSet();
-    // A subject-wise test has multiple subjects and every question belongs to one.
-    return source.isNotEmpty &&
-        subjects.length > 1 &&
-        source.every((item) => _subjectName(item).trim().isNotEmpty);
+    return subjects.isNotEmpty;
   }
 
   List<String> _sectionLabelsFromData(List<dynamic> source) {
@@ -1047,37 +1014,15 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     var correct = 0;
     var wrong = 0;
     var skipped = 0;
-    var review = 0;
 
     for (final item in items) {
-      final questionData = item is Map && item['question'] is Map ? item['question'] as Map : <String, dynamic>{};
-      final markedForReview = item is Map
-          ? (item['markedForReview'] == true ||
-              item['markedForReview'].toString().toLowerCase() == 'true')
-          : false;
-      if (markedForReview) {
-        review++;
-        continue;
-      }
-      final options = _optionMap(item);
-      final userAnswer = _cleanText((item is Map ? item['user_answer'] : null) ?? questionData['user_answer']).toLowerCase();
-      final correctAnswer = _cleanText(
-        biText(
-          (item is Map ? item['correct_answer'] : null) ??
-              (item is Map ? item['answer'] : null) ??
-              questionData['correct_answer'] ??
-              questionData['answer'],
-        ),
-      );
-      final userKey = _normalizedAnswerKey(userAnswer, options) ?? userAnswer;
-      final correctKey = _normalizedAnswerKey(correctAnswer, options) ?? correctAnswer.toLowerCase();
-
-      if (userKey == 'skipped') {
-        skipped++;
-      } else if (userKey.isNotEmpty && userKey == correctKey) {
+      final status = _answerKeyStatus(item);
+      if (status == 'correct') {
         correct++;
-      } else {
+      } else if (status == 'incorrect') {
         wrong++;
+      } else {
+        skipped++;
       }
     }
 
@@ -1090,7 +1035,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       'correct': correct,
       'wrong': wrong,
       'skipped': skipped,
-      'review': review,
       'total': total,
       'marks': marks,
     };

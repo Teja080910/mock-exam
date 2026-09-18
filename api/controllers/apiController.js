@@ -1525,6 +1525,969 @@ const GetQuestionsByQuizId = async (req, res) => {
   }
 };
 
+// Download or View Quiz Question Paper (Printable HTML / PDF)
+const DownloadQuizPdf = async (req, res) => {
+  try {
+    const quizId = req.params.quizId || req.query.quizId || req.body?.quizId;
+    if (!quizId) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html><head><title>Error</title></head>
+        <body style="font-family:sans-serif;padding:40px;text-align:center;">
+          <h2>Invalid Request</h2>
+          <p>Quiz ID is required.</p>
+        </body></html>
+      `);
+    }
+
+    const quiz = await Quiz.findById(quizId).populate(["categoryId", "subcategoryId"]).lean();
+    if (!quiz) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html><head><title>Quiz Not Found</title></head>
+        <body style="font-family:sans-serif;padding:40px;text-align:center;">
+          <h2>Quiz Not Found</h2>
+          <p>The requested mock test could not be found.</p>
+        </body></html>
+      `);
+    }
+
+    // If quiz has static pdf uploaded
+    const staticPdf = quiz.pdf || quiz.pdf_url || quiz.file || quiz.link;
+    if (staticPdf && typeof staticPdf === "string" && staticPdf.trim() && !req.query.force_render) {
+      const clean = staticPdf.trim();
+      const target = clean.startsWith("http") ? clean : `/assets/userImages/${clean}`;
+      return res.redirect(target);
+    }
+
+    const questions = await Questions.find({ quizId: quiz._id, is_active: 1 }).sort({ _id: 1 }).lean();
+    if (!questions || questions.length === 0) {
+      return res.status(200).send(`
+        <!DOCTYPE html>
+        <html><head><title>${quiz.name || "Mock Test"}</title></head>
+        <body style="font-family:sans-serif;padding:40px;text-align:center;">
+          <h2>${quiz.name || "Mock Test"}</h2>
+          <p>Questions for this mock test are currently being prepared.</p>
+        </body></html>
+      `);
+    }
+
+    const quizTitle = quiz.name || "Mock Test Paper";
+    const categoryName = quiz.categoryId?.name || "";
+    const subcategoryName = quiz.subcategoryId?.name || "";
+    const totalQuestions = questions.length;
+    const timeMinutes = quiz.minutes_per_quiz || (totalQuestions > 0 ? totalQuestions : 60);
+    const rewardPerQ = quiz.correct_ans_reward_per_question !== undefined && quiz.correct_ans_reward_per_question !== null ? quiz.correct_ans_reward_per_question : 1;
+    const penaltyPerQ = quiz.penalty_per_question !== undefined && quiz.penalty_per_question !== null ? quiz.penalty_per_question : 0;
+    const totalMarks = totalQuestions * rewardPerQ;
+
+    const biText = (val) => {
+      if (!val) return { en: "", hi: "" };
+      if (typeof val === "string") return { en: val, hi: "" };
+      return {
+        en: (val.en || "").toString().trim(),
+        hi: (val.hi || "").toString().trim(),
+      };
+    };
+
+    const cleanHtml = (html) => {
+      if (!html) return "";
+      let s = String(html).trim();
+      s = s.replace(/<p><br\s*\/?><\/p>/gi, "");
+      s = s.replace(/&nbsp;/g, " ");
+      return s;
+    };
+
+    const resolveOption = (opt) => {
+      if (!opt) return { en: "", hi: "", image: "" };
+      if (typeof opt === "string") return { en: opt, hi: "", image: "" };
+      const textBi = biText(opt.text);
+      const img = opt.image ? opt.image.toString().trim() : "";
+      return { en: textBi.en, hi: textBi.hi, image: img };
+    };
+
+    const formatImgUrl = (img) => {
+      if (!img || typeof img !== "string") return "";
+      const clean = img.trim();
+      if (!clean) return "";
+      if (clean.startsWith("http://") || clean.startsWith("https://") || clean.startsWith("data:")) return clean;
+      if (clean.startsWith("/")) return clean;
+      return "/assets/userImages/" + clean;
+    };
+
+    const stripTags = (s) => (s || "").replace(/<[^>]*>/g, "").trim().toLowerCase();
+
+    const getAnswerKey = (q, optA, optB, optC, optD) => {
+      const ansBi = biText(q.answer);
+      const ansEn = ansBi.en.trim().toLowerCase();
+      const ansHi = ansBi.hi.trim().toLowerCase();
+
+      if (ansEn === "a" || ansHi === "a" || ansEn === "1" || ansHi === "1") return "A";
+      if (ansEn === "b" || ansHi === "b" || ansEn === "2" || ansHi === "2") return "B";
+      if (ansEn === "c" || ansHi === "c" || ansEn === "3" || ansHi === "3") return "C";
+      if (ansEn === "d" || ansHi === "d" || ansEn === "4" || ansHi === "4") return "D";
+
+      const ansRawEn = stripTags(ansBi.en);
+      const ansRawHi = stripTags(ansBi.hi);
+
+      const checkMatch = (opt) => {
+        const oEn = stripTags(opt.en);
+        const oHi = stripTags(opt.hi);
+        if (ansRawEn && oEn && ansRawEn === oEn) return true;
+        if (ansRawHi && oHi && ansRawHi === oHi) return true;
+        if (ansRawHi && oEn && ansRawHi === oEn) return true;
+        if (ansRawEn && oHi && ansRawEn === oHi) return true;
+        return false;
+      };
+
+      if (checkMatch(optA)) return "A";
+      if (checkMatch(optB)) return "B";
+      if (checkMatch(optC)) return "C";
+      if (checkMatch(optD)) return "D";
+
+      return ansBi.en || ansBi.hi || "-";
+    };
+
+    const formattedQuestions = questions.map((q, idx) => {
+      const qNum = idx + 1;
+      const qTitleBi = biText(q.question_title);
+      const optA = resolveOption(q.option?.a);
+      const optB = resolveOption(q.option?.b);
+      const optC = resolveOption(q.option?.c);
+      const optD = resolveOption(q.option?.d);
+      const correctOption = getAnswerKey(q, optA, optB, optC, optD);
+      const descBi = biText(q.description);
+
+      return {
+        number: qNum,
+        subject: q.subject || "",
+        chapter: q.chapter || "",
+        title: { en: cleanHtml(qTitleBi.en), hi: cleanHtml(qTitleBi.hi) },
+        image: q.image ? q.image.trim() : "",
+        options: { a: optA, b: optB, c: optC, d: optD },
+        correctOption,
+        explanation: { en: cleanHtml(descBi.en), hi: cleanHtml(descBi.hi) },
+      };
+    });
+
+    // Build answer key grid (chunks of 10)
+    let answerKeyHtml = '<div class="ans-grid-wrap"><table class="ans-table"><thead><tr>';
+    for (let c = 1; c <= 10; c++) {
+      answerKeyHtml += `<th>Q</th><th>Ans</th>`;
+    }
+    answerKeyHtml += "</tr></thead><tbody>";
+
+    const chunkSize = 10;
+    for (let i = 0; i < formattedQuestions.length; i += chunkSize) {
+      answerKeyHtml += "<tr>";
+      const chunk = formattedQuestions.slice(i, i + chunkSize);
+      for (let c = 0; c < 10; c++) {
+        if (c < chunk.length) {
+          const item = chunk[c];
+          answerKeyHtml += `<td class="q-cell">${item.number}</td><td class="ans-cell"><strong>${item.correctOption}</strong></td>`;
+        } else {
+          answerKeyHtml += `<td class="q-cell">-</td><td class="ans-cell">-</td>`;
+        }
+      }
+      answerKeyHtml += "</tr>";
+    }
+    answerKeyHtml += "</tbody></table></div>";
+
+    // Render questions HTML
+    let questionsHtml = formattedQuestions.map((q) => {
+      const renderOpt = (letter, opt) => {
+        const hasTextEn = !!opt.en;
+        const hasTextHi = !!opt.hi;
+        const hasImg = !!opt.image;
+        if (!hasTextEn && !hasTextHi && !hasImg) return "";
+
+        return `
+          <div class="opt-box">
+            <span class="opt-label">${letter}</span>
+            <div class="opt-content">
+              ${hasTextHi ? `<div class="lang-hi text-hindi opt-text">${opt.hi}</div>` : ""}
+              ${hasTextEn ? `<div class="lang-en text-english opt-text">${opt.en}</div>` : ""}
+              ${hasImg ? `<img src="${formatImgUrl(opt.image)}" class="opt-img" alt="Option ${letter}" />` : ""}
+            </div>
+          </div>
+        `;
+      };
+
+      const hasTitleHi = !!q.title.hi;
+      const hasTitleEn = !!q.title.en;
+      const hasQImg = !!q.image;
+
+      return `
+        <div class="question-card" id="q-${q.number}">
+          <div class="q-meta-header">
+            <div class="q-number">Question ${q.number}</div>
+            <div class="q-tags">
+              ${q.subject ? `<span class="q-subject-badge">${q.subject}</span>` : ""}
+              <span class="q-marks-badge">+${rewardPerQ} / -${penaltyPerQ}</span>
+            </div>
+          </div>
+          <div class="q-body">
+            ${hasTitleHi ? `<div class="lang-hi text-hindi q-text">${q.title.hi}</div>` : ""}
+            ${hasTitleEn ? `<div class="lang-en text-english q-text">${q.title.en}</div>` : ""}
+            ${hasQImg ? `<div class="q-img-wrap"><img src="${formatImgUrl(q.image)}" class="q-img" alt="Question ${q.number}" /></div>` : ""}
+          </div>
+          <div class="options-grid">
+            ${renderOpt("A", q.options.a)}
+            ${renderOpt("B", q.options.b)}
+            ${renderOpt("C", q.options.c)}
+            ${renderOpt("D", q.options.d)}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Render solutions HTML
+    let solutionsHtml = formattedQuestions.map((q) => {
+      const hasHi = !!q.explanation.hi;
+      const hasEn = !!q.explanation.en;
+      return `
+        <div class="solution-card" id="sol-${q.number}">
+          <div class="sol-header">
+            <span class="sol-qnum">Q. ${q.number}</span>
+            <span class="sol-correct-badge">Correct Answer: <strong>Option (${q.correctOption})</strong></span>
+          </div>
+          <div class="sol-body">
+            ${hasHi ? `<div class="lang-hi text-hindi sol-text">${q.explanation.hi}</div>` : ""}
+            ${hasEn ? `<div class="lang-en text-english sol-text">${q.explanation.en}</div>` : ""}
+            ${!hasHi && !hasEn ? `<div class="sol-text text-muted">Option (${q.correctOption}) is the correct answer.</div>` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${quizTitle} - Mock Station Test Paper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1D6FFF;
+      --primary-dark: #1450BE;
+      --primary-light: #EEF4FF;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --correct: #16A34A;
+      --correct-bg: #DCFCE7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed Action Toolbar */
+    .action-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .bar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .bar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-group {
+      display: inline-flex;
+      background: #F1F5F9;
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-group button {
+      border: none;
+      background: transparent;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-group button.active {
+      background: #FFFFFF;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(29, 111, 255, 0.3);
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FFFFFF;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-outline:hover {
+      background: #F8FAFC;
+    }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+
+    /* Exam Paper Header */
+    .paper-header {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      text-align: center;
+    }
+
+    .paper-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 6px;
+    }
+
+    .paper-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .meta-box {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .meta-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    /* Instructions */
+    .instructions-card {
+      background: #FEF9C3;
+      border: 1px solid #FDE047;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #713F12;
+    }
+
+    .instructions-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .instructions-card ol {
+      padding-left: 20px;
+    }
+
+    .instructions-card li {
+      margin-bottom: 4px;
+    }
+
+    /* Section Header */
+    .section-title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 32px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .section-title-bar h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    /* Question Cards */
+    .question-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .q-meta-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .q-number {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .q-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .q-subject-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: #F1F5F9;
+      color: #475569;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #CBD5E1;
+    }
+
+    .q-marks-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: #F8FAFC;
+      color: #0F172A;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .q-body {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .q-body p {
+      margin-bottom: 6px;
+    }
+
+    .q-body ol, .q-body ul {
+      margin: 8px 0;
+      padding-left: 24px;
+    }
+
+    .q-text {
+      margin-bottom: 8px;
+    }
+
+    .text-hindi {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+
+    .text-english {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .q-img-wrap {
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    .q-img {
+      max-width: 100%;
+      max-height: 320px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* Options Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .opt-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+
+    .opt-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      font-size: 12px;
+      font-weight: 800;
+      color: #334155;
+      flex-shrink: 0;
+    }
+
+    .opt-content {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .opt-img {
+      max-width: 100%;
+      max-height: 160px;
+      margin-top: 6px;
+      border-radius: 4px;
+    }
+
+    /* Answer Key Table */
+    .ans-grid-wrap {
+      overflow-x: auto;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 24px;
+    }
+
+    .ans-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .ans-table th {
+      background: #F1F5F9;
+      padding: 8px 4px;
+      border: 1px solid var(--border);
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .ans-table td {
+      padding: 6px 4px;
+      border: 1px solid var(--border);
+    }
+
+    .ans-table .q-cell {
+      background: #F8FAFC;
+      font-weight: 600;
+      color: #64748B;
+    }
+
+    .ans-table .ans-cell {
+      color: var(--primary);
+      font-weight: 800;
+      background: #FFFFFF;
+    }
+
+    /* Solution Cards */
+    .solution-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .sol-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .sol-qnum {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .sol-correct-badge {
+      font-size: 12px;
+      background: var(--correct-bg);
+      color: var(--correct);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .sol-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #334155;
+    }
+
+    .sol-text {
+      margin-bottom: 6px;
+    }
+
+    /* Language Visibility Filtering */
+    .hide-en .lang-en {
+      display: none !important;
+    }
+
+    .hide-hi .lang-hi {
+      display: none !important;
+    }
+
+    /* Footer */
+    .paper-footer {
+      text-align: center;
+      padding: 24px 0 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      body {
+        background: #FFFFFF;
+        color: #000000;
+        font-size: 11pt;
+      }
+
+      .no-print, .action-bar {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .paper-header {
+        border: 1px solid #000000;
+        box-shadow: none;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .meta-grid {
+        gap: 6px;
+      }
+
+      .meta-box {
+        border: 1px solid #999999;
+        background: #FAFAFA;
+        padding: 6px;
+      }
+
+      .instructions-card {
+        border: 1px solid #000000;
+        background: #FFFFFF;
+        color: #000000;
+        padding: 10px;
+      }
+
+      .question-card, .solution-card {
+        border: 1px solid #D1D5DB;
+        box-shadow: none;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .page-break {
+        break-before: page;
+        page-break-before: always;
+      }
+
+      .opt-box {
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        padding: 6px 10px;
+      }
+
+      .ans-table th {
+        background: #EEEEEE;
+        border: 1px solid #333333;
+        color: #000000;
+      }
+
+      .ans-table td {
+        border: 1px solid #333333;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .meta-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Toolbar -->
+  <div class="action-bar no-print">
+    <div class="bar-brand">
+      <span class="brand-logo-text">MOCK STATION</span>
+      <span class="brand-badge">Official Paper</span>
+    </div>
+    <div class="bar-controls">
+      <div class="btn-group">
+        <button id="btn-both" class="active" onclick="setLanguage('both')">Both / दोनों</button>
+        <button id="btn-en" onclick="setLanguage('en')">English</button>
+        <button id="btn-hi" onclick="setLanguage('hi')">हिन्दी</button>
+      </div>
+      <a href="#section-anskey" class="btn-outline">Answer Key</a>
+      <a href="#section-solutions" class="btn-outline">Solutions</a>
+      <button class="btn-action" onclick="window.print()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+        Download / Print PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="container" id="paper-container">
+
+    <!-- Exam Paper Header -->
+    <div class="paper-header">
+      <div class="paper-sub">${categoryName ? categoryName + " &bull; " : ""}${subcategoryName}</div>
+      <h1 class="paper-title">${quizTitle}</h1>
+      <div class="meta-grid">
+        <div class="meta-box">
+          <div class="meta-label">Total Questions</div>
+          <div class="meta-value">${totalQuestions}</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Time Allowed</div>
+          <div class="meta-value">${timeMinutes} Mins</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Maximum Marks</div>
+          <div class="meta-value">${totalMarks}</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">Marking Scheme</div>
+          <div class="meta-value">+${rewardPerQ} / -${penaltyPerQ}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions-card">
+      <h4>📌 Instructions for Candidates (अभ्यर्थियों के लिए निर्देश):</h4>
+      <ol>
+        <li>This question paper contains <strong>${totalQuestions} questions</strong>. All questions are compulsory.</li>
+        <li>Each question carries <strong>${rewardPerQ} mark(s)</strong>. A negative marking of <strong>${penaltyPerQ} marks</strong> is applicable for each wrong answer.</li>
+        <li>Each question has 4 options (A, B, C, D) with only one correct choice.</li>
+        <li>Detailed Answer Key and Explanations are provided at the end of this paper.</li>
+      </ol>
+    </div>
+
+    <!-- Questions Section -->
+    <div class="section-title-bar">
+      <h2>QUESTIONS (प्रश्न पत्र)</h2>
+      <span class="brand-badge">${totalQuestions} Questions</span>
+    </div>
+
+    <div class="questions-list">
+      ${questionsHtml}
+    </div>
+
+    <!-- Answer Key Section -->
+    <div class="page-break" id="section-anskey"></div>
+    <div class="section-title-bar" style="margin-top: 40px;">
+      <h2>ANSWER KEY (उत्तर कुंजी)</h2>
+      <span class="brand-badge">Quick Reference</span>
+    </div>
+    ${answerKeyHtml}
+
+    <!-- Solutions Section -->
+    <div class="page-break" id="section-solutions"></div>
+    <div class="section-title-bar" style="margin-top: 40px;">
+      <h2>DETAILED SOLUTIONS & EXPLANATIONS (विस्तृत हल)</h2>
+      <span class="brand-badge">Solutions</span>
+    </div>
+    <div class="solutions-list">
+      ${solutionsHtml}
+    </div>
+
+    <!-- Footer -->
+    <div class="paper-footer">
+      <p>&copy; ${new Date().getFullYear()} Mock Station App. All Rights Reserved.</p>
+      <p style="margin-top: 4px; font-size: 11px;">Practice online tests on Mock Station App: https://play.google.com/store/apps/details?id=com.mock.exam.app</p>
+    </div>
+
+  </div>
+
+  <script>
+    function setLanguage(lang) {
+      const container = document.getElementById('paper-container');
+      const btnBoth = document.getElementById('btn-both');
+      const btnEn = document.getElementById('btn-en');
+      const btnHi = document.getElementById('btn-hi');
+
+      btnBoth.classList.remove('active');
+      btnEn.classList.remove('active');
+      btnHi.classList.remove('active');
+
+      container.classList.remove('hide-en', 'hide-hi');
+
+      if (lang === 'en') {
+        container.classList.add('hide-hi');
+        btnEn.classList.add('active');
+      } else if (lang === 'hi') {
+        container.classList.add('hide-en');
+        btnHi.classList.add('active');
+      } else {
+        btnBoth.classList.add('active');
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('lang') === 'en') {
+      setLanguage('en');
+    } else if (urlParams.get('lang') === 'hi') {
+      setLanguage('hi');
+    }
+
+    if (urlParams.get('print') === '1' || urlParams.get('download') === '1') {
+      window.onload = function() {
+        setTimeout(function() {
+          window.print();
+        }, 500);
+      };
+    }
+  </script>
+</body>
+</html>`;
+
+    return res.status(200).send(fullHtml);
+  } catch (error) {
+    console.error("ERROR in DownloadQuizPdf:", error);
+    return res.status(500).send(`
+      <!DOCTYPE html>
+      <html><head><title>Server Error</title></head>
+      <body style="font-family:sans-serif;padding:40px;text-align:center;">
+        <h2>Error Generating Test Paper</h2>
+        <p>An error occurred while generating the test paper. Please try again later.</p>
+      </body></html>
+    `);
+  }
+};
+
 // Get Questions By CategoryId
 const GetQuestionsByCategoryId = async (req, res) => {
   try {
@@ -3031,6 +3994,7 @@ module.exports = {
   GetQuizByCategory,
   GetQuestions,
   GetQuestionsByQuizId,
+  DownloadQuizPdf,
   GetQuestionsByCategoryId,
   GetFeaturedCategory,
   GetAdsSettings,

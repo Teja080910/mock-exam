@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
+import '/custom_code/utils/test_paper_helper.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
 import 'books_screen_model.dart';
 export 'books_screen_model.dart';
 
@@ -123,7 +123,11 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                       child: InkWell(
                         onTap: () {
                           if (ebookLink.isNotEmpty) {
-                            openNotePdf(context, ebookLink, title: ebookName);
+                            TestPaperHelper.downloadPdfFromUrl(
+                              context,
+                              ebookLink,
+                              title: ebookName,
+                            );
                           }
                         },
                         child: Stack(
@@ -214,7 +218,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                         ),
                                         const SizedBox(height: 4.0),
                                         Text(
-                                          'Click to view ebooks',
+                                          'Tap to download PDF',
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(

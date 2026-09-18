@@ -91,6 +91,8 @@ api_route.post("/getquizbycategory", apiController.GetQuizByCategory);
 // Questions
 api_route.post("/getallquestions", apiController.GetQuestions);
 api_route.post("/getquestionsbyquizid", apiController.GetQuestionsByQuizId);
+api_route.get("/download-quiz-pdf/:quizId", apiController.DownloadQuizPdf);
+api_route.get("/quiz-pdf/:quizId", apiController.DownloadQuizPdf);
 api_route.post(
   "/getquestionsbycategoryid",
   apiController.GetQuestionsByCategoryId,

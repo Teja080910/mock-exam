@@ -1,9 +1,8 @@
-import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
+import '/custom_code/utils/test_paper_helper.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
-import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -108,6 +107,45 @@ class _SubcategoryDetailPageWidgetState
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPdfBadge(BuildContext context, Map quiz) {
+    return InkWell(
+      onTap: () async {
+        await TestPaperHelper.downloadOrOpenTestPaper(context, quiz);
+      },
+      borderRadius: BorderRadius.circular(5.0),
+      child: Container(
+        width: 26.0,
+        height: 29.0,
+        decoration: BoxDecoration(
+          color: const Color(0xFFDC2626),
+          borderRadius: BorderRadius.circular(5.0),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 2.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.description_rounded,
+              color: Colors.white,
+              size: 13.0,
+            ),
+            SizedBox(height: 1.0),
+            Text(
+              'PDF',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 6.5,
+                fontWeight: FontWeight.w900,
+                height: 1.0,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -272,6 +310,14 @@ class _SubcategoryDetailPageWidgetState
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        _buildPdfBadge(context, quiz),
+                        const SizedBox(width: 8.0),
+                        Container(
+                          width: 1.0,
+                          height: 20.0,
+                          color: const Color(0xFFD7E1F0),
+                        ),
+                        const SizedBox(width: 8.0),
                         SizedBox(
                           width: 22.0,
                           height: 22.0,
@@ -280,19 +326,13 @@ class _SubcategoryDetailPageWidgetState
                             fit: BoxFit.contain,
                           ),
                         ),
-                        const SizedBox(width: 10.0),
-                        Container(
-                          width: 1.0,
-                          height: 20.0,
-                          color: const Color(0xFFD7E1F0),
-                        ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 8.0),
                         const Expanded(
                           child: Text(
                             'हिन्दी, English',
                             style: TextStyle(
                               color: Color(0xFF111827),
-                              fontSize: FFFont.f16,
+                              fontSize: FFFont.f14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -314,7 +354,7 @@ class _SubcategoryDetailPageWidgetState
                             child: const Text(
                               'Start Test',
                               style: TextStyle(
-                                fontSize: FFFont.f16,
+                                fontSize: FFFont.f14,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

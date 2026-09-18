@@ -1,9 +1,8 @@
-import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
+import '/custom_code/utils/test_paper_helper.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -218,6 +217,45 @@ class _FeaturedCategoryDetailWidgetState
     );
   }
 
+  Widget _buildPdfBadge(BuildContext context, dynamic quizzesItem) {
+    return InkWell(
+      onTap: () async {
+        await TestPaperHelper.downloadOrOpenTestPaper(context, quizzesItem);
+      },
+      borderRadius: BorderRadius.circular(5.0),
+      child: Container(
+        width: 26.0,
+        height: 29.0,
+        decoration: BoxDecoration(
+          color: const Color(0xFFDC2626),
+          borderRadius: BorderRadius.circular(5.0),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 2.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.description_rounded,
+              color: Colors.white,
+              size: 13.0,
+            ),
+            SizedBox(height: 1.0),
+            Text(
+              'PDF',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 6.5,
+                fontWeight: FontWeight.w900,
+                height: 1.0,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildDashedDivider() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -267,10 +305,7 @@ class _FeaturedCategoryDetailWidgetState
                 width: 5.0,
                 height: 28.0,
                 margin: const EdgeInsets.only(top: 2.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1D6FFF),
-                  borderRadius: BorderRadius.circular(0.0),
-                ),
+                color: const Color(0xFF1D6FFF),
               ),
               const SizedBox(width: 10.0),
               Expanded(
@@ -281,8 +316,8 @@ class _FeaturedCategoryDetailWidgetState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 72.0,
-                          height: 72.0,
+                          width: 58.0,
+                          height: 58.0,
                           decoration: BoxDecoration(
                             color: const Color(0xFFF5F8FF),
                             borderRadius: BorderRadius.circular(12.0),
@@ -291,49 +326,59 @@ class _FeaturedCategoryDetailWidgetState
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
                             child: CachedNetworkImage(
-                              fadeInDuration:
-                                  const Duration(milliseconds: 300),
-                              fadeOutDuration:
-                                  const Duration(milliseconds: 300),
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => Container(
+                                color: const Color(0xFFF5F8FF),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.image_outlined,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 11.0),
                         Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 2.0, right: 6.0),
-                            child: Text(
-                              name.toUpperCase(),
-                              style: const TextStyle(
-                                color: Color(0xFF111827),
-                                fontSize: FFFont.f18,
-                                fontWeight: FontWeight.w800,
-                                height: 1.28,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 2.0, right: 6.0),
+                                child: Text(
+                                  name.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: FFFont.f18,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.28,
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 8.0),
+                              Row(
+                                children: [
+                                  _buildMetaItem(
+                                    icon: Icons.access_time_rounded,
+                                    text: '$minutes mins',
+                                  ),
+                                  const SizedBox(width: 13.0),
+                                  Container(
+                                    width: 1.0,
+                                    height: 18.0,
+                                    color: const Color(0xFFD7E1F0),
+                                  ),
+                                  const SizedBox(width: 13.0),
+                                  _buildMetaItem(
+                                    icon: Icons.assignment_outlined,
+                                    text: '$totalQuestions Marks',
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10.0),
-                    Row(
-                      children: [
-                        _buildMetaItem(
-                          icon: Icons.access_time_rounded,
-                          text: '$minutes mins',
-                        ),
-                        const SizedBox(width: 13.0),
-                        Container(
-                          width: 1.0,
-                          height: 18.0,
-                          color: const Color(0xFFD7E1F0),
-                        ),
-                        const SizedBox(width: 13.0),
-                        _buildMetaItem(
-                          icon: Icons.assignment_outlined,
-                          text: '$totalQuestions Marks',
                         ),
                       ],
                     ),
@@ -346,34 +391,36 @@ class _FeaturedCategoryDetailWidgetState
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          width: 30.0,
-                          height: 30.0,
-                          child: SvgPicture.asset(
-                            'assets/images/google_translate_icon.svg',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                        const SizedBox(width: 10.0),
+                        _buildPdfBadge(context, quizzesItem),
+                        const SizedBox(width: 8.0),
                         Container(
                           width: 1.0,
                           height: 20.0,
                           color: const Color(0xFFD7E1F0),
                         ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 8.0),
+                        SizedBox(
+                          width: 22.0,
+                          height: 22.0,
+                          child: SvgPicture.asset(
+                            'assets/images/google_translate_icon.svg',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(width: 8.0),
                         const Expanded(
                           child: Text(
                             'हिन्दी, English',
                             style: TextStyle(
                               color: Color(0xFF111827),
-                              fontSize: FFFont.f16,
+                              fontSize: FFFont.f14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
                         SizedBox(
-                          width: 107.0,
-                          height: 42.0,
+                          width: 90.0,
+                          height: 34.0,
                           child: ElevatedButton(
                             onPressed: () async => _openQuiz(quizzesItem),
                             style: ElevatedButton.styleFrom(
@@ -388,7 +435,7 @@ class _FeaturedCategoryDetailWidgetState
                             child: const Text(
                               'Start Test',
                               style: TextStyle(
-                                fontSize: FFFont.f16,
+                                fontSize: FFFont.f14,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

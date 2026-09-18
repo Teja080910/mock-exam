@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '/backend/api_requests/api_calls.dart';
 import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
+import '/custom_code/utils/test_paper_helper.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -10,8 +10,6 @@ import '/pages/category_flow/category_detail_page/category_detail_page_widget.da
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/pages/home_flow/news_screen/news_screen_widget.dart';
 import '/pages/home_flow/quiz_questions_screen/quiz_questions_screen_widget.dart';
-import '/pages/profile_flow/notes_screen/notes_screen_widget.dart';
-
 enum _SearchResultType { group, category, quiz, news, ebook }
 
 class _GlobalSearchResult {
@@ -383,7 +381,11 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       case _SearchResultType.ebook:
         final link = _value(result.data['link']);
         if (link.isEmpty) return;
-        await openNotePdf(context, link, title: result.title);
+        await TestPaperHelper.downloadPdfFromUrl(
+          context,
+          link,
+          title: result.title,
+        );
         return;
     }
   }

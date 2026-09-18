@@ -115,6 +115,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => PrivacyPolicyScreenWidget(),
         ),
         FFRoute(
+          name: RefundPolicyScreenWidget.routeName,
+          path: RefundPolicyScreenWidget.routePath,
+          builder: (context, params) => RefundPolicyScreenWidget(),
+        ),
+        FFRoute(
           name: ResetPasswordScreenWidget.routeName,
           path: ResetPasswordScreenWidget.routePath,
           builder: (context, params) => ResetPasswordScreenWidget(

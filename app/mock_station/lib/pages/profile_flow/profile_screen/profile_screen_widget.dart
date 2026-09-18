@@ -407,13 +407,11 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     },
                   ),
                 _buildMenuTile(
-                  icon: Icons.privacy_tip_outlined,
-                  label: 'Privacy Policy',
-                  color: const Color(0xFFEF4444),
+                  icon: Icons.card_giftcard_outlined,
+                  label: 'Refer and Earn',
+                  color: const Color(0xFFE11D48),
                   onTap: () {
-                    launchURL(
-                      'https://mockstation.blogspot.com/2026/05/privacy-policy-for-mockstation.html',
-                    );
+                    context.pushNamed(ReferAndEarnScreenWidget.routeName);
                   },
                 ),
                 _buildMenuTile(
@@ -425,11 +423,26 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                   },
                 ),
                 _buildMenuTile(
-                  icon: Icons.card_giftcard_outlined,
-                  label: 'Refer and Earn',
-                  color: const Color(0xFFE11D48),
+                  icon: Icons.privacy_tip_outlined,
+                  label: 'Privacy Policy',
+                  color: const Color(0xFFEF4444),
                   onTap: () {
-                    context.pushNamed(ReferAndEarnScreenWidget.routeName);
+                    launchURL(
+                      'https://mockstation.blogspot.com/2026/05/privacy-policy-for-mockstation.html',
+                    );
+                  },
+                ),
+                _buildMenuTile(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Refund Policy',
+                  color: const Color(0xFF64748B),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RefundPolicyScreenWidget(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuTile(

@@ -11,6 +11,8 @@ export '/pages/profile_flow/setting_page/setting_page_widget.dart'
     show SettingPageWidget;
 export '/pages/profile_flow/privacy_policy_screen/privacy_policy_screen_widget.dart'
     show PrivacyPolicyScreenWidget;
+export '/pages/profile_flow/refund_policy_screen/refund_policy_screen_widget.dart'
+    show RefundPolicyScreenWidget;
 export '/pages/login_flow/reset_password_screen/reset_password_screen_widget.dart'
     show ResetPasswordScreenWidget;
 export '/pages/login_flow/login_screen/login_screen_widget.dart'

@@ -44,6 +44,18 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "barcode",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/barcode-2.2.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "bidi",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/bidi-2.0.13",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "boolean_selector",
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/boolean_selector-2.1.2",
       "packageUri": "lib/",
@@ -746,6 +758,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "open_filex",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/open_filex-4.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "package_info_plus",
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/package_info_plus-8.3.1",
       "packageUri": "lib/",
@@ -836,6 +854,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "pdf",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/pdf-3.12.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
       "name": "percent_indicator",
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/percent_indicator-4.2.2",
       "packageUri": "lib/",
@@ -906,6 +930,12 @@
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/provider-6.1.2",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "qr",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/qr-3.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
     },
     {
       "name": "razorpay_flutter",

@@ -244,6 +244,9 @@ admin_route.get('/delete-note', NoteController.deleteNote);
 admin_route.post('/note-is-active/:id/toggle', NoteController.activeStatus);
 
 admin_route.get('*', function (req, res) {
+  if (req.originalUrl && req.originalUrl.startsWith('/api')) {
+    return res.status(404).json({ success: 0, message: 'Endpoint not found', error: 1 });
+  }
   res.redirect('/');
 });
 
