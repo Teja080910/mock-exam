@@ -14,13 +14,41 @@
         el.style.opacity = '0.7';
     }
 
-    // Forms: disable + spinner on the submit button that was used
+    function resetLoading(el) {
+        if (!el || el.dataset.loading !== '1') return;
+        if (typeof el.dataset.originalHtml === 'string') {
+            el.innerHTML = el.dataset.originalHtml;
+        }
+        delete el.dataset.originalHtml;
+        delete el.dataset.loading;
+        el.disabled = false;
+        el.style.opacity = '';
+    }
+
+    // Restore every element that is still in its loading state. Needed when a
+    // page is restored from the back/forward cache (or history) with the DOM
+    // snapshot taken while a link/button was mid-navigation.
+    function resetAllLoading() {
+        document.querySelectorAll('[data-loading="1"]').forEach(resetLoading);
+    }
+
+    // pageshow fires on normal loads and bfcache restores (persisted=true).
+    window.addEventListener('pageshow', resetAllLoading);
+    // pagehide fires before the page is cached/unloaded: leave a clean snapshot.
+    window.addEventListener('pagehide', resetAllLoading);
+
+    // Forms: disable + spinner on the submit button that was used.
+    // Deferred so handlers that cancel the submit (AJAX forms, validation,
+    // confirm dialogs) can call preventDefault() first.
     document.addEventListener('submit', function (e) {
         const form = e.target;
         if (!(form instanceof HTMLFormElement)) return;
         // skip AJAX-only toggle forms (they contain no visible submit button)
         const btn = form.querySelector('button[type="submit"], button:not([type])');
-        if (btn) showLoading(btn);
+        if (!btn) return;
+        setTimeout(function () {
+            if (!e.defaultPrevented) showLoading(btn);
+        }, 0);
     }, true);
 
     // Action links (edit/delete): show spinner only once navigation is really

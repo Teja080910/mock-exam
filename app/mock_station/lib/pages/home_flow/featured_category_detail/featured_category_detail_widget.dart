@@ -222,35 +222,17 @@ class _FeaturedCategoryDetailWidgetState
       onTap: () async {
         await TestPaperHelper.downloadOrOpenTestPaper(context, quizzesItem);
       },
-      borderRadius: BorderRadius.circular(5.0),
-      child: Container(
-        width: 26.0,
-        height: 29.0,
-        decoration: BoxDecoration(
-          color: const Color(0xFFDC2626),
-          borderRadius: BorderRadius.circular(5.0),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 2.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(
-              Icons.description_rounded,
-              color: Colors.white,
-              size: 13.0,
-            ),
-            SizedBox(height: 1.0),
-            Text(
-              'PDF',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 6.5,
-                fontWeight: FontWeight.w900,
-                height: 1.0,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
+      borderRadius: BorderRadius.circular(4.0),
+      child: Semantics(
+        button: true,
+        label: 'Open test PDF',
+        child: SizedBox(
+          width: 22.0,
+          height: 22.0,
+          child: SvgPicture.asset(
+            'assets/images/pdf_exact.svg',
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
@@ -348,7 +330,7 @@ class _FeaturedCategoryDetailWidgetState
                                 padding:
                                     const EdgeInsets.only(top: 2.0, right: 6.0),
                                 child: Text(
-                                  name.toUpperCase(),
+                                  name,
                                   style: const TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: FFFont.f18,
@@ -391,14 +373,16 @@ class _FeaturedCategoryDetailWidgetState
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _buildPdfBadge(context, quizzesItem),
-                        const SizedBox(width: 8.0),
-                        Container(
-                          width: 1.0,
-                          height: 20.0,
-                          color: const Color(0xFFD7E1F0),
-                        ),
-                        const SizedBox(width: 8.0),
+                        if (TestPaperHelper.hasPdf(quizzesItem)) ...[
+                          _buildPdfBadge(context, quizzesItem),
+                          const SizedBox(width: 8.0),
+                          Container(
+                            width: 1.0,
+                            height: 20.0,
+                            color: const Color(0xFFD7E1F0),
+                          ),
+                          const SizedBox(width: 8.0),
+                        ],
                         SizedBox(
                           width: 22.0,
                           height: 22.0,

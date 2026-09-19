@@ -1664,7 +1664,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                   child: PageView
                                                                       .builder(
                                                                     physics:
-                                                                        const NeverScrollableScrollPhysics(),
+                                                                        const PageScrollPhysics(),
                                                                     controller: _model
                                                                             .pageViewController ??=
                                                                         PageController(
@@ -1673,6 +1673,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                     onPageChanged:
                                                                         (idx) async {
                                                                       _switchQuestionTiming(idx);
+                                                                      FFAppState()
+                                                                              .quesIndex =
+                                                                          idx;
                                                                       FFAppState()
                                                                               .selectedColorIndex =
                                                                           selectedOptionPerQuestion[idx] ??
@@ -1916,13 +1919,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             _model.actualAnswer = null;
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = -1;
                                                                                             FFAppState().selectedColorIndex = -1;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.a''').toString();
                                                                                             _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                             FFAppState().selectedColorIndex = 0;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'a';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'a';
                                                                                           }
                                                                                           safeSetState(() {});
                                                                                           FFAppState().update(() {});
@@ -1939,13 +1942,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             _model.actualAnswer = null;
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = -1;
                                                                                             FFAppState().selectedColorIndex = -1;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.b''').toString();
                                                                                             _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                             FFAppState().selectedColorIndex = 1;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'b';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'b';
                                                                                           }
                                                                                           safeSetState(() {});
                                                                                           FFAppState().update(() {});
@@ -1962,13 +1965,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             _model.actualAnswer = null;
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = -1;
                                                                                             FFAppState().selectedColorIndex = -1;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.c''').toString();
                                                                                             _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 2;
                                                                                             FFAppState().selectedColorIndex = 2;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'c';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'c';
                                                                                           }
                                                                                           safeSetState(() {});
                                                                                           FFAppState().update(() {});
@@ -1985,13 +1988,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             _model.actualAnswer = null;
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = -1;
                                                                                             FFAppState().selectedColorIndex = -1;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'skipped';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'skipped';
                                                                                           } else {
                                                                                             _model.userAnswer = getJsonField(categorywisequizItem, r'''$.option.d''').toString();
                                                                                             _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                             selectedOptionPerQuestion[categorywisequizIndex] = 3;
                                                                                             FFAppState().selectedColorIndex = 3;
-                                                                                            userAnswersPerQuestion[_model.pageViewCurrentIndex] = 'd';
+                                                                                            userAnswersPerQuestion[categorywisequizIndex] = 'd';
                                                                                           }
                                                                                           safeSetState(() {});
                                                                                           FFAppState().update(() {});
@@ -2332,7 +2335,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 0;
                                                                                                   FFAppState().selectedColorIndex = 0;
-                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  userAnswersPerQuestion[categorywisequizIndex] = _model.userAnswer ?? '';
                                                                                                   safeSetState(() {});
                                                                                                   FFAppState().update(() {});
                                                                                                 },
@@ -2378,7 +2381,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 1;
                                                                                                   FFAppState().selectedColorIndex = 1;
-                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  userAnswersPerQuestion[categorywisequizIndex] = _model.userAnswer ?? '';
                                                                                                   safeSetState(() {});
                                                                                                   FFAppState().update(() {});
                                                                                                 },
@@ -2424,7 +2427,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 2;
                                                                                                   FFAppState().selectedColorIndex = 2;
-                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  userAnswersPerQuestion[categorywisequizIndex] = _model.userAnswer ?? '';
                                                                                                   safeSetState(() {});
                                                                                                   FFAppState().update(() {});
                                                                                                 },
@@ -2470,7 +2473,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   _model.actualAnswer = _answerText(categorywisequizItem);
                                                                                                   selectedOptionPerQuestion[categorywisequizIndex] = 3;
                                                                                                   FFAppState().selectedColorIndex = 3;
-                                                                                                  userAnswersPerQuestion[_model.pageViewCurrentIndex] = _model.userAnswer ?? '';
+                                                                                                  userAnswersPerQuestion[categorywisequizIndex] = _model.userAnswer ?? '';
                                                                                                   safeSetState(() {});
                                                                                                   FFAppState().update(() {});
                                                                                                 },

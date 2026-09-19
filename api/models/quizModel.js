@@ -46,6 +46,18 @@ const QuizSchema = mongoose.Schema({
     penalty_per_question: {
         type: Number,
         default: 0
+    },
+    pdf: {
+        type: mongoose.Schema.Types.Mixed,
+        default: { en: '', hi: '' }
+    },
+    pdf_en: {
+        type: String,
+        default: ''
+    },
+    pdf_hi: {
+        type: String,
+        default: ''
     }
 },
     {

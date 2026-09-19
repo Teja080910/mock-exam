@@ -1143,7 +1143,7 @@ const GetBanner = async (req, res) => {
   try {
     let banner = await Banner.find({ is_active: 1 }).populate(
       "quizId",
-      "quizId name categoryId image timer_status minutes_per_quiz description",
+      "quizId name categoryId image timer_status minutes_per_quiz description pdf pdf_en pdf_hi",
     );
     if (banner.length > 0) {
       const bannerData = await Promise.all(
@@ -1260,6 +1260,9 @@ const GetQuizzes = async (req, res) => {
             timer_status: quiz.timer_status,
             minutes_per_quiz: quiz.minutes_per_quiz,
             description: normalizeQuizDescription(quiz.description),
+            pdf: quiz.pdf || { en: quiz.pdf_en || '', hi: quiz.pdf_hi || '' },
+            pdf_en: quiz.pdf_en || (quiz.pdf ? quiz.pdf.en : ''),
+            pdf_hi: quiz.pdf_hi || (quiz.pdf ? quiz.pdf.hi : ''),
             total_questions: totalQuestions,
             correct_ans_reward_per_question:
               quiz.correct_ans_reward_per_question,
@@ -1342,6 +1345,9 @@ const GetQuizByCategory = async (req, res) => {
             timer_status: quiz.timer_status,
             minutes_per_quiz: quiz.minutes_per_quiz,
             description: normalizeQuizDescription(quiz.description),
+            pdf: quiz.pdf || { en: quiz.pdf_en || '', hi: quiz.pdf_hi || '' },
+            pdf_en: quiz.pdf_en || (quiz.pdf ? quiz.pdf.en : ''),
+            pdf_hi: quiz.pdf_hi || (quiz.pdf ? quiz.pdf.hi : ''),
             total_questions: totalQuestions,
             correct_ans_reward_per_question:
               quiz.correct_ans_reward_per_question,
@@ -1495,6 +1501,9 @@ const GetQuestionsByQuizId = async (req, res) => {
           name: question.quizId?.name,
           image: question.quizId?.image,
           description: normalizeQuizDescription(question.quizId?.description),
+          pdf: question.quizId?.pdf || { en: question.quizId?.pdf_en || '', hi: question.quizId?.pdf_hi || '' },
+          pdf_en: question.quizId?.pdf_en || (question.quizId?.pdf ? question.quizId.pdf.en : ''),
+          pdf_hi: question.quizId?.pdf_hi || (question.quizId?.pdf ? question.quizId.pdf.hi : ''),
         },
         question_type: question.question_type,
         image: question.image,
@@ -2594,6 +2603,9 @@ const GetFeaturedCategory = async (req, res) => {
                 timer_status: quiz.timer_status,
                 minutes_per_quiz: quiz.minutes_per_quiz,
                 description: normalizeQuizDescription(quiz.description),
+                pdf: quiz.pdf || { en: quiz.pdf_en || '', hi: quiz.pdf_hi || '' },
+                pdf_en: quiz.pdf_en || (quiz.pdf ? quiz.pdf.en : ''),
+                pdf_hi: quiz.pdf_hi || (quiz.pdf ? quiz.pdf.hi : ''),
                 total_questions: totalQuestions,
                 correct_ans_reward_per_question:
                   quiz.correct_ans_reward_per_question,

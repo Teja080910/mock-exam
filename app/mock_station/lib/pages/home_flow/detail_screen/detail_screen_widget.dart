@@ -366,7 +366,7 @@ class _DetailScreenWidgetState extends State<DetailScreenWidget>
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       16.0, 0.0, 0.0, 0.0),
                                   child: Text(
-                                    _resolveBilingualText(widget.name).toUpperCase(),
+                                    _resolveBilingualText(widget.name),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(

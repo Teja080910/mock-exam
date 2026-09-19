@@ -117,6 +117,42 @@
                                                     <input name="description_hi" type="hidden">
                                                 </div>
                                             </div>
+                                            <% 
+                                                const curPdfEn = editquiz.pdf_en || (editquiz.pdf && editquiz.pdf.en ? editquiz.pdf.en : '');
+                                                const curPdfHi = editquiz.pdf_hi || (editquiz.pdf && editquiz.pdf.hi ? editquiz.pdf.hi : '');
+                                            %>
+                                            <div class="row mb-3">
+                                                <label class="col-sm-3 col-form-label">PDF Question Paper (English)</label>
+                                                <div class="col-sm-9">
+                                                    <% if (curPdfEn) { %>
+                                                        <div class="mb-2 d-flex align-items-center gap-2">
+                                                            <a href="./assets/userImages/<%= curPdfEn %>" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bx bxs-file-pdf me-1"></i>View Current English PDF</a>
+                                                            <div class="form-check ms-2">
+                                                                <input class="form-check-input" type="checkbox" name="remove_pdf_en" value="1" id="removePdfEn">
+                                                                <label class="form-check-label text-danger" for="removePdfEn">Remove PDF</label>
+                                                            </div>
+                                                        </div>
+                                                    <% } %>
+                                                    <input type="file" name="pdf_en" class="form-control" accept="application/pdf" />
+                                                    <small class="text-muted"><%= curPdfEn ? 'Select a file to replace current English PDF' : 'Optional. Upload PDF question paper in English' %></small>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <label class="col-sm-3 col-form-label">PDF Question Paper (Hindi)</label>
+                                                <div class="col-sm-9">
+                                                    <% if (curPdfHi) { %>
+                                                        <div class="mb-2 d-flex align-items-center gap-2">
+                                                            <a href="./assets/userImages/<%= curPdfHi %>" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bx bxs-file-pdf me-1"></i>View Current Hindi PDF</a>
+                                                            <div class="form-check ms-2">
+                                                                <input class="form-check-input" type="checkbox" name="remove_pdf_hi" value="1" id="removePdfHi">
+                                                                <label class="form-check-label text-danger" for="removePdfHi">Remove PDF</label>
+                                                            </div>
+                                                        </div>
+                                                    <% } %>
+                                                    <input type="file" name="pdf_hi" class="form-control" accept="application/pdf" />
+                                                    <small class="text-muted"><%= curPdfHi ? 'Select a file to replace current Hindi PDF' : 'Optional. Upload PDF question paper in Hindi' %></small>
+                                                </div>
+                                            </div>
                                             <div class="row mb-3">
                                                 <label class="col-sm-3 col-form-label">Is Active</label>
                                                 <div class="col-sm-9">

@@ -283,28 +283,24 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
       'soft': Color(0xFFDBEAFE),
       'icon': Icons.import_contacts_rounded,
       'border': Color(0xFF93C5FD),
-      'features': ['High Quality Content', 'Easy to Download'],
     },
     1: {
       'accent': Color(0xFF16A34A),
       'soft': Color(0xFFDCFCE7),
       'icon': Icons.description_rounded,
       'border': Color(0xFF86EFAC),
-      'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
     },
     2: {
       'accent': Color(0xFFEA580C),
       'soft': Color(0xFFFFEDD5),
       'icon': Icons.cast_for_education_rounded,
       'border': Color(0xFFFDBA74),
-      'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
     },
     3: {
       'accent': Color(0xFF7C3AED),
       'soft': Color(0xFFF3E8FF),
       'icon': Icons.card_giftcard_rounded,
       'border': Color(0xFFD8B4FE),
-      'features': ['Ebooks + Notes + Mock Tests', 'Complete Exam Preparation in One Plan'],
     },
   };
 
@@ -315,38 +311,30 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
       'soft': Color(0xFFDBEAFE),
       'icon': Icons.import_contacts_rounded,
       'border': Color(0xFF93C5FD),
-      'features': ['High Quality Content', 'Easy to Download'],
     },
     'notes': {
       'accent': Color(0xFF16A34A),
       'soft': Color(0xFFDCFCE7),
       'icon': Icons.description_rounded,
       'border': Color(0xFF86EFAC),
-      'features': ['Short & Concise Notes', 'Quick Revision Friendly'],
     },
     'mock test': {
       'accent': Color(0xFFEA580C),
       'soft': Color(0xFFFFEDD5),
       'icon': Icons.cast_for_education_rounded,
       'border': Color(0xFFFDBA74),
-      'features': ['Unlimited Mock Tests', 'Instant Results & Analysis'],
     },
     'all in one': {
       'accent': Color(0xFF7C3AED),
       'soft': Color(0xFFF3E8FF),
       'icon': Icons.card_giftcard_rounded,
       'border': Color(0xFFD8B4FE),
-      'features': ['Ebooks + Notes + Mock Tests', 'Complete Exam Preparation in One Plan'],
     },
     'lifetime': {
       'accent': Color(0xFFB45309),
       'soft': Color(0xFFFEF3C7),
       'icon': Icons.all_inclusive_rounded,
       'border': Color(0xFFFCD34D),
-      'features': [
-        'Unlimited Access to All Premium Content',
-        'One-Time Payment, Lifetime Benefits',
-      ],
     },
   };
 
@@ -419,14 +407,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     final soft = theme['soft'] as Color;
     final icon = theme['icon'] as IconData;
     final border = theme['border'] as Color;
-    final resolvedFeatures = features.isNotEmpty
-        ? features
-        : (theme['features'] as List<String>? ??
-            <String>[
-              categoryName,
-              '$planValidity validity',
-              'Plan ID: $planId',
-            ]);
+    final resolvedFeatures = features;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14.0),

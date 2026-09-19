@@ -725,13 +725,13 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0),
+            padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Center(
               child: Text(
                 'Sectional Summary',
                 style: TextStyle(
                   color: Color(0xFF0F172A),
-                  fontSize: FFFont.f20,
+                  fontSize: FFFont.f16,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'Roboto',
                   letterSpacing: -0.2,
@@ -885,16 +885,16 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
     if (isHeader) {
       fontWeight = FontWeight.w700;
-      fontSize = FFFont.f12;
+      fontSize = FFFont.f10;
     } else if (isTotal) {
       fontWeight = FontWeight.w900;
-      fontSize = FFFont.f14;
+      fontSize = FFFont.f12;
     } else if (isSubject) {
       fontWeight = FontWeight.w800;
-      fontSize = FFFont.f14;
+      fontSize = FFFont.f12;
     } else {
       fontWeight = FontWeight.w800;
-      fontSize = FFFont.f14;
+      fontSize = FFFont.f12;
     }
 
     final textWidget = Text(
@@ -911,8 +911,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: alignLeft ? 10.0 : 4.0,
-        vertical: 14.0,
+        horizontal: alignLeft ? 8.0 : 4.0,
+        vertical: 6.0,
       ),
       alignment: alignLeft ? Alignment.centerLeft : Alignment.center,
       child: alignLeft

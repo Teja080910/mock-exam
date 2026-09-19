@@ -117,13 +117,20 @@ admin_route.get('/edit-subcategory', SubcategoryController.editSubcategory);
 admin_route.post('/edit-subcategory', upload.single('image'), SubcategoryController.updateSubcategory);
 admin_route.get('/delete-subcategory', SubcategoryController.deleteSubcategory);
 
+// Quiz Upload Fields
+const quizUpload = upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'pdf_en', maxCount: 1 },
+  { name: 'pdf_hi', maxCount: 1 }
+]);
+
 // Quiz
 admin_route.get('/add-quiz', QuizController.loadQuiz);
-admin_route.post('/add-quiz', upload.single('image'), QuizController.addQuiz);
+admin_route.post('/add-quiz', quizUpload, QuizController.addQuiz);
 admin_route.get('/view-quiz', QuizController.viewQuiz);
 admin_route.post('/quiz-is-active/:id/toggle', QuizController.activeStatus);
 admin_route.get('/edit-quiz', QuizController.editQuiz);
-admin_route.post('/edit-quiz', upload.single('image'), QuizController.UpdateQuiz);
+admin_route.post('/edit-quiz', quizUpload, QuizController.UpdateQuiz);
 admin_route.get('/delete-quiz', QuizController.deleteQuiz);
 
 // Image and Audio Upload

@@ -23,11 +23,15 @@ const addQuiz = async(req,res)=>{
     try {
         let loginData = await Admin.findById({_id:req.session.user_id});
         if (loginData.is_admin == 1) {
+            const imageFile = req.files && req.files['image'] ? req.files['image'][0].filename : (req.file ? req.file.filename : '');
+            const pdfEnFile = req.files && req.files['pdf_en'] ? req.files['pdf_en'][0].filename : '';
+            const pdfHiFile = req.files && req.files['pdf_hi'] ? req.files['pdf_hi'][0].filename : '';
+
             const QuizData = new Quiz({
                 categoryId: req.body.categoryId,
                 subcategoryId: req.body.subcategoryId,
                 name: req.body.name,
-                image: req.file.filename,
+                image: imageFile,
                 points_require_to_play: parseInt(req.body.points_require_to_play) || 0,
                 timer_status: req.body.timer_status == "on" ? 1 : 0,
                 minutes_per_quiz: parseInt(req.body.minutes_per_quiz) || 0,
@@ -36,6 +40,12 @@ const addQuiz = async(req,res)=>{
                     en: req.body.description || '',
                     hi: req.body.description_hi || ''
                 },
+                pdf: {
+                    en: pdfEnFile,
+                    hi: pdfHiFile
+                },
+                pdf_en: pdfEnFile,
+                pdf_hi: pdfHiFile,
                 is_active: req.body.is_active == "on" ? 1 : 0,
                 correct_ans_reward_per_question: parseFloat(req.body.correct_ans_reward_per_question) || 0,
                 penalty_per_question: parseFloat(req.body.penalty_per_question) || 0
@@ -158,62 +168,87 @@ const editQuiz = async(req,res)=>{
 const UpdateQuiz = async(req,res)=>{
     try {
         let loginData = await Admin.findById({_id:req.session.user_id});
-            if (loginData.is_admin == 1) {
-                const id = req.body.id;
-                const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-quiz';
-                const currentQuiz = await Quiz.findById(id);
-                const description = {
-                    en: req.body.description || '',
-                    hi: req.body.description_hi || ''
-                };
-                if (req.file) {
-                    if (currentQuiz) {
-                        if (fs.existsSync(userimages + currentQuiz.image))
-                            {
-                                fs.unlinkSync(userimages + currentQuiz.image)
-                            }
-                    }
-                    const UpdateData = await Quiz.findByIdAndUpdate({ _id: id }, 
-                        { $set: { 
-                            categoryId: req.body.categoryId,
-                            subcategoryId: req.body.subcategoryId,
-                            name: req.body.name,
-                            image:req.file.filename,
-                            points_require_to_play:req.body.points_require_to_play,
-                            timer_status:req.body.timer_status == "on" ? 1 : 0,
-                            minutes_per_quiz:req.body.minutes_per_quiz,
-                            minimum_required_points:req.body.minimum_required_points,
-                            description: description,
-                            correct_ans_reward_per_question: parseFloat(req.body.correct_ans_reward_per_question) || 0,
-                            penalty_per_question: parseFloat(req.body.penalty_per_question) || 0
-                        }
-                        });
-                    res.redirect(returnUrl);
+        if (loginData.is_admin == 1) {
+            const id = req.body.id;
+            const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-quiz';
+            const currentQuiz = await Quiz.findById(id);
+            const description = {
+                en: req.body.description || '',
+                hi: req.body.description_hi || ''
+            };
+
+            const updateFields = {
+                categoryId: req.body.categoryId,
+                subcategoryId: req.body.subcategoryId,
+                name: req.body.name,
+                points_require_to_play: parseInt(req.body.points_require_to_play) || 0,
+                timer_status: req.body.timer_status == "on" ? 1 : 0,
+                minutes_per_quiz: parseInt(req.body.minutes_per_quiz) || 0,
+                minimum_required_points: parseInt(req.body.minimum_required_points) || 0,
+                description: description,
+                is_active: req.body.is_active == "on" ? 1 : 0,
+                correct_ans_reward_per_question: parseFloat(req.body.correct_ans_reward_per_question) || 0,
+                penalty_per_question: parseFloat(req.body.penalty_per_question) || 0
+            };
+
+            // Image handling
+            if (req.files && req.files['image'] && req.files['image'][0]) {
+                if (currentQuiz && currentQuiz.image && fs.existsSync(userimages + currentQuiz.image)) {
+                    try { fs.unlinkSync(userimages + currentQuiz.image); } catch (e) { console.log(e); }
                 }
-                else {
-                    const UpdateData = await Quiz.findByIdAndUpdate({ _id: id }, 
-                        { $set: { 
-                            categoryId: req.body.categoryId,
-                            subcategoryId: req.body.subcategoryId,
-                            name: req.body.name,
-                            points_require_to_play:req.body.points_require_to_play,
-                            timer_status:req.body.timer_status == "on" ? 1 : 0,
-                            minutes_per_quiz:req.body.minutes_per_quiz,
-                            minimum_required_points:req.body.minimum_required_points,
-                            description: description,
-                            correct_ans_reward_per_question: parseFloat(req.body.correct_ans_reward_per_question) || 0,
-                            penalty_per_question: parseFloat(req.body.penalty_per_question) || 0
-                        }
-                    });
-                    res.redirect(returnUrl);
+                updateFields.image = req.files['image'][0].filename;
+            } else if (req.file) {
+                if (currentQuiz && currentQuiz.image && fs.existsSync(userimages + currentQuiz.image)) {
+                    try { fs.unlinkSync(userimages + currentQuiz.image); } catch (e) { console.log(e); }
                 }
+                updateFields.image = req.file.filename;
             }
-            else {
-                req.flash('error', 'You have no access to edit quiz , You are not super admin !! *');
-                return res.redirect('back');
+
+            // PDF English handling
+            let pdfEn = currentQuiz && (currentQuiz.pdf_en || (currentQuiz.pdf && currentQuiz.pdf.en)) ? (currentQuiz.pdf_en || currentQuiz.pdf.en) : '';
+            if (req.files && req.files['pdf_en'] && req.files['pdf_en'][0]) {
+                if (pdfEn && fs.existsSync(userimages + pdfEn)) {
+                    try { fs.unlinkSync(userimages + pdfEn); } catch (e) { console.log(e); }
+                }
+                pdfEn = req.files['pdf_en'][0].filename;
+            } else if (req.body.remove_pdf_en === '1') {
+                if (pdfEn && fs.existsSync(userimages + pdfEn)) {
+                    try { fs.unlinkSync(userimages + pdfEn); } catch (e) { console.log(e); }
+                }
+                pdfEn = '';
             }
+
+            // PDF Hindi handling
+            let pdfHi = currentQuiz && (currentQuiz.pdf_hi || (currentQuiz.pdf && currentQuiz.pdf.hi)) ? (currentQuiz.pdf_hi || currentQuiz.pdf.hi) : '';
+            if (req.files && req.files['pdf_hi'] && req.files['pdf_hi'][0]) {
+                if (pdfHi && fs.existsSync(userimages + pdfHi)) {
+                    try { fs.unlinkSync(userimages + pdfHi); } catch (e) { console.log(e); }
+                }
+                pdfHi = req.files['pdf_hi'][0].filename;
+            } else if (req.body.remove_pdf_hi === '1') {
+                if (pdfHi && fs.existsSync(userimages + pdfHi)) {
+                    try { fs.unlinkSync(userimages + pdfHi); } catch (e) { console.log(e); }
+                }
+                pdfHi = '';
+            }
+
+            updateFields.pdf = {
+                en: pdfEn,
+                hi: pdfHi
+            };
+            updateFields.pdf_en = pdfEn;
+            updateFields.pdf_hi = pdfHi;
+
+            await Quiz.findByIdAndUpdate({ _id: id }, { $set: updateFields });
+            res.redirect(returnUrl);
+        } else {
+            req.flash('error', 'You have no access to edit quiz , You are not super admin !! *');
+            return res.redirect('back');
+        }
     } catch (error) {
         console.log(error.message);
+        req.flash('error', error.message);
+        return res.redirect('back');
     }
 }
 
@@ -224,15 +259,23 @@ const deleteQuiz = async(req,res)=>{
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-quiz';
         const currentQuiz = await Quiz.findById(id);
         if (currentQuiz) {
-            if (fs.existsSync(userimages + currentQuiz.image))
-            {
-                fs.unlinkSync(userimages + currentQuiz.image)
+            if (currentQuiz.image && fs.existsSync(userimages + currentQuiz.image)) {
+                try { fs.unlinkSync(userimages + currentQuiz.image); } catch (e) { console.log(e); }
+            }
+            const pdfEn = currentQuiz.pdf_en || (currentQuiz.pdf && currentQuiz.pdf.en);
+            if (pdfEn && fs.existsSync(userimages + pdfEn)) {
+                try { fs.unlinkSync(userimages + pdfEn); } catch (e) { console.log(e); }
+            }
+            const pdfHi = currentQuiz.pdf_hi || (currentQuiz.pdf && currentQuiz.pdf.hi);
+            if (pdfHi && fs.existsSync(userimages + pdfHi)) {
+                try { fs.unlinkSync(userimages + pdfHi); } catch (e) { console.log(e); }
             }
         }
-        const delBanner = await Quiz.deleteOne({ _id: id });
+        await Quiz.deleteOne({ _id: id });
         res.redirect(returnUrl);
     } catch (error) {
         console.log(error.message);
+        res.redirect(returnUrl);
     }
 }
 

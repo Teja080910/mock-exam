@@ -863,13 +863,14 @@ class _QuizquestionsScreenCopyWidgetState
                                                 Padding(
                                                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 40.0),
                                               child: PageView.builder(
-                                                    physics: const NeverScrollableScrollPhysics(),
+                                                    physics: const PageScrollPhysics(),
                                                     controller: _model.pageViewController ??= PageController(
                                                       initialPage: max(0, min(0, categorywisequiz.length - 1))
                                                     ),
-                                                onPageChanged: (_) async {
+                                                onPageChanged: (idx) async {
+                                                      FFAppState().quesIndex = idx;
                                                       FFAppState().questionType = getJsonField(
-                                                        categorywisequiz.elementAtOrNull(_model.pageViewCurrentIndex),
+                                                        categorywisequiz.elementAtOrNull(idx),
                                                     r'''$.question_type''',
                                                   ).toString();
                                                   safeSetState(() {});
