@@ -45,7 +45,19 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
         FFAppState().planStatus = QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
         FFAppState().subsIsSelectedAll = QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ?? false;
         FFAppState().expiresAt = QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
+        FFAppState().activePlanName = QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
+        FFAppState().activePlanCode = QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
+        FFAppState().hasEbookAccess = QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ?? false;
+        FFAppState().hasNotesAccess = QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ?? false;
+        FFAppState().hasMockTestAccess = QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ?? false;
         
+        final rawCodes = QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
+        if (rawCodes is List) {
+          FFAppState().activePlanCodes = rawCodes.map((c) => c.toString().toUpperCase()).toList();
+        } else {
+          FFAppState().activePlanCodes = [];
+        }
+
         List<String> categoryIds = [];
         final categoryGroups = QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
         if (categoryGroups != null) {
@@ -369,10 +381,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     color: const Color(0xFF6366F1),
                     onTap: () async {
                       final hasAccess = FFAppState().planStatus == 'active' &&
-                          (FFAppState().subsIsSelectedAll ||
-                              FFAppState().allowedCategoryIds.any((id) =>
-                                  id.toLowerCase() == 'ebook' ||
-                                  id.toLowerCase() == 'ebooks'));
+                          FFAppState().hasEbookAccess;
                       if (!hasAccess) {
                         await showSubscriptionDialog(context);
                         return;
@@ -387,9 +396,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     color: const Color(0xFF06B6D4),
                     onTap: () async {
                       final hasAccess = FFAppState().planStatus == 'active' &&
-                          (FFAppState().subsIsSelectedAll ||
-                              FFAppState().allowedCategoryIds.any(
-                                  (id) => id.toLowerCase() == 'notes'));
+                          FFAppState().hasNotesAccess;
                       if (!hasAccess) {
                         await showSubscriptionDialog(context);
                         return;

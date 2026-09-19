@@ -96,8 +96,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
     final hasAccess = FFAppState().planStatus == 'active' &&
-        (FFAppState().subsIsSelectedAll ||
-            FFAppState().allowedCategoryIds.any((id) => id.toLowerCase() == 'notes'));
+        FFAppState().hasNotesAccess;
 
     return Scaffold(
       key: scaffoldKey,

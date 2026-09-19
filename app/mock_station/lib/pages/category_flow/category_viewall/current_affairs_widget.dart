@@ -1,4 +1,3 @@
-import 'dart:convert';
 import '/backend/api_requests/api_calls.dart';
 import '/componants/app_bar/app_bar_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
@@ -10,9 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'category_viewall_model.dart';
-import '/flutter_flow/nav/serialization_util.dart';
-export 'category_viewall_model.dart';
+import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 
 class CurrentAffairsWidget extends StatefulWidget {
   const CurrentAffairsWidget({super.key});
@@ -109,7 +107,17 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                           itemBuilder: (context, index) {
                             final quiz = quizList[index];
                             return InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                if (!functions.hasCategoryAccess(
+                                  FFAppState().planStatus,
+                                  FFAppState().subsIsSelectedAll,
+                                  FFAppState().allowedCategoryIds,
+                                  currentAffairsCategoryId,
+                                  null,
+                                )) {
+                                  await showSubscriptionDialog(context);
+                                  return;
+                                }
                                 context.pushNamed(
                                   QuizQuestionsScreenWidget.routeName,
                                   queryParameters: {

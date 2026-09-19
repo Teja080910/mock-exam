@@ -13,6 +13,42 @@ const UserPlanSchema = new mongoose.Schema(
         ref: "CategoryGroup",
       },
     ],
+    subscriptions: [
+      {
+        planId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Plan",
+        },
+        planName: {
+          type: String,
+          default: "",
+        },
+        planCode: {
+          type: String,
+          default: "",
+        },
+        categoryGroupId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "CategoryGroup",
+        },
+        price: {
+          type: Number,
+          default: 0,
+        },
+        planStatus: {
+          type: String,
+          enum: ["active", "expired"],
+          default: "active",
+        },
+        purchasedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        expiresAt: {
+          type: Date,
+        },
+      },
+    ],
     planId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Plan",

@@ -9,17 +9,35 @@ cron.schedule("0 0 * * *", async () => {
 
     const now = new Date();
 
-    const result = await UserPlan.updateMany(
+    // Expire individual subscriptions that have passed expiresAt
+    await UserPlan.updateMany(
       {
-        planStatus: "active",
-        expiresAt: { $ne: null, $lte: now },
+        "subscriptions.planStatus": "active",
+        "subscriptions.expiresAt": { $ne: null, $lte: now },
       },
       {
-        $set: { planStatus: "expired" },
+        $set: { "subscriptions.$[elem].planStatus": "expired" },
       },
+      {
+        arrayFilters: [{ "elem.planStatus": "active", "elem.expiresAt": { $ne: null, $lte: now } }],
+      }
     );
 
-    console.log(`✅ Plans expired: ${result.modifiedCount}`);
+    // Update overall planStatus
+    const activePlans = await UserPlan.find({ planStatus: "active" });
+    let expiredCount = 0;
+    for (const up of activePlans) {
+      const hasActiveSub = up.subscriptions && up.subscriptions.some(
+        (s) => s.planStatus === "active" && (!s.expiresAt || new Date(s.expiresAt) > now)
+      );
+      if (!hasActiveSub && (up.expiresAt ? new Date(up.expiresAt) <= now : true)) {
+        up.planStatus = "expired";
+        await up.save();
+        expiredCount++;
+      }
+    }
+
+    console.log(`✅ Plans expired: ${expiredCount}`);
   } catch (error) {
     console.error("❌ Expire Plan Cron Error:", error);
   }

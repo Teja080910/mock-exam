@@ -112,6 +112,22 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
               QuizGroup.fetchUserPlanCall.isSelectedAll(planRes.jsonBody) ?? false;
           FFAppState().expiresAt =
               QuizGroup.fetchUserPlanCall.expiresAt(planRes.jsonBody) ?? '';
+          FFAppState().activePlanName =
+              QuizGroup.fetchUserPlanCall.planName(planRes.jsonBody) ?? '';
+          FFAppState().activePlanCode =
+              QuizGroup.fetchUserPlanCall.planCode(planRes.jsonBody) ?? '';
+          FFAppState().hasEbookAccess =
+              QuizGroup.fetchUserPlanCall.hasEbookAccess(planRes.jsonBody) ?? false;
+          FFAppState().hasNotesAccess =
+              QuizGroup.fetchUserPlanCall.hasNotesAccess(planRes.jsonBody) ?? false;
+          FFAppState().hasMockTestAccess =
+              QuizGroup.fetchUserPlanCall.hasMockTestAccess(planRes.jsonBody) ?? false;
+          final rawCodes = QuizGroup.fetchUserPlanCall.activePlanCodes(planRes.jsonBody);
+          if (rawCodes is List) {
+            FFAppState().activePlanCodes = rawCodes.map((c) => c.toString().toUpperCase()).toList();
+          } else {
+            FFAppState().activePlanCodes = [];
+          }
           List<String> categoryIds = [];
           final categoryGroups =
               QuizGroup.fetchUserPlanCall.categoryGroupIds(planRes.jsonBody);

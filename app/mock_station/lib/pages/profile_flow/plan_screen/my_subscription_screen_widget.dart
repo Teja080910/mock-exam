@@ -25,6 +25,7 @@ class _MySubscriptionScreenWidgetState extends State<MySubscriptionScreenWidget>
 
   String? activePlanName;
   List<dynamic>? activeCategoryGroups;
+  List<dynamic>? activeSubscriptions;
 
   @override
   void initState() {
@@ -45,9 +46,22 @@ class _MySubscriptionScreenWidgetState extends State<MySubscriptionScreenWidget>
         FFAppState().planStatus = QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
         FFAppState().subsIsSelectedAll = QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ?? false;
         FFAppState().expiresAt = QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
+        FFAppState().activePlanName = QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
+        FFAppState().activePlanCode = QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
+        FFAppState().hasEbookAccess = QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ?? false;
+        FFAppState().hasNotesAccess = QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ?? false;
+        FFAppState().hasMockTestAccess = QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ?? false;
         
-        // Extract Plan and Category Name
-        activePlanName = getJsonField(response.jsonBody, r'''$.planId.planName''')?.toString();
+        final rawCodes = QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
+        if (rawCodes is List) {
+          FFAppState().activePlanCodes = rawCodes.map((c) => c.toString().toUpperCase()).toList();
+        } else {
+          FFAppState().activePlanCodes = [];
+        }
+
+        activeSubscriptions = QuizGroup.fetchUserPlanCall.subscriptions(response.jsonBody);
+        activePlanName = QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ??
+            getJsonField(response.jsonBody, r'''$.planId.planName''')?.toString();
         activeCategoryGroups = QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
 
         List<String> categoryIds = [];
@@ -76,6 +90,18 @@ class _MySubscriptionScreenWidgetState extends State<MySubscriptionScreenWidget>
     required String category,
     required String expiry,
   }) {
+    String expiryText;
+    if (expiry.isEmpty || expiry == 'null') {
+      expiryText = 'Lifetime Access';
+    } else {
+      final parsed = DateTime.tryParse(expiry);
+      if (parsed != null) {
+        expiryText = dateTimeFormat('MMM d, yyyy', parsed);
+      } else {
+        expiryText = expiry;
+      }
+    }
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -163,7 +189,9 @@ class _MySubscriptionScreenWidgetState extends State<MySubscriptionScreenWidget>
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
               child: Text(
-                'Expires on: ${dateTimeFormat('MMM d, yyyy', DateTime.tryParse(expiry) ?? DateTime.now())}',
+                expiryText == 'Lifetime Access'
+                    ? 'Validity: Lifetime Access'
+                    : 'Expires on: $expiryText',
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       fontFamily: 'Roboto',
                       color: FlutterFlowTheme.of(context).secondaryText,
@@ -207,20 +235,106 @@ class _MySubscriptionScreenWidgetState extends State<MySubscriptionScreenWidget>
                     if (FFAppState().planStatus == 'active')
                       Builder(
                         builder: (context) {
-                          if (FFAppState().subsIsSelectedAll) {
+                          if (activeSubscriptions != null &&
+                              activeSubscriptions!.isNotEmpty) {
+                            return Column(
+                              children: activeSubscriptions!.map((sub) {
+                                final subTitle =
+                                    sub['planName']?.toString().isNotEmpty == true
+                                        ? sub['planName'].toString()
+                                        : 'Active Plan';
+                                final subCode = (sub['planCode']?.toString() ?? '')
+                                    .toUpperCase();
+                                final subNameLower = subTitle.toLowerCase();
+                                final subExpiry =
+                                    sub['expiresAt']?.toString() ?? '';
+
+                                String category = 'General Access';
+                                if (subCode == 'PLAN-EBK01' ||
+                                    subNameLower.contains('ebook')) {
+                                  category = 'eBooks Access';
+                                } else if (subCode == 'PLAN-NOT01' ||
+                                    subNameLower.contains('notes')) {
+                                  category = 'Notes Access';
+                                } else if (subCode == 'PLAN-MKT01' ||
+                                    (subNameLower.contains('mock test') &&
+                                        sub['categoryGroup'] == null)) {
+                                  category =
+                                      'All Categories included (Mock Tests & PDFs)';
+                                } else if (subCode == 'PLAN-AIO01' ||
+                                    subNameLower.contains('all in one') ||
+                                    subNameLower.contains('all-in-one') ||
+                                    subNameLower.contains('all access')) {
+                                  category =
+                                      'Complete Access (Mock Tests, PDFs, Ebooks & Notes)';
+                                } else if (subCode == 'PLAN-LTP01' ||
+                                    subNameLower.contains('lifetime')) {
+                                  category = 'Lifetime Complete Access';
+                                } else if (sub['categoryGroup'] != null) {
+                                  category = sub['categoryGroup']
+                                              ['displayName']
+                                          ?.toString() ??
+                                      'Category Tests Access';
+                                }
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: _buildSubscriptionCard(
+                                    context,
+                                    title: subTitle,
+                                    category: category,
+                                    expiry: subExpiry,
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          }
+
+                          final displayName = (activePlanName != null &&
+                                  activePlanName!.isNotEmpty)
+                              ? activePlanName!
+                              : (FFAppState().activePlanName.isNotEmpty
+                                  ? FFAppState().activePlanName
+                                  : 'Active Plan');
+
+                          if (FFAppState().hasEbookAccess &&
+                              !FFAppState().hasMockTestAccess) {
                             return _buildSubscriptionCard(
                               context,
-                              title: activePlanName ?? 'Full Access (All Categories)',
-                              category: 'All Categories included',
+                              title: displayName,
+                              category: 'eBooks Access',
                               expiry: FFAppState().expiresAt,
                             );
                           }
-                          
-                          if (activeCategoryGroups == null || activeCategoryGroups!.isEmpty) {
+
+                          if (FFAppState().hasNotesAccess &&
+                              !FFAppState().hasMockTestAccess) {
                             return _buildSubscriptionCard(
                               context,
-                              title: activePlanName ?? 'Standard Category Plan',
-                              category: 'No category details found',
+                              title: displayName,
+                              category: 'Notes Access',
+                              expiry: FFAppState().expiresAt,
+                            );
+                          }
+
+                          if (FFAppState().subsIsSelectedAll) {
+                            return _buildSubscriptionCard(
+                              context,
+                              title: displayName,
+                              category: (FFAppState().hasEbookAccess &&
+                                      FFAppState().hasNotesAccess)
+                                  ? 'Complete Access (Mock Tests, PDFs, Ebooks & Notes)'
+                                  : 'All Categories included (Mock Tests & PDFs)',
+                              expiry: FFAppState().expiresAt,
+                            );
+                          }
+
+                          if (activeCategoryGroups == null ||
+                              activeCategoryGroups!.isEmpty) {
+                            return _buildSubscriptionCard(
+                              context,
+                              title: displayName,
+                              category: 'Standard Plan',
                               expiry: FFAppState().expiresAt,
                             );
                           }
@@ -228,11 +342,14 @@ class _MySubscriptionScreenWidgetState extends State<MySubscriptionScreenWidget>
                           return Column(
                             children: activeCategoryGroups!.map((group) {
                               return Padding(
-                                padding: EdgeInsets.only(bottom: 16.0),
+                                padding: const EdgeInsets.only(bottom: 16.0),
                                 child: _buildSubscriptionCard(
                                   context,
-                                  title: activePlanName ?? 'Standard Category Plan',
-                                  category: getJsonField(group, r'''$.displayName''')?.toString() ?? 'Category Name',
+                                  title: displayName,
+                                  category: getJsonField(
+                                              group, r'''$.displayName''')
+                                          ?.toString() ??
+                                      'Category Name',
                                   expiry: FFAppState().expiresAt,
                                 ),
                               );

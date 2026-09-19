@@ -43,10 +43,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
     final hasAccess = FFAppState().planStatus == 'active' &&
-        (FFAppState().subsIsSelectedAll ||
-            FFAppState().allowedCategoryIds.any((id) =>
-                id.toLowerCase() == 'ebook' ||
-                id.toLowerCase() == 'ebooks'));
+        FFAppState().hasEbookAccess;
 
     return Scaffold(
       key: scaffoldKey,

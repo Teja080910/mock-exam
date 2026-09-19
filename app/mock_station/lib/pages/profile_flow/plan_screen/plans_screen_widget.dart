@@ -35,6 +35,9 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+
+    // Fetch latest user plan on screen load
+    WidgetsBinding.instance.addPostFrameCallback((_) => refreshProfile());
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
@@ -118,7 +121,19 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
         FFAppState().planStatus = QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
         FFAppState().subsIsSelectedAll = QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ?? false;
         FFAppState().expiresAt = QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
+        FFAppState().activePlanName = QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
+        FFAppState().activePlanCode = QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
+        FFAppState().hasEbookAccess = QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ?? false;
+        FFAppState().hasNotesAccess = QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ?? false;
+        FFAppState().hasMockTestAccess = QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ?? false;
         
+        final rawCodes = QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
+        if (rawCodes is List) {
+          FFAppState().activePlanCodes = rawCodes.map((c) => c.toString().toUpperCase()).toList();
+        } else {
+          FFAppState().activePlanCodes = [];
+        }
+
         List<String> categoryIds = [];
         final categoryGroups = QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
         if (categoryGroups != null) {
@@ -556,31 +571,62 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                   ),
                 ),
                 const SizedBox(width: 12.0),
-                SizedBox(
-                  width: 96.0,
-                  height: 40.0,
-                  child: ElevatedButton(
-                    onPressed: isAlreadyActive ? null : onBuyNow,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accent,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFFD1D5DB),
-                      disabledForegroundColor: Colors.white70,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                isAlreadyActive
+                    ? Container(
+                        width: 96.0,
+                        height: 40.0,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDCFCE7),
+                          border: Border.all(
+                            color: const Color(0xFF16A34A),
+                            width: 1.2,
+                          ),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFF16A34A),
+                              size: 15.0,
+                            ),
+                            SizedBox(width: 4.0),
+                            Text(
+                              'Active',
+                              style: TextStyle(
+                                fontSize: FFFont.f12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF16A34A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : SizedBox(
+                        width: 96.0,
+                        height: 40.0,
+                        child: ElevatedButton(
+                          onPressed: onBuyNow,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accent,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: const Text(
+                            'Buy Now',
+                            style: TextStyle(
+                              fontSize: FFFont.f12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: Text(
-                      isAlreadyActive ? 'Active' : 'Buy Now',
-                      style: const TextStyle(
-                        fontSize: FFFont.f12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ],
@@ -720,7 +766,70 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
 
                               bool isAlreadyActive = false;
                               if (FFAppState().planStatus == 'active') {
-                                if (FFAppState().subsIsSelectedAll) {
+                                final activeCodes = FFAppState()
+                                    .activePlanCodes
+                                    .map((c) => c.toUpperCase())
+                                    .toList();
+                                final cardPlanIdUpper = (getJsonField(
+                                            plan, r'''$.planId''')
+                                        ?.toString() ??
+                                    '')
+                                    .toUpperCase();
+                                final cardPlanNameLower =
+                                    planName.toLowerCase();
+
+                                final isLifetimeActive =
+                                    activeCodes.contains('PLAN-LTP01') ||
+                                        FFAppState()
+                                            .activePlanName
+                                            .toLowerCase()
+                                            .contains('lifetime');
+                                final isAioActive =
+                                    activeCodes.contains('PLAN-AIO01') ||
+                                        FFAppState()
+                                            .activePlanName
+                                            .toLowerCase()
+                                            .contains('all in one') ||
+                                        FFAppState()
+                                            .activePlanName
+                                            .toLowerCase()
+                                            .contains('all access');
+
+                                if (isLifetimeActive) {
+                                  if (cardPlanIdUpper == 'PLAN-LTP01' ||
+                                      cardPlanNameLower.contains('lifetime')) {
+                                    isAlreadyActive = true;
+                                  }
+                                } else if (isAioActive) {
+                                  if (cardPlanIdUpper == 'PLAN-AIO01' ||
+                                      cardPlanNameLower.contains('all in one') ||
+                                      cardPlanNameLower.contains('all-in-one') ||
+                                      cardPlanNameLower.contains('all access') ||
+                                      cardPlanNameLower.contains('all-access')) {
+                                    isAlreadyActive = true;
+                                  }
+                                } else if (cardPlanIdUpper == 'PLAN-EBK01' ||
+                                    cardPlanNameLower.contains('ebook')) {
+                                  if (FFAppState().hasEbookAccess ||
+                                      activeCodes.contains('PLAN-EBK01')) {
+                                    isAlreadyActive = true;
+                                  }
+                                } else if (cardPlanIdUpper == 'PLAN-NOT01' ||
+                                    cardPlanNameLower.contains('notes')) {
+                                  if (FFAppState().hasNotesAccess ||
+                                      activeCodes.contains('PLAN-NOT01')) {
+                                    isAlreadyActive = true;
+                                  }
+                                } else if (cardPlanIdUpper == 'PLAN-MKT01' ||
+                                    (cardPlanNameLower.contains('mock test') &&
+                                        categoryGroupId == null)) {
+                                  if (FFAppState().hasMockTestAccess &&
+                                      (FFAppState().subsIsSelectedAll ||
+                                          categoryGroupId == null)) {
+                                    isAlreadyActive = true;
+                                  }
+                                } else if (cardPlanIdUpper.isNotEmpty &&
+                                    activeCodes.contains(cardPlanIdUpper)) {
                                   isAlreadyActive = true;
                                 } else if (categoryGroupId != null &&
                                     FFAppState()

@@ -3542,28 +3542,111 @@ const buyPlan = async (req, res) => {
       });
     }
 
-    const existingPlan = await UserPlan.findOne({
+    const existingUserPlan = await UserPlan.findOne({
       userId,
       planStatus: "active",
-    });
+    }).populate("planId").populate("subscriptions.planId");
 
     // Check if user already has this specific content or all access
-    if (existingPlan) {
-      if (existingPlan.isSelectedAll) {
-        return res.status(400).json({
-          success: false,
-          message: "You already have all-access plan",
-        });
+    if (existingUserPlan) {
+      const now = new Date();
+      // Collect active subscriptions
+      let activeSubs = (existingUserPlan.subscriptions || []).filter(
+        (s) => s.planStatus === "active" && (!s.expiresAt || new Date(s.expiresAt) > now)
+      );
+
+      // If subscriptions array was empty, consider top-level planId
+      if (activeSubs.length === 0 && existingUserPlan.planId) {
+        activeSubs = [
+          {
+            planId: existingUserPlan.planId,
+            planName: existingUserPlan.planId.planName || "",
+            planCode: existingUserPlan.planId.planId || "",
+            categoryGroupId: existingUserPlan.categoryGroupIds && existingUserPlan.categoryGroupIds.length === 1 ? existingUserPlan.categoryGroupIds[0] : null,
+          }
+        ];
       }
 
-      if (
-        plan.categoryGroup &&
-        existingPlan.categoryGroupIds.includes(plan.categoryGroup.toString())
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "You already have access to this test group",
-        });
+      const targetPlanCodeUpper = (plan.planId || "").toUpperCase();
+      const targetPlanNameLower = (plan.planName || "").toLowerCase();
+
+      for (const sub of activeSubs) {
+        const subPlanDoc = sub.planId;
+        const subPlanIdStr = subPlanDoc?._id ? subPlanDoc._id.toString() : (sub.planId ? sub.planId.toString() : "");
+        const subCodeUpper = (sub.planCode || subPlanDoc?.planId || "").toUpperCase();
+        const subNameLower = (sub.planName || subPlanDoc?.planName || "").toLowerCase();
+
+        // 1. Same exact plan
+        if (subPlanIdStr === plan._id.toString() || (subCodeUpper && subCodeUpper === targetPlanCodeUpper)) {
+          return res.status(400).json({
+            success: false,
+            message: "You already have this plan active",
+          });
+        }
+
+        // 2. Already has Lifetime or All in One (full access to everything)
+        const isSubLifetime = subCodeUpper === "PLAN-LTP01" || subNameLower.includes("lifetime");
+        const isSubAIO =
+          subCodeUpper === "PLAN-AIO01" ||
+          subNameLower.includes("all in one") ||
+          subNameLower.includes("all-in-one") ||
+          subNameLower.includes("all access") ||
+          subNameLower.includes("all-access");
+
+        if (isSubLifetime || isSubAIO) {
+          return res.status(400).json({
+            success: false,
+            message: "You already have a full All-Access plan",
+          });
+        }
+
+        // 3. Mock test checks
+        const isSubMockTestAll =
+          subCodeUpper === "PLAN-MKT01" ||
+          (!sub.categoryGroupId && !subNameLower.includes("ebook") && !subNameLower.includes("notes") && !subCodeUpper.includes("EBK") && !subCodeUpper.includes("NOT"));
+
+        if (isSubMockTestAll) {
+          // If user already has Mock Test All, don't allow buying category-specific mock test plan or mock test all again
+          const isTargetMockTestAll = targetPlanCodeUpper === "PLAN-MKT01" || (!plan.categoryGroup && !targetPlanNameLower.includes("ebook") && !targetPlanNameLower.includes("notes"));
+          if (isTargetMockTestAll || plan.categoryGroup) {
+            return res.status(400).json({
+              success: false,
+              message: "You already have access to all test groups",
+            });
+          }
+        }
+
+        // 4. Same category group check
+        if (
+          plan.categoryGroup &&
+          sub.categoryGroupId &&
+          sub.categoryGroupId.toString() === plan.categoryGroup.toString()
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "You already have access to this test group",
+          });
+        }
+
+        // 5. Duplicate Ebook
+        const isSubEbook = subCodeUpper === "PLAN-EBK01" || subNameLower.includes("ebook");
+        const isTargetEbook = targetPlanCodeUpper === "PLAN-EBK01" || targetPlanNameLower.includes("ebook");
+        if (isSubEbook && isTargetEbook) {
+          return res.status(400).json({
+            success: false,
+            message: "You already have an active eBook plan",
+          });
+        }
+
+        // 6. Duplicate Notes
+        const isSubNotes = subCodeUpper === "PLAN-NOT01" || subNameLower.includes("notes");
+        const isTargetNotes = targetPlanCodeUpper === "PLAN-NOT01" || targetPlanNameLower.includes("notes");
+        if (isSubNotes && isTargetNotes) {
+          return res.status(400).json({
+            success: false,
+            message: "You already have an active Notes plan",
+          });
+        }
       }
     }
 
@@ -3592,22 +3675,24 @@ const buyPlan = async (req, res) => {
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
       notes: {
-        userId,
+        userId: userId.toString(),
         planId: plan._id.toString(),
       },
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
       orderId: order.id,
-      amountInPaise,
-      planId: plan._id,
+      amount: order.amount,
+      currency: order.currency,
+      key: process.env.RAZORPAY_KEY_ID,
+      planName: plan.planName,
     });
-  } catch (err) {
-    console.error("Buy Plan Error:", err);
+  } catch (error) {
+    console.error("Create Order Error:", error);
     res.status(500).json({
       success: false,
-      message: "Something went wrong",
+      message: "Unable to create payment order",
     });
   }
 };
@@ -3658,41 +3743,123 @@ const verifyPayment = async (req, res) => {
     if (!userPlan) {
       userPlan = new UserPlan({
         userId,
+        subscriptions: [],
         categoryGroupIds: [],
       });
     }
 
-    // ===============================
-    // 🧠 ACTIVATE PLAN DATA
-    // ===============================
-    userPlan.planId = plan._id;
-    userPlan.price = plan.price;
+    if (!userPlan.subscriptions) {
+      userPlan.subscriptions = [];
+    }
 
-    if (!plan.categoryGroup) {
-      // If plan has no specific categoryGroup, it's an "All Access" plan
+    // Auto-migrate legacy userPlan if subscriptions is empty
+    const now = new Date();
+    if (userPlan.subscriptions.length === 0 && userPlan.planId) {
+      const isLegacyExpired = userPlan.expiresAt && new Date(userPlan.expiresAt) < now;
+      userPlan.subscriptions.push({
+        planId: userPlan.planId,
+        planName: "",
+        planCode: "",
+        categoryGroupId: userPlan.categoryGroupIds && userPlan.categoryGroupIds.length === 1 ? userPlan.categoryGroupIds[0] : null,
+        price: userPlan.price || 0,
+        planStatus: isLegacyExpired ? "expired" : (userPlan.planStatus || "active"),
+        purchasedAt: userPlan.createdAt || now,
+        expiresAt: userPlan.expiresAt,
+      });
+    }
+
+    // ===============================
+    // 🧠 ACTIVATE PLAN DATA (MULTI-SUBSCRIPTION)
+    // ===============================
+    let subExpiryDate = null;
+    if (plan.planValidity && plan.planValidity.toLowerCase().includes("lifetime")) {
+      subExpiryDate = null;
+    } else {
+      subExpiryDate = new Date();
+      subExpiryDate.setFullYear(subExpiryDate.getFullYear() + 1);
+    }
+
+    const newSubItem = {
+      planId: plan._id,
+      planName: plan.planName || "",
+      planCode: plan.planId || "",
+      categoryGroupId: plan.categoryGroup || null,
+      price: plan.price || 0,
+      planStatus: "active",
+      purchasedAt: new Date(),
+      expiresAt: subExpiryDate,
+    };
+
+    // Update existing subscription entry if exists, or append new
+    const existingSubIdx = userPlan.subscriptions.findIndex(
+      (s) => s.planId && s.planId.toString() === plan._id.toString()
+    );
+
+    if (existingSubIdx >= 0) {
+      userPlan.subscriptions[existingSubIdx] = newSubItem;
+    } else {
+      userPlan.subscriptions.push(newSubItem);
+    }
+
+    // Recalculate aggregate permissions & access across all active subscriptions
+    const activeSubs = userPlan.subscriptions.filter(
+      (s) => s.planStatus === "active" && (!s.expiresAt || new Date(s.expiresAt) > now)
+    );
+
+    let hasLifetime = false;
+    let hasAIO = false;
+    let hasEbook = false;
+    let hasNotes = false;
+    let hasMockAll = false;
+    const activeCategoryGroupIds = new Set();
+    let maxExpiryDate = null;
+
+    for (const sub of activeSubs) {
+      const code = (sub.planCode || "").toUpperCase();
+      const name = (sub.planName || "").toLowerCase();
+
+      const isSubLifetime = code === "PLAN-LTP01" || name.includes("lifetime");
+      const isSubAIO =
+        code === "PLAN-AIO01" ||
+        name.includes("all in one") ||
+        name.includes("all-in-one") ||
+        name.includes("all access") ||
+        name.includes("all-access");
+      const isSubEbook = code === "PLAN-EBK01" || name.includes("ebook");
+      const isSubNotes = code === "PLAN-NOT01" || name.includes("notes");
+      const isSubMockAll = code === "PLAN-MKT01" || (!sub.categoryGroupId && !isSubEbook && !isSubNotes && !isSubAIO && !isSubLifetime);
+
+      if (isSubLifetime) hasLifetime = true;
+      if (isSubAIO) hasAIO = true;
+      if (isSubLifetime || isSubAIO || isSubEbook) hasEbook = true;
+      if (isSubLifetime || isSubAIO || isSubNotes) hasNotes = true;
+      if (isSubLifetime || isSubAIO || isSubMockAll) hasMockAll = true;
+
+      if (sub.categoryGroupId) {
+        activeCategoryGroupIds.add(sub.categoryGroupId.toString());
+      }
+
+      if (sub.expiresAt) {
+        const exp = new Date(sub.expiresAt);
+        if (!maxExpiryDate || exp > maxExpiryDate) {
+          maxExpiryDate = exp;
+        }
+      }
+    }
+
+    if (hasMockAll) {
       userPlan.isSelectedAll = true;
-      // Optionally populate all category groups here or handle it in Auth logic
       const allGroups = await CategoryGroup.find({}, "_id");
       userPlan.categoryGroupIds = allGroups.map((g) => g._id);
     } else {
-      // Direct access to specific category group
-      const merged = new Set([
-        ...(userPlan.categoryGroupIds || []).map((id) => id.toString()),
-        plan.categoryGroup.toString(),
-      ]);
-      userPlan.categoryGroupIds = Array.from(merged);
+      userPlan.isSelectedAll = false;
+      userPlan.categoryGroupIds = Array.from(activeCategoryGroupIds);
     }
 
-    userPlan.planStatus = "active";
-
-    // ⏰ Expiry = 1 year (Lifetime plans never expire)
-    if (plan.planValidity && plan.planValidity.toLowerCase().includes('lifetime')) {
-      userPlan.expiresAt = null;
-    } else {
-      const expiryDate = new Date();
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      userPlan.expiresAt = expiryDate;
-    }
+    userPlan.planId = plan._id;
+    userPlan.price = plan.price;
+    userPlan.planStatus = activeSubs.length > 0 ? "active" : "expired";
+    userPlan.expiresAt = hasLifetime ? null : (maxExpiryDate || subExpiryDate);
 
     await userPlan.save();
 
@@ -3767,7 +3934,7 @@ const verifyPayment = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Payment verified & plan activated",
-      expiresAt: expiryDate,
+      expiresAt: userPlan.expiresAt,
     });
   } catch (error) {
     console.error("Verify Payment Error:", error);
@@ -3781,28 +3948,182 @@ const verifyPayment = async (req, res) => {
 const fetchUserPlan = async (req, res) => {
   try {
     const { id: userId } = req.user;
+    const now = new Date();
 
-    const plan = await UserPlan.findOne({ userId })
+    let plan = await UserPlan.findOne({ userId })
       .populate("categoryGroupIds", "displayName")
-      .populate("planId");
+      .populate("planId")
+      .populate("subscriptions.planId")
+      .populate("subscriptions.categoryGroupId", "displayName");
 
     if (!plan) {
       return res.json({
         success: true,
         isSelectedAll: false,
         categoryGroupIds: [],
+        activePlanCodes: [],
+        subscriptions: [],
         planStatus: "none",
+        planId: null,
+        planName: "",
+        planCode: "",
+        hasEbookAccess: false,
+        hasNotesAccess: false,
+        hasMockTestAccess: false,
       });
     }
 
+    // Auto-migrate legacy UserPlan if subscriptions array is empty
+    if ((!plan.subscriptions || plan.subscriptions.length === 0) && plan.planId) {
+      const legacyExp = plan.expiresAt;
+      const isExp = legacyExp && new Date(legacyExp) < now;
+      plan.subscriptions = [
+        {
+          planId: plan.planId._id || plan.planId,
+          planName: plan.planId.planName || "",
+          planCode: plan.planId.planId || "",
+          categoryGroupId: plan.categoryGroupIds && plan.categoryGroupIds.length === 1 ? plan.categoryGroupIds[0]._id : null,
+          price: plan.price || 0,
+          planStatus: isExp ? "expired" : (plan.planStatus || "active"),
+          purchasedAt: plan.createdAt || now,
+          expiresAt: legacyExp,
+        },
+      ];
+      await plan.save();
+    }
+
+    // Check expiry on all subscriptions
+    let hasModified = false;
+    for (const sub of (plan.subscriptions || [])) {
+      if (sub.planStatus === "active" && sub.expiresAt && new Date(sub.expiresAt) < now) {
+        sub.planStatus = "expired";
+        hasModified = true;
+      }
+    }
+
+    const activeSubs = (plan.subscriptions || []).filter(
+      (s) => s.planStatus === "active" && (!s.expiresAt || new Date(s.expiresAt) > now)
+    );
+
+    if (activeSubs.length === 0) {
+      if (plan.planStatus === "active") {
+        plan.planStatus = "expired";
+        hasModified = true;
+      }
+    } else {
+      if (plan.planStatus !== "active") {
+        plan.planStatus = "active";
+        hasModified = true;
+      }
+    }
+
+    if (hasModified) {
+      await plan.save();
+    }
+
+    if (activeSubs.length === 0) {
+      return res.json({
+        success: true,
+        isSelectedAll: false,
+        categoryGroupIds: [],
+        activePlanCodes: [],
+        subscriptions: [],
+        planStatus: plan.planStatus || "expired",
+        planId: null,
+        planName: "",
+        planCode: "",
+        hasEbookAccess: false,
+        hasNotesAccess: false,
+        hasMockTestAccess: false,
+      });
+    }
+
+    let hasEbookAccess = false;
+    let hasNotesAccess = false;
+    let hasMockTestAll = false;
+    let hasCategorySpecific = false;
+    const activePlanCodes = [];
+    const activePlanNames = [];
+    const activeCategoryGroupIds = new Set();
+    let hasLifetime = false;
+
+    for (const sub of activeSubs) {
+      const code = (sub.planCode || sub.planId?.planId || "").toUpperCase();
+      const name = (sub.planName || sub.planId?.planName || "").toLowerCase();
+      if (code && !activePlanCodes.includes(code)) activePlanCodes.push(code);
+      const subDispName = sub.planName || sub.planId?.planName;
+      if (subDispName && !activePlanNames.includes(subDispName)) activePlanNames.push(subDispName);
+
+      const isSubLifetime = code === "PLAN-LTP01" || name.includes("lifetime");
+      const isSubAIO =
+        code === "PLAN-AIO01" ||
+        name.includes("all in one") ||
+        name.includes("all-in-one") ||
+        name.includes("all access") ||
+        name.includes("all-access");
+      const isSubEbook = code === "PLAN-EBK01" || name.includes("ebook");
+      const isSubNotes = code === "PLAN-NOT01" || name.includes("notes");
+      const isSubMockAll =
+        code === "PLAN-MKT01" ||
+        (!sub.categoryGroupId && !isSubEbook && !isSubNotes && !isSubAIO && !isSubLifetime);
+
+      if (isSubLifetime) hasLifetime = true;
+      if (isSubLifetime || isSubAIO || isSubEbook) hasEbookAccess = true;
+      if (isSubLifetime || isSubAIO || isSubNotes) hasNotesAccess = true;
+      if (isSubLifetime || isSubAIO || isSubMockAll) hasMockTestAll = true;
+
+      if (sub.categoryGroupId) {
+        hasCategorySpecific = true;
+        activeCategoryGroupIds.add(
+          sub.categoryGroupId._id
+            ? sub.categoryGroupId._id.toString()
+            : sub.categoryGroupId.toString()
+        );
+      }
+    }
+
+    const hasMockTestAccess = hasMockTestAll || hasCategorySpecific;
+    const isSelectedAll = hasMockTestAll;
+
+    let finalCategoryGroups = [];
+    if (isSelectedAll) {
+      finalCategoryGroups = await CategoryGroup.find({}, "_id displayName");
+    } else {
+      finalCategoryGroups = await CategoryGroup.find(
+        {
+          _id: { $in: Array.from(activeCategoryGroupIds) },
+        },
+        "_id displayName"
+      );
+    }
+
+    const formattedSubscriptions = activeSubs.map((s) => ({
+      _id: s._id,
+      planId: s.planId?._id || s.planId,
+      planCode: s.planCode || s.planId?.planId || "",
+      planName: s.planName || s.planId?.planName || "",
+      categoryGroup: s.categoryGroupId,
+      price: s.price,
+      planStatus: s.planStatus,
+      purchasedAt: s.purchasedAt,
+      expiresAt: s.expiresAt,
+    }));
+
     res.json({
       success: true,
-      isSelectedAll: plan.isSelectedAll,
-      categoryGroupIds: plan.categoryGroupIds,
-      planId: plan.planId,
+      isSelectedAll,
+      categoryGroupIds: finalCategoryGroups,
+      activePlanCodes,
+      subscriptions: formattedSubscriptions,
+      planId: plan.planId?._id || plan.planId,
+      planName: activePlanNames.join(" + "),
+      planCode: activePlanCodes.join(", "),
       planStatus: plan.planStatus,
       price: plan.price,
-      expiresAt: plan.expiresAt,
+      expiresAt: hasLifetime ? null : plan.expiresAt,
+      hasEbookAccess,
+      hasNotesAccess,
+      hasMockTestAccess,
     });
   } catch (error) {
     console.error("Fetch User Plan Error:", error);

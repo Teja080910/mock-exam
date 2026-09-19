@@ -2025,6 +2025,36 @@ class FetchUserPlanCall {
         response,
         r'''$.expiresAt''',
       ));
+  String? planName(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.planName''',
+      ));
+  String? planCode(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.planCode''',
+      ));
+  bool? hasEbookAccess(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.hasEbookAccess''',
+      ));
+  bool? hasNotesAccess(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.hasNotesAccess''',
+      ));
+  bool? hasMockTestAccess(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.hasMockTestAccess''',
+      ));
+  List? subscriptions(dynamic response) => getJsonField(
+        response,
+        r'''$.subscriptions''',
+        true,
+      ) as List?;
+  List? activePlanCodes(dynamic response) => getJsonField(
+        response,
+        r'''$.activePlanCodes''',
+        true,
+      ) as List?;
 }
 
 class SaveUpiIdCall {

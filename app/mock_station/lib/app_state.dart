@@ -149,6 +149,24 @@ class FFAppState extends ChangeNotifier {
     _safeInit(() {
       _expiresAt = prefs.getString('ff_expiresAt') ?? _expiresAt;
     });
+    _safeInit(() {
+      _activePlanName = prefs.getString('ff_activePlanName') ?? _activePlanName;
+    });
+    _safeInit(() {
+      _activePlanCode = prefs.getString('ff_activePlanCode') ?? _activePlanCode;
+    });
+    _safeInit(() {
+      _hasEbookAccess = prefs.getBool('ff_hasEbookAccess') ?? _hasEbookAccess;
+    });
+    _safeInit(() {
+      _hasNotesAccess = prefs.getBool('ff_hasNotesAccess') ?? _hasNotesAccess;
+    });
+    _safeInit(() {
+      _hasMockTestAccess = prefs.getBool('ff_hasMockTestAccess') ?? _hasMockTestAccess;
+    });
+    _safeInit(() {
+      _activePlanCodes = prefs.getStringList('ff_activePlanCodes') ?? _activePlanCodes;
+    });
   }
 
   void update(VoidCallback callback) {
@@ -861,6 +879,54 @@ class FFAppState extends ChangeNotifier {
   void addToAllowedCategoryIds(String value) {
     allowedCategoryIds.add(value);
     prefs.setStringList('ff_allowedCategoryIds', _allowedCategoryIds);
+  }
+
+  String _activePlanName = '';
+  String get activePlanName => _activePlanName;
+  set activePlanName(String value) {
+    _activePlanName = value;
+    prefs.setString('ff_activePlanName', value);
+    notifyListeners();
+  }
+
+  String _activePlanCode = '';
+  String get activePlanCode => _activePlanCode;
+  set activePlanCode(String value) {
+    _activePlanCode = value;
+    prefs.setString('ff_activePlanCode', value);
+    notifyListeners();
+  }
+
+  bool _hasEbookAccess = false;
+  bool get hasEbookAccess => _hasEbookAccess;
+  set hasEbookAccess(bool value) {
+    _hasEbookAccess = value;
+    prefs.setBool('ff_hasEbookAccess', value);
+    notifyListeners();
+  }
+
+  bool _hasNotesAccess = false;
+  bool get hasNotesAccess => _hasNotesAccess;
+  set hasNotesAccess(bool value) {
+    _hasNotesAccess = value;
+    prefs.setBool('ff_hasNotesAccess', value);
+    notifyListeners();
+  }
+
+  bool _hasMockTestAccess = false;
+  bool get hasMockTestAccess => _hasMockTestAccess;
+  set hasMockTestAccess(bool value) {
+    _hasMockTestAccess = value;
+    prefs.setBool('ff_hasMockTestAccess', value);
+    notifyListeners();
+  }
+
+  List<String> _activePlanCodes = [];
+  List<String> get activePlanCodes => _activePlanCodes;
+  set activePlanCodes(List<String> value) {
+    _activePlanCodes = value;
+    prefs.setStringList('ff_activePlanCodes', value);
+    notifyListeners();
   }
 
   void removeFromAllowedCategoryIds(String value) {
