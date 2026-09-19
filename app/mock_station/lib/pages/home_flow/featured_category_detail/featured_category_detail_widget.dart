@@ -334,7 +334,7 @@ class _FeaturedCategoryDetailWidgetState
                                   style: const TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: FFFont.f18,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.normal,
                                     height: 1.28,
                                   ),
                                 ),

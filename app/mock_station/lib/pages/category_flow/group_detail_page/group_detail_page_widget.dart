@@ -41,7 +41,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
           style: const TextStyle(
             color: Color(0xFF111827),
             fontSize: FFFont.f18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             fontFamily: 'Roboto',
           ),
         ),
@@ -179,7 +179,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                                     displayTitle.toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: FFFont.f16,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.normal,
                                       color: Color(0xFF111827),
                                       fontFamily: 'Roboto',
                                     ),

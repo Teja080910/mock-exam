@@ -315,26 +315,32 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     0: {
       'accent': Color(0xFF2563EB),
       'soft': Color(0xFFDBEAFE),
-      'icon': Icons.import_contacts_rounded,
+      'icon': Icons.menu_book_rounded,
       'border': Color(0xFF93C5FD),
     },
     1: {
-      'accent': Color(0xFF16A34A),
-      'soft': Color(0xFFDCFCE7),
+      'accent': Color(0xFFF5026E),
+      'soft': Color(0xFFFDE6F0),
       'icon': Icons.description_rounded,
-      'border': Color(0xFF86EFAC),
+      'border': Color(0xFFFBCFE8),
     },
     2: {
-      'accent': Color(0xFFEA580C),
+      'accent': Color(0xFFFD4607),
       'soft': Color(0xFFFFEDD5),
       'icon': Icons.cast_for_education_rounded,
       'border': Color(0xFFFDBA74),
     },
     3: {
-      'accent': Color(0xFF7C3AED),
+      'accent': Color(0xFF7D2AFB),
       'soft': Color(0xFFF3E8FF),
       'icon': Icons.card_giftcard_rounded,
       'border': Color(0xFFD8B4FE),
+    },
+    4: {
+      'accent': Color(0xFFB1470F),
+      'soft': Color(0xFFFEF3C7),
+      'icon': Icons.all_inclusive_rounded,
+      'border': Color(0xFFFCD34D),
     },
   };
 
@@ -343,29 +349,29 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     'ebook': {
       'accent': Color(0xFF2563EB),
       'soft': Color(0xFFDBEAFE),
-      'icon': Icons.import_contacts_rounded,
+      'icon': Icons.menu_book_rounded,
       'border': Color(0xFF93C5FD),
     },
     'notes': {
-      'accent': Color(0xFF16A34A),
-      'soft': Color(0xFFDCFCE7),
+      'accent': Color(0xFFF5026E),
+      'soft': Color(0xFFFDE6F0),
       'icon': Icons.description_rounded,
-      'border': Color(0xFF86EFAC),
+      'border': Color(0xFFFBCFE8),
     },
     'mock test': {
-      'accent': Color(0xFFEA580C),
+      'accent': Color(0xFFFD4607),
       'soft': Color(0xFFFFEDD5),
       'icon': Icons.cast_for_education_rounded,
       'border': Color(0xFFFDBA74),
     },
     'all in one': {
-      'accent': Color(0xFF7C3AED),
+      'accent': Color(0xFF7D2AFB),
       'soft': Color(0xFFF3E8FF),
       'icon': Icons.card_giftcard_rounded,
       'border': Color(0xFFD8B4FE),
     },
     'lifetime': {
-      'accent': Color(0xFFB45309),
+      'accent': Color(0xFFB1470F),
       'soft': Color(0xFFFEF3C7),
       'icon': Icons.all_inclusive_rounded,
       'border': Color(0xFFFCD34D),
@@ -389,12 +395,17 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     required IconData icon,
     required String text,
     Color? background,
+    Color? borderColor,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       decoration: BoxDecoration(
         color: background ?? accent.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(999.0),
+        borderRadius: BorderRadius.circular(6.0),
+        border: Border.all(
+          color: borderColor ?? accent.withOpacity(0.3),
+          width: 1.0,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -448,7 +459,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     final icon = theme['icon'] as IconData;
     final border = theme['border'] as Color;
     final resolvedFeatures = features;
-    final statusLabel = isIncluded ? 'Included' : 'Active';
+    final statusLabel = isAlreadyActive ? 'Active' : 'Inactive';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14.0),
@@ -508,9 +519,10 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       const SizedBox(height: 8.0),
                       _buildBenefitChip(
                         accent: accent,
+                        borderColor: border,
                         icon: Icons.calendar_today_rounded,
                         text: 'Validity: $planValidity',
-                        background: soft.withOpacity(0.6),
+                        background: soft.withOpacity(0.5),
                       ),
                     ],
                   ),
@@ -533,12 +545,12 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                           horizontal: 10.0, vertical: 4.0),
                       decoration: BoxDecoration(
                         color: isAlreadyActive
-                            ? accent.withOpacity(0.15)
+                            ? soft
                             : const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(6.0),
                       ),
                       child: Text(
-                        isAlreadyActive ? statusLabel : 'Inactive',
+                        statusLabel,
                         style: TextStyle(
                           fontSize: FFFont.f11,
                           fontWeight: FontWeight.w700,
@@ -618,18 +630,18 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         alignment: Alignment.center,
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.check_circle_rounded,
                               color: Color(0xFF16A34A),
                               size: 15.0,
                             ),
-                            const SizedBox(width: 4.0),
+                            SizedBox(width: 4.0),
                             Text(
-                              statusLabel,
-                              style: const TextStyle(
+                              'Active',
+                              style: TextStyle(
                                 fontSize: FFFont.f12,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF16A34A),
@@ -937,14 +949,22 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 title: 'Secure Payment',
                                 subtitle: '100% Safe & Secure',
                               ),
-                              const SizedBox(width: 8.0),
+                              Container(
+                                width: 1.0,
+                                height: 32.0,
+                                color: const Color(0xFFE5E7EB),
+                              ),
                               _buildTrustItem(
                                 accent: const Color(0xFF22C55E),
                                 icon: Icons.autorenew_rounded,
                                 title: 'Instant Access',
                                 subtitle: 'Start immediately',
                               ),
-                              const SizedBox(width: 8.0),
+                              Container(
+                                width: 1.0,
+                                height: 32.0,
+                                color: const Color(0xFFE5E7EB),
+                              ),
                               _buildTrustItem(
                                 accent: const Color(0xFF8B5CF6),
                                 icon: Icons.support_agent_rounded,

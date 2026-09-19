@@ -35,7 +35,7 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
           style: const TextStyle(
             color: Color(0xFF111827),
             fontSize: FFFont.f18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             fontFamily: 'Roboto',
           ),
         ),
@@ -150,7 +150,7 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
                               group.displayName.toUpperCase(),
                               style: const TextStyle(
                                 fontSize: FFFont.f16,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.normal,
                                 color: Color(0xFF111827),
                                 fontFamily: 'Roboto',
                               ),

@@ -77,7 +77,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: FFFont.f18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -213,7 +213,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                   Text(
                     getJsonField(subcategory, r'$.name').toString().toUpperCase(),
                     style: const TextStyle(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.normal,
                       fontSize: FFFont.f16,
                       color: Color(0xFF111827),
                     ),
