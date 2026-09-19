@@ -29,7 +29,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PlansScreenModel());
-    
+
     // Initialize Razorpay
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
@@ -54,9 +54,10 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
         razorpayPaymentId: paymentId,
         razorpaySignature: signature,
       );
-      
+
       print('=== VERIFY RESPONSE: ${verifyRes.jsonBody} ===');
-      final vSuccess = getJsonField(verifyRes.jsonBody, r'''$.success''') ?? getJsonField(verifyRes.jsonBody, r'''$.data.success''');
+      final vSuccess = getJsonField(verifyRes.jsonBody, r'''$.success''') ??
+          getJsonField(verifyRes.jsonBody, r'''$.data.success''');
 
       if (vSuccess == true || vSuccess == 1) {
         await refreshProfile();
@@ -72,7 +73,8 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                 alignment: AlignmentDirectional(0.0, 0.0),
                 child: PaymentSuccessComponantWidget(
                   title: 'Subscription Successful!',
-                  message: 'Your plan has been activated successfully. You can now access your mock tests.',
+                  message:
+                      'Your plan has been activated successfully. You can now access your mock tests.',
                   onTapHome: () async {
                     Navigator.pop(dialogContext);
                     context.goNamed(HomeScreenWidget.routeName);
@@ -85,7 +87,9 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Payment verification failed. Please contact support.')),
+            SnackBar(
+                content: Text(
+                    'Payment verification failed. Please contact support.')),
           );
         }
       }
@@ -94,7 +98,9 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
 
   void _handlePaymentError(PaymentFailureResponse response) {
     final msg = response.message;
-    final reason = (msg != null && msg.isNotEmpty && msg != 'undefined') ? msg : 'Payment was cancelled';
+    final reason = (msg != null && msg.isNotEmpty && msg != 'undefined')
+        ? msg
+        : 'Payment was cancelled';
     print('Payment Error: ${response.code} - $reason');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Payment Failed: $reason')),
@@ -118,24 +124,39 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     );
     if (QuizGroup.fetchUserPlanCall.success(response.jsonBody) == true) {
       safeSetState(() {
-        FFAppState().planStatus = QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
-        FFAppState().subsIsSelectedAll = QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ?? false;
-        FFAppState().expiresAt = QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
-        FFAppState().activePlanName = QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
-        FFAppState().activePlanCode = QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
-        FFAppState().hasEbookAccess = QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ?? false;
-        FFAppState().hasNotesAccess = QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ?? false;
-        FFAppState().hasMockTestAccess = QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ?? false;
-        
-        final rawCodes = QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
+        FFAppState().planStatus =
+            QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
+        FFAppState().subsIsSelectedAll =
+            QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ??
+                false;
+        FFAppState().expiresAt =
+            QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
+        FFAppState().activePlanName =
+            QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
+        FFAppState().activePlanCode =
+            QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
+        FFAppState().hasEbookAccess =
+            QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ??
+                false;
+        FFAppState().hasNotesAccess =
+            QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ??
+                false;
+        FFAppState().hasMockTestAccess =
+            QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ??
+                false;
+
+        final rawCodes =
+            QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
         if (rawCodes is List) {
-          FFAppState().activePlanCodes = rawCodes.map((c) => c.toString().toUpperCase()).toList();
+          FFAppState().activePlanCodes =
+              rawCodes.map((c) => c.toString().toUpperCase()).toList();
         } else {
           FFAppState().activePlanCodes = [];
         }
 
         List<String> categoryIds = [];
-        final categoryGroups = QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
+        final categoryGroups =
+            QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
         if (categoryGroups != null) {
           for (var group in categoryGroups) {
             if (group['_id'] != null) {
@@ -196,16 +217,14 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
         'description': categoryName,
         'order_id': orderId,
         'prefill': {
-          'contact':
-              getJsonField(FFAppState().userDetils, r'''$.phone''')
-                      ?.toString() ??
-                  getJsonField(FFAppState().userDetils, r'''$.mobileno''')
-                      ?.toString() ??
-                  '',
-          'email':
-              getJsonField(FFAppState().userDetils, r'''$.email''')
-                      ?.toString() ??
-                  '',
+          'contact': getJsonField(FFAppState().userDetils, r'''$.phone''')
+                  ?.toString() ??
+              getJsonField(FFAppState().userDetils, r'''$.mobileno''')
+                  ?.toString() ??
+              '',
+          'email': getJsonField(FFAppState().userDetils, r'''$.email''')
+                  ?.toString() ??
+              '',
         },
         'theme': {
           'color': '#60A5FA',
@@ -353,7 +372,8 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     },
   };
 
-  Map<String, dynamic> _planTheme(String categoryName, String planName, int index) {
+  Map<String, dynamic> _planTheme(
+      String categoryName, String planName, int index) {
     final lower = '$categoryName $planName'.toLowerCase();
     // Product keyword match wins; index-based colors are the fallback.
     for (final entry in _productThemes.entries) {
@@ -394,13 +414,17 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     );
   }
 
-  String _formatPlanCategorySubtitle(String planName, String? groupDisplayName) {
-    final target = (groupDisplayName != null && groupDisplayName.trim().isNotEmpty)
-        ? groupDisplayName.trim()
-        : planName.trim();
+  String _formatPlanCategorySubtitle(
+      String planName, String? groupDisplayName) {
+    final target =
+        (groupDisplayName != null && groupDisplayName.trim().isNotEmpty)
+            ? groupDisplayName.trim()
+            : planName.trim();
     if (target.isEmpty) return 'Full Access Category';
     if (target.toLowerCase().contains('category')) {
-      return target.toLowerCase().startsWith('full access') ? target : 'Full Access $target';
+      return target.toLowerCase().startsWith('full access')
+          ? target
+          : 'Full Access $target';
     }
     return 'Full Access $target Category';
   }
@@ -414,6 +438,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     required String categoryName,
     required String planId,
     required bool isAlreadyActive,
+    required bool isIncluded,
     required List<String> features,
     required VoidCallback onBuyNow,
   }) {
@@ -423,6 +448,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     final icon = theme['icon'] as IconData;
     final border = theme['border'] as Color;
     final resolvedFeatures = features;
+    final statusLabel = isIncluded ? 'Included' : 'Active';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14.0),
@@ -503,17 +529,22 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                     ),
                     const SizedBox(height: 6.0),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 4.0),
                       decoration: BoxDecoration(
-                        color: isAlreadyActive ? accent.withOpacity(0.15) : const Color(0xFFE5E7EB),
+                        color: isAlreadyActive
+                            ? accent.withOpacity(0.15)
+                            : const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(6.0),
                       ),
                       child: Text(
-                        isAlreadyActive ? 'Active' : 'Inactive',
+                        isAlreadyActive ? statusLabel : 'Inactive',
                         style: TextStyle(
                           fontSize: FFFont.f11,
                           fontWeight: FontWeight.w700,
-                          color: isAlreadyActive ? accent : const Color(0xFF4B5568),
+                          color: isAlreadyActive
+                              ? accent
+                              : const Color(0xFF4B5568),
                         ),
                       ),
                     ),
@@ -549,31 +580,34 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: resolvedFeatures.map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6.0),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle_rounded, size: 16.0, color: accent),
-                          const SizedBox(width: 8.0),
-                          Expanded(
-                            child: Text(
-                              feature,
-                              style: const TextStyle(
-                                fontSize: FFFont.f12,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF374151),
+                    children: resolvedFeatures
+                        .map((feature) => Padding(
+                              padding: const EdgeInsets.only(bottom: 6.0),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.check_circle_rounded,
+                                      size: 16.0, color: accent),
+                                  const SizedBox(width: 8.0),
+                                  Expanded(
+                                    child: Text(
+                                      feature,
+                                      style: const TextStyle(
+                                        fontSize: FFFont.f12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF374151),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )).toList(),
+                            ))
+                        .toList(),
                   ),
                 ),
                 const SizedBox(width: 12.0),
                 isAlreadyActive
                     ? Container(
-                        width: 96.0,
+                        width: 104.0,
                         height: 40.0,
                         decoration: BoxDecoration(
                           color: const Color(0xFFDCFCE7),
@@ -584,18 +618,18 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         alignment: Alignment.center,
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.check_circle_rounded,
                               color: Color(0xFF16A34A),
                               size: 15.0,
                             ),
-                            SizedBox(width: 4.0),
+                            const SizedBox(width: 4.0),
                             Text(
-                              'Active',
-                              style: TextStyle(
+                              statusLabel,
+                              style: const TextStyle(
                                 fontSize: FFFont.f12,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF16A34A),
@@ -605,7 +639,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                         ),
                       )
                     : SizedBox(
-                        width: 96.0,
+                        width: 104.0,
                         height: 40.0,
                         child: ElevatedButton(
                           onPressed: onBuyNow,
@@ -719,8 +753,12 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                     }
                     final plans = List.from(rawPlans);
                     plans.sort((a, b) {
-                      final aPrice = double.tryParse(getJsonField(a, r'''$.price''').toString()) ?? 0.0;
-                      final bPrice = double.tryParse(getJsonField(b, r'''$.price''').toString()) ?? 0.0;
+                      final aPrice = double.tryParse(
+                              getJsonField(a, r'''$.price''').toString()) ??
+                          0.0;
+                      final bPrice = double.tryParse(
+                              getJsonField(b, r'''$.price''').toString()) ??
+                          0.0;
                       return aPrice.compareTo(bPrice);
                     });
                     return ListView(
@@ -745,9 +783,9 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                           ?.toString() ??
                                       '1 year';
                               final rawGroupDisplayName = getJsonField(
-                                    plan,
-                                    r'''$.categoryGroup.displayName''',
-                                  )?.toString();
+                                plan,
+                                r'''$.categoryGroup.displayName''',
+                              )?.toString();
                               final categoryName = _formatPlanCategorySubtitle(
                                 planName,
                                 rawGroupDisplayName,
@@ -757,24 +795,25 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 r'''$.categoryGroup._id''',
                               )?.toString();
                               final planFeatures = (getJsonField(
-                                        plan,
-                                        r'''$.features''',
-                                      ) as List<dynamic>?)
+                                    plan,
+                                    r'''$.features''',
+                                  ) as List<dynamic>?)
                                       ?.map((f) => f.toString())
                                       .toList() ??
                                   <String>[];
 
                               bool isAlreadyActive = false;
+                              bool isIncludedByHigherPlan = false;
                               if (FFAppState().planStatus == 'active') {
                                 final activeCodes = FFAppState()
                                     .activePlanCodes
                                     .map((c) => c.toUpperCase())
                                     .toList();
-                                final cardPlanIdUpper = (getJsonField(
-                                            plan, r'''$.planId''')
-                                        ?.toString() ??
-                                    '')
-                                    .toUpperCase();
+                                final cardPlanIdUpper =
+                                    (getJsonField(plan, r'''$.planId''')
+                                                ?.toString() ??
+                                            '')
+                                        .toUpperCase();
                                 final cardPlanNameLower =
                                     planName.toLowerCase();
 
@@ -799,14 +838,25 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                   if (cardPlanIdUpper == 'PLAN-LTP01' ||
                                       cardPlanNameLower.contains('lifetime')) {
                                     isAlreadyActive = true;
+                                  } else {
+                                    isIncludedByHigherPlan = true;
                                   }
                                 } else if (isAioActive) {
+                                  final isCardLifetime = cardPlanIdUpper ==
+                                          'PLAN-LTP01' ||
+                                      cardPlanNameLower.contains('lifetime');
                                   if (cardPlanIdUpper == 'PLAN-AIO01' ||
-                                      cardPlanNameLower.contains('all in one') ||
-                                      cardPlanNameLower.contains('all-in-one') ||
-                                      cardPlanNameLower.contains('all access') ||
-                                      cardPlanNameLower.contains('all-access')) {
+                                      cardPlanNameLower
+                                          .contains('all in one') ||
+                                      cardPlanNameLower
+                                          .contains('all-in-one') ||
+                                      cardPlanNameLower
+                                          .contains('all access') ||
+                                      cardPlanNameLower
+                                          .contains('all-access')) {
                                     isAlreadyActive = true;
+                                  } else if (!isCardLifetime) {
+                                    isIncludedByHigherPlan = true;
                                   }
                                 } else if (cardPlanIdUpper == 'PLAN-EBK01' ||
                                     cardPlanNameLower.contains('ebook')) {
@@ -846,13 +896,16 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 planType: planType,
                                 planValidity: planValidity,
                                 categoryName: categoryName,
-                                planId: getJsonField(plan, r'''$.planId''').toString(),
-                                isAlreadyActive: isAlreadyActive,
+                                planId: getJsonField(plan, r'''$.planId''')
+                                    .toString(),
+                                isAlreadyActive:
+                                    isAlreadyActive || isIncludedByHigherPlan,
+                                isIncluded: isIncludedByHigherPlan,
                                 features: planFeatures,
                                 onBuyNow: () async {
                                   await _startPurchase(
-                                    planId:
-                                        getJsonField(plan, r'''$._id''').toString(),
+                                    planId: getJsonField(plan, r'''$._id''')
+                                        .toString(),
                                     price: price,
                                     categoryName: categoryName,
                                   );
@@ -862,7 +915,8 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                           ),
                         const SizedBox(height: 6.0),
                         Container(
-                          padding: const EdgeInsets.fromLTRB(6.0, 8.0, 6.0, 12.0),
+                          padding:
+                              const EdgeInsets.fromLTRB(6.0, 8.0, 6.0, 12.0),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(22.0),

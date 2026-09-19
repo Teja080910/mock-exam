@@ -1,0 +1,323 @@
+[
+ {
+  "_id": "6982f8b85c38d4d0ba6f376a",
+  "userId": "697df8d4d6d9bc79cb0b09bc",
+  "categoryGroupIds": [
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982eadc97dcd6e6811d617d",
+  "expiresAt": "2027-02-04T07:44:37.598Z",
+  "createdAt": "2026-02-04T07:43:52.466Z",
+  "updatedAt": "2026-02-04T07:44:37.599Z",
+  "__v": 1
+ },
+ {
+  "_id": "698339a545c2048a21ed4da2",
+  "userId": "69412098d6d9bc79cb056297",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 1,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "698444f7cc517e1385315e95",
+  "expiresAt": "2027-02-05T07:22:40.199Z",
+  "createdAt": "2026-02-04T12:20:53.464Z",
+  "updatedAt": "2026-02-05T07:22:40.200Z",
+  "__v": 3
+ },
+ {
+  "_id": "698358b845c2048a21ed6231",
+  "userId": "68779eef5f6d479c84bf05b9",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "68d67dbdd6d9bc79cbfe0c1f",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762"
+  ],
+  "price": 999,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "6982ec2adae0cb32791e5aad",
+  "expiresAt": "2027-02-04T16:59:44.187Z",
+  "createdAt": "2026-02-04T14:33:28.904Z",
+  "updatedAt": "2026-02-04T16:59:44.194Z",
+  "__v": 2
+ },
+ {
+  "_id": "69835fb645c2048a21ed6e04",
+  "userId": "698055738e4afefaf0a92f52",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 499,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-02-04T15:03:18.848Z",
+  "createdAt": "2026-02-04T15:03:18.849Z",
+  "updatedAt": "2026-02-04T15:03:18.849Z",
+  "__v": 0
+ },
+ {
+  "_id": "6984502ecc517e1385316658",
+  "userId": "69844f2fcc517e13853165b7",
+  "categoryGroupIds": [
+   "68d67dbdd6d9bc79cbfe0c1f",
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 2,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-02-05T08:37:03.406Z",
+  "createdAt": "2026-02-05T08:09:18.778Z",
+  "updatedAt": "2026-02-05T08:37:03.407Z",
+  "__v": 1
+ },
+ {
+  "_id": "69aa5b93bcdba44c2ff596fe",
+  "userId": "68ff88f9d6d9bc79cbfe5cb4",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 1,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-03-07T04:41:08.042Z",
+  "createdAt": "2026-03-06T04:44:03.929Z",
+  "updatedAt": "2026-03-07T04:41:08.043Z",
+  "__v": 1
+ },
+ {
+  "_id": "69abac99d42e1350e4d1fd6b",
+  "userId": "68da93ffd6d9bc79cbfe1fc9",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 1,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-03-07T04:42:01.140Z",
+  "createdAt": "2026-03-07T04:42:01.144Z",
+  "updatedAt": "2026-03-07T04:42:01.144Z",
+  "__v": 0
+ },
+ {
+  "_id": "69abaee5d42e1350e4d203b5",
+  "userId": "69219352d6d9bc79cbffbff4",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 1,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-03-07T04:51:49.435Z",
+  "createdAt": "2026-03-07T04:51:49.437Z",
+  "updatedAt": "2026-03-07T04:51:49.437Z",
+  "__v": 0
+ },
+ {
+  "_id": "69eb893a94c1e3aa3fe3f5bc",
+  "userId": "692c6224d6d9bc79cb021df2",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 1,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-04-24T15:16:10.997Z",
+  "createdAt": "2026-04-24T15:16:10.997Z",
+  "updatedAt": "2026-04-24T15:16:10.997Z",
+  "__v": 0
+ },
+ {
+  "_id": "69eb99509786f12142a992bc",
+  "userId": "69eb99189786f12142a992a9",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 1,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-04-24T16:24:48.806Z",
+  "createdAt": "2026-04-24T16:24:48.807Z",
+  "updatedAt": "2026-04-24T16:24:48.807Z",
+  "__v": 0
+ },
+ {
+  "_id": "69ed7335d42e1350e4d323e9",
+  "userId": "69ed72c7d42e1350e4d32353",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 1,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-04-26T02:06:45.869Z",
+  "createdAt": "2026-04-26T02:06:45.870Z",
+  "updatedAt": "2026-04-26T02:06:45.870Z",
+  "__v": 0
+ },
+ {
+  "_id": "69f0b82a246fdd740af4396e",
+  "userId": "69efb1297d337e0d5a624b1f",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 1,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-04-28T13:37:46.146Z",
+  "createdAt": "2026-04-28T13:37:46.149Z",
+  "updatedAt": "2026-04-28T13:37:46.149Z",
+  "__v": 0
+ },
+ {
+  "_id": "6a343057ce31451f19f5f612",
+  "userId": "6a343036ce31451f19f5f5fa",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-06-18T17:53:14.632Z",
+  "createdAt": "2026-06-18T17:52:23.948Z",
+  "updatedAt": "2026-06-18T17:53:14.633Z",
+  "__v": 1
+ },
+ {
+  "_id": "6a34d3bd978b744a383cd2b8",
+  "userId": "6a34d399978b744a383cd2a3",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7"
+  ],
+  "price": 99,
+  "isSelectedAll": false,
+  "planStatus": "active",
+  "planId": "6982ead497dcd6e6811d6178",
+  "expiresAt": "2027-06-19T05:29:33.852Z",
+  "createdAt": "2026-06-19T05:29:33.853Z",
+  "updatedAt": "2026-06-19T05:29:33.853Z",
+  "__v": 0
+ },
+ {
+  "_id": "6a605345f963225d6f0ec06d",
+  "userId": "6a34b87c07b7336a0030bf30",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": true,
+  "planStatus": "expired",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-08-06T12:29:38.443Z",
+  "createdAt": "2026-07-22T05:21:09.484Z",
+  "updatedAt": "2026-09-19T15:10:04.178Z",
+  "__v": 2,
+  "subscriptions": []
+ },
+ {
+  "_id": "6a732d5a70fc6e424713e998",
+  "userId": "6a608955f963225d6f0ec281",
+  "categoryGroupIds": [
+   "6877cbdb7dc156eec037b8b7",
+   "691c96f4d6d9bc79cbff02e6",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-08-05T12:33:25.825Z",
+  "createdAt": "2026-08-05T12:32:26.288Z",
+  "updatedAt": "2026-08-05T12:33:25.826Z",
+  "__v": 1
+ },
+ {
+  "_id": "6a74cc48eb888f313b9a07bf",
+  "userId": "6a749c4fa765070c6dec6421",
+  "categoryGroupIds": [
+   "691c96f4d6d9bc79cbff02e6",
+   "6877cbdb7dc156eec037b8b7",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-08-06T18:02:48.382Z",
+  "createdAt": "2026-08-06T18:02:48.383Z",
+  "updatedAt": "2026-08-06T18:02:48.383Z",
+  "__v": 0
+ },
+ {
+  "_id": "6a74d853eb888f313b9a0912",
+  "userId": "6a6790f85e48ff0a12e0759c",
+  "categoryGroupIds": [
+   "691c96f4d6d9bc79cbff02e6",
+   "6877cbdb7dc156eec037b8b7",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-08-06T18:54:11.111Z",
+  "createdAt": "2026-08-06T18:54:11.111Z",
+  "updatedAt": "2026-08-06T18:54:11.111Z",
+  "__v": 0
+ },
+ {
+  "_id": "6a78271689858f5a24554aee",
+  "userId": "6a7826d689858f5a24554ad1",
+  "categoryGroupIds": [
+   "691c96f4d6d9bc79cbff02e6",
+   "6877cbdb7dc156eec037b8b7",
+   "69763661d6d9bc79cb09e762",
+   "68d67dbdd6d9bc79cbfe0c1f"
+  ],
+  "price": 499,
+  "isSelectedAll": true,
+  "planStatus": "active",
+  "planId": "69aa5c84bcdba44c2ff59752",
+  "expiresAt": "2027-08-09T07:07:02.176Z",
+  "createdAt": "2026-08-09T07:07:02.176Z",
+  "updatedAt": "2026-08-09T07:07:02.176Z",
+  "__v": 0
+ }
+]

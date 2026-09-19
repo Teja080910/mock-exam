@@ -1,0 +1,30 @@
+{
+ "_id": "6a605345f963225d6f0ec06d",
+ "userId": "6a34b87c07b7336a0030bf30",
+ "categoryGroupIds": [
+  "6877cbdb7dc156eec037b8b7",
+  "691c96f4d6d9bc79cbff02e6",
+  "69763661d6d9bc79cb09e762",
+  "68d67dbdd6d9bc79cbfe0c1f"
+ ],
+ "price": 499,
+ "isSelectedAll": true,
+ "planStatus": "expired",
+ "planId": "69aa5c84bcdba44c2ff59752",
+ "expiresAt": "2027-08-06T12:29:38.443Z",
+ "createdAt": "2026-07-22T05:21:09.484Z",
+ "updatedAt": "2026-09-19T15:10:04.178Z",
+ "__v": 2,
+ "subscriptions": [
+  {
+   "planId": "6a99de51170debdca0baa8bc",
+   "planName": "All in One",
+   "planCode": "PLAN-AIO01",
+   "categoryGroupId": null,
+   "price": 499,
+   "planStatus": "expired",
+   "purchasedAt": "2026-07-22T05:21:09.484Z",
+   "expiresAt": "2027-08-06T12:29:38.443Z"
+  }
+ ]
+}

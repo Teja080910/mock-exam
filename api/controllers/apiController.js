@@ -3593,7 +3593,18 @@ const buyPlan = async (req, res) => {
           subNameLower.includes("all access") ||
           subNameLower.includes("all-access");
 
-        if (isSubLifetime || isSubAIO) {
+        if (isSubLifetime) {
+          return res.status(400).json({
+            success: false,
+            message: "You already have a full All-Access plan",
+          });
+        }
+
+        const isTargetLifetime =
+          targetPlanCodeUpper === "PLAN-LTP01" ||
+          targetPlanNameLower.includes("lifetime");
+
+        if (isSubAIO && !isTargetLifetime) {
           return res.status(400).json({
             success: false,
             message: "You already have a full All-Access plan",
@@ -3603,12 +3614,26 @@ const buyPlan = async (req, res) => {
         // 3. Mock test checks
         const isSubMockTestAll =
           subCodeUpper === "PLAN-MKT01" ||
-          (!sub.categoryGroupId && !subNameLower.includes("ebook") && !subNameLower.includes("notes") && !subCodeUpper.includes("EBK") && !subCodeUpper.includes("NOT"));
+          (!isSubAIO &&
+            !isSubLifetime &&
+            !sub.categoryGroupId &&
+            !subNameLower.includes("ebook") &&
+            !subNameLower.includes("notes") &&
+            !subCodeUpper.includes("EBK") &&
+            !subCodeUpper.includes("NOT"));
 
         if (isSubMockTestAll) {
+          const isTargetFullAccess =
+            targetPlanCodeUpper === "PLAN-AIO01" ||
+            targetPlanCodeUpper === "PLAN-LTP01" ||
+            targetPlanNameLower.includes("all in one") ||
+            targetPlanNameLower.includes("all-in-one") ||
+            targetPlanNameLower.includes("all access") ||
+            targetPlanNameLower.includes("all-access") ||
+            targetPlanNameLower.includes("lifetime");
           // If user already has Mock Test All, don't allow buying category-specific mock test plan or mock test all again
           const isTargetMockTestAll = targetPlanCodeUpper === "PLAN-MKT01" || (!plan.categoryGroup && !targetPlanNameLower.includes("ebook") && !targetPlanNameLower.includes("notes"));
-          if (isTargetMockTestAll || plan.categoryGroup) {
+          if ((isTargetMockTestAll && !isTargetFullAccess) || plan.categoryGroup) {
             return res.status(400).json({
               success: false,
               message: "You already have access to all test groups",
