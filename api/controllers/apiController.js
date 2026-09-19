@@ -2720,6 +2720,7 @@ const GetPlans = async (req, res) => {
     const planData = plans.map((plan) => ({
       _id: plan._id,
       planName: plan.planName,
+      description: plan.description || '',
       planValidity: plan.planValidity,
       planId: plan.planId,
       planType: plan.planType || '',
@@ -3797,11 +3798,17 @@ const verifyPayment = async (req, res) => {
     // 🧠 ACTIVATE PLAN DATA (MULTI-SUBSCRIPTION)
     // ===============================
     let subExpiryDate = null;
-    if (plan.planValidity && plan.planValidity.toLowerCase().includes("lifetime")) {
+    const validityText = (plan.planValidity || "").toLowerCase();
+    if (validityText.includes("lifetime")) {
       subExpiryDate = null;
     } else {
       subExpiryDate = new Date();
-      subExpiryDate.setFullYear(subExpiryDate.getFullYear() + 1);
+      const validityNumber = parseInt(validityText, 10) || 1;
+      if (validityText.includes("month")) {
+        subExpiryDate.setMonth(subExpiryDate.getMonth() + validityNumber);
+      } else {
+        subExpiryDate.setFullYear(subExpiryDate.getFullYear() + validityNumber);
+      }
     }
 
     const newSubItem = {

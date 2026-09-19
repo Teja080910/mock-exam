@@ -118,7 +118,7 @@
                                                         <td>
                                                             <% const currentViewUrl = '/view-plan?page=' + currentPage + (typeof extraParams !== 'undefined' ? extraParams : ''); %>
                                                             <div class="d-flex gap-3">
-                                                                <a href="#" class="text-info me-3 btn-view-plan" data-plan-id="<%= allPlan.planId %>" data-plan-name="<%= allPlan.planName %>" data-category-group="<%= allPlan.categoryGroup ? allPlan.categoryGroup.displayName : 'All Category Groups' %>" data-validity="<%= allPlan.planValidity %>" data-price="<%= allPlan.price %>" data-bs-toggle="modal" data-bs-target="#viewPlanModal"><i class="bx bx-show"></i></a>
+                                                                <a href="#" class="text-info me-3 btn-view-plan" data-plan-id="<%= allPlan.planId %>" data-plan-name="<%= allPlan.planName %>" data-description="<%= allPlan.description || '' %>" data-category-group="<%= allPlan.categoryGroup ? allPlan.categoryGroup.displayName : 'All Category Groups' %>" data-validity="<%= allPlan.planValidity %>" data-price="<%= allPlan.price %>" data-bs-toggle="modal" data-bs-target="#viewPlanModal"><i class="bx bx-show"></i></a>
                                                                 <% if (loginData.is_admin==1) { %>
                                                                     <a href="/edit-plan?id=<%= allPlan._id %>&returnUrl=<%= encodeURIComponent(currentViewUrl) %>"
                                                                         class="text-success me-3"><i
@@ -167,6 +167,7 @@
                 <table class="table table-borderless">
                     <tr><td class="fw-bold text-muted" style="width:140px;">Plan ID</td><td id="viewPlanId"></td></tr>
                     <tr><td class="fw-bold text-muted">Plan Name</td><td id="viewPlanName"></td></tr>
+                    <tr><td class="fw-bold text-muted">Description</td><td id="viewPlanDescription"></td></tr>
                     <tr><td class="fw-bold text-muted">Category Group</td><td id="viewPlanCategoryGroup"></td></tr>
                     <tr><td class="fw-bold text-muted">Validity</td><td id="viewPlanValidity"></td></tr>
                     <tr><td class="fw-bold text-muted">Price</td><td id="viewPlanPrice"></td></tr>
@@ -185,6 +186,7 @@
             e.preventDefault();
             document.getElementById('viewPlanId').textContent = this.dataset.planId;
             document.getElementById('viewPlanName').textContent = this.dataset.planName;
+            document.getElementById('viewPlanDescription').textContent = this.dataset.description || '-';
             document.getElementById('viewPlanCategoryGroup').textContent = this.dataset.categoryGroup;
             document.getElementById('viewPlanValidity').textContent = this.dataset.validity;
             document.getElementById('viewPlanPrice').textContent = '\u20B9 ' + this.dataset.price;

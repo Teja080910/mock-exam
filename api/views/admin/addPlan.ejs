@@ -58,6 +58,15 @@
                                                                     </div>
                                                                     <div class="row mb-3">
                                                                         <label class="col-sm-2 col-form-label"
+                                                                            for="description">Description</label>
+                                                                        <div class="col-sm-10">
+                                                                            <input type="text" class="form-control"
+                                                                                name="description"
+                                                                                placeholder="e.g. Full Access All in One Category (shown under plan name in app)" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="row mb-3">
+                                                                        <label class="col-sm-2 col-form-label"
                                                                             for="planType">Plan Type</label>
                                                                         <div class="col-sm-10">
                                                                             <select class="form-control"
@@ -81,13 +90,16 @@
                                                                         <label class="col-sm-2 col-form-label"
                                                                             for="planValidity">Plan Validity</label>
                                                                         <div class="col-sm-10">
-                                                                            <select class="form-control" name="planValidity" required>
-                                                                                <option value="">Select Validity</option>
-                                                                                <option value="1 month">1 month</option>
-                                                                                <option value="3 month">3 month</option>
-                                                                                <option value="6 month">6 month</option>
-                                                                                <option value="1 year">1 year</option>
-                                                                            </select>
+                                                                            <input type="text" class="form-control"
+                                                                                name="planValidity" list="validityOptions"
+                                                                                placeholder="e.g. 1 Year" required />
+                                                                            <datalist id="validityOptions">
+                                                                                <option value="1 Month"></option>
+                                                                                <option value="3 Month"></option>
+                                                                                <option value="6 Month"></option>
+                                                                                <option value="1 Year"></option>
+                                                                                <option value="Lifetime"></option>
+                                                                            </datalist>
                                                                         </div>
                                                                     </div>
                                                                     <div class="row mb-3">

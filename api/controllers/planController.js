@@ -22,11 +22,6 @@ const addPlan = async (req, res) => {
             const categoryGroups = await CategoryGroup.find({});
             const categoryGroupVal = req.body.categoryGroup === 'all' ? null : req.body.categoryGroup;
 
-            const existingPlan = await Plan.findOne({ categoryGroup: categoryGroupVal });
-            if (existingPlan) {
-                return res.render('addPlan', { message: "Plan for this Category Group already exists!", categoryGroups: categoryGroups });
-            }
-
             // Generate random Plan ID (Format: PLAN-XXXXXX)
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let randomStr = '';
@@ -37,6 +32,7 @@ const addPlan = async (req, res) => {
 
             const planData = new Plan({
                 planName: req.body.planName,
+                description: (req.body.description || '').trim(),
                 planValidity: req.body.planValidity,
                 price: req.body.price,
                 planId: randomPlanId,
@@ -59,6 +55,8 @@ const addPlan = async (req, res) => {
         }
     } catch (error) {
         console.log(error.message);
+        req.flash('error', 'Plan could not be added: ' + error.message);
+        return res.redirect('back');
     }
 }
 
@@ -144,15 +142,11 @@ const updatePlan = async (req, res) => {
             const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-plan';
             const categoryGroupVal = req.body.categoryGroup === 'all' ? null : req.body.categoryGroup;
 
-            const existingPlan = await Plan.findOne({ categoryGroup: categoryGroupVal, _id: { $ne: id } });
-            if (existingPlan) {
-                req.flash('error', 'A plan for this Category Group already exists!');
-                return res.redirect('back');
-            }
             await Plan.findByIdAndUpdate({ _id: id },
                 {
                     $set: {
                         planName: req.body.planName,
+                        description: (req.body.description || '').trim(),
                         planValidity: req.body.planValidity,
                         price: req.body.price,
                         planType: req.body.planType || '',
@@ -168,6 +162,8 @@ const updatePlan = async (req, res) => {
         }
     } catch (error) {
         console.log(error.message);
+        req.flash('error', 'Plan could not be updated: ' + error.message);
+        return res.redirect('back');
     }
 }
 

@@ -786,10 +786,17 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 plan,
                                 r'''$.categoryGroup.displayName''',
                               )?.toString();
-                              final categoryName = _formatPlanCategorySubtitle(
-                                planName,
-                                rawGroupDisplayName,
-                              );
+                              final rawDescription = getJsonField(
+                                plan,
+                                r'''$.description''',
+                              )?.toString();
+                              final categoryName = (rawDescription != null &&
+                                      rawDescription.trim().isNotEmpty)
+                                  ? rawDescription.trim()
+                                  : _formatPlanCategorySubtitle(
+                                      planName,
+                                      rawGroupDisplayName,
+                                    );
                               final categoryGroupId = getJsonField(
                                 plan,
                                 r'''$.categoryGroup._id''',
