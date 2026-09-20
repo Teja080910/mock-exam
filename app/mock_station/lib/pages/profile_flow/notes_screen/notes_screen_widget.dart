@@ -667,6 +667,12 @@ class _NotesDetailScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 28,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            /*
                             Icon(
                               hasAccess
                                   ? Icons.chevron_right_rounded
@@ -674,6 +680,7 @@ class _NotesDetailScreen extends StatelessWidget {
                               size: hasAccess ? 28 : 22,
                               color: const Color(0xFF9CA3AF),
                             ),
+                            */
                           ],
                         ),
                       ),

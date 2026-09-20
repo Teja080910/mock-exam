@@ -240,6 +240,13 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                   ),
                                   const SizedBox(width: 8.0),
                                   Icon(
+                                    Icons.chevron_right,
+                                    size: 24.0,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
+                                  /*
+                                  Icon(
                                     hasAccess
                                         ? Icons.chevron_right
                                         : Icons.lock_outline_rounded,
@@ -249,6 +256,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                             .secondaryText
                                         : const Color(0xFF9CA3AF),
                                   ),
+                                  */
                                 ],
                               ),
                             ),
