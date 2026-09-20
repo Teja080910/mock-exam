@@ -504,6 +504,9 @@ bool hasCategoryAccess(
   String? currentCategoryId,
   String? currentGroupId,
 ) {
+  if (currentCategoryId == '68d67ba5d6d9bc79cbfe054a') {
+    return true;
+  }
   if (planStatus != 'active') {
     return false;
   }

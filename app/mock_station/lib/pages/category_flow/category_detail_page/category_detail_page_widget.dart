@@ -211,9 +211,11 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    getJsonField(subcategory, r'$.name').toString().toUpperCase(),
+                    getJsonField(subcategory, r'$.name')
+                        .toString()
+                        .toUpperCase(),
                     style: const TextStyle(
-                      fontWeight: FontWeight.normal,
+                      fontWeight: FontWeight.w800,
                       fontSize: FFFont.f16,
                       color: Color(0xFF111827),
                     ),
@@ -285,35 +287,50 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
             _buildHeader(),
             Expanded(
               child: FutureBuilder<ApiCallResponse>(
-                future: FFAppState().details(
+                future: FFAppState()
+                    .details(
                   uniqueQueryKey: valueOrDefault<String>(widget.catId, '65498'),
-                  requestFn: () => QuizGroup.getSubcategoriesCall.call(categoryId: widget.catId),
-                ).then((result) {
-                          _model.apiRequestCompleted = true;
-                  _model.apiRequestLastUniqueKey = valueOrDefault<String>(widget.catId, '65498');
+                  requestFn: () => QuizGroup.getSubcategoriesCall
+                      .call(categoryId: widget.catId),
+                )
+                    .then((result) {
+                  _model.apiRequestCompleted = true;
+                  _model.apiRequestLastUniqueKey =
+                      valueOrDefault<String>(widget.catId, '65498');
                   print('Subcategories API Response: ${result.jsonBody}');
                   print('Subcategories API Status: ${result.statusCode}');
-                        return result;
-                      }),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) {
+                  return result;
+                }),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
                     print('Error in subcategories API: ${snapshot.error}');
-                    return Center(child: Text('Error loading subcategories: ${snapshot.error}'));
-                        }
-                        if (!snapshot.hasData) {
+                    return Center(
+                        child: Text(
+                            'Error loading subcategories: ${snapshot.error}'));
+                  }
+                  if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
-                        }
-                        final response = snapshot.data!;
-                  final subcategoryList = (QuizGroup.getSubcategoriesCall.subcategoryList(response.jsonBody)?.toList() ?? [])
+                  }
+                  final response = snapshot.data!;
+                  final subcategoryList = (QuizGroup.getSubcategoriesCall
+                          .subcategoryList(response.jsonBody)
+                          ?.toList() ??
+                      [])
                     ..sort((a, b) {
-                      String nameA = getJsonField(a, r'$.name').toString().trim().toLowerCase();
-                      String nameB = getJsonField(b, r'$.name').toString().trim().toLowerCase();
-                      
+                      String nameA = getJsonField(a, r'$.name')
+                          .toString()
+                          .trim()
+                          .toLowerCase();
+                      String nameB = getJsonField(b, r'$.name')
+                          .toString()
+                          .trim()
+                          .toLowerCase();
+
                       // Extract trailing number from each name
                       final regex = RegExp(r'(\d+)$');
                       final matchA = regex.firstMatch(nameA);
                       final matchB = regex.firstMatch(nameB);
-                      
+
                       if (matchA != null && matchB != null) {
                         int valA = int.parse(matchA.group(1)!);
                         int valB = int.parse(matchB.group(1)!);
@@ -321,19 +338,23 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                       }
                       if (matchA != null) return -1; // names with numbers first
                       if (matchB != null) return 1;
-                      
+
                       return nameA.compareTo(nameB);
                     });
                   if (subcategoryList.isEmpty) {
-                    return Center(child: Padding(
+                    return Center(
+                        child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 32),
                       child: Column(
                         children: [
-                          Text('No subcategories found for this category', style: Theme.of(context).textTheme.bodyLarge),
+                          Text('No subcategories found for this category',
+                              style: Theme.of(context).textTheme.bodyLarge),
                           SizedBox(height: 16),
-                          Text('Category ID: ${widget.catId}', style: Theme.of(context).textTheme.bodyMedium),
+                          Text('Category ID: ${widget.catId}',
+                              style: Theme.of(context).textTheme.bodyMedium),
                           SizedBox(height: 8),
-                          Text('Response: ${response.jsonBody}', style: Theme.of(context).textTheme.bodySmall),
+                          Text('Response: ${response.jsonBody}',
+                              style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),
                     ));
@@ -345,8 +366,8 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                     itemBuilder: (context, subcategoryIndex) {
                       final subcategory = subcategoryList[subcategoryIndex];
                       return _buildSubcategoryCard(subcategory);
-                      },
-                    );
+                    },
+                  );
                 },
               ),
             ),

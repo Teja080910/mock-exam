@@ -10,6 +10,7 @@ import '/pages/category_flow/category_detail_page/category_detail_page_widget.da
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/pages/home_flow/news_screen/news_screen_widget.dart';
 import '/pages/home_flow/quiz_questions_screen/quiz_questions_screen_widget.dart';
+
 enum _SearchResultType { group, category, quiz, news, ebook }
 
 class _GlobalSearchResult {
@@ -379,6 +380,11 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
         );
         return;
       case _SearchResultType.ebook:
+        if (FFAppState().planStatus != 'active' ||
+            !FFAppState().hasEbookAccess) {
+          await showSubscriptionDialog(context);
+          return;
+        }
         final openUrl = _firstValue([
           result.data['fileUrl'],
           result.data['file'],
@@ -438,7 +444,8 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
 
   Widget _buildResultTile(_GlobalSearchResult result) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5.0),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5.0),
       leading: Container(
         width: 46.0,
         height: 46.0,
@@ -467,7 +474,8 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
           style: const TextStyle(color: Color(0xFF64748B), fontSize: 12.0),
         ),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+      trailing:
+          const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
       onTap: () => _openResult(result),
     );
   }
@@ -533,7 +541,8 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded, size: 48, color: Color(0xFF94A3B8)),
+            const Icon(Icons.wifi_off_rounded,
+                size: 48, color: Color(0xFF94A3B8)),
             const SizedBox(height: 12),
             const Text('Could not load search results.'),
             const SizedBox(height: 12),

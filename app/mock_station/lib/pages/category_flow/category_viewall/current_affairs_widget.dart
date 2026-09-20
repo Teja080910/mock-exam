@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
 
 class CurrentAffairsWidget extends StatefulWidget {
   const CurrentAffairsWidget({super.key});
@@ -91,7 +89,8 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                         final quizResponse = snapshot.data!;
                         final quizList = GetquizbycategoryCall.quizDetailsList(
                               quizResponse.jsonBody,
-                            )?.toList() ?? [];
+                            )?.toList() ??
+                            [];
                         if (quizList.isEmpty) {
                           return Center(
                             child: Text(
@@ -108,34 +107,55 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                             final quiz = quizList[index];
                             return InkWell(
                               onTap: () async {
-                                if (!functions.hasCategoryAccess(
-                                  FFAppState().planStatus,
-                                  FFAppState().subsIsSelectedAll,
-                                  FFAppState().allowedCategoryIds,
-                                  currentAffairsCategoryId,
-                                  null,
-                                )) {
-                                  await showSubscriptionDialog(context);
-                                  return;
-                                }
                                 context.pushNamed(
                                   QuizQuestionsScreenWidget.routeName,
                                   queryParameters: {
-                                    'quizID': serializeParam(getJsonField(quiz, r'$._id').toString(), ParamType.String),
-                                    'title': serializeParam(getJsonField(quiz, r'$.name') is Map ? jsonEncode(getJsonField(quiz, r'$.name')) : getJsonField(quiz, r'$.name').toString(), ParamType.String),
-                                    'catId': serializeParam(currentAffairsCategoryId, ParamType.String),
-                                    'image': serializeParam(getJsonField(quiz, r'$.image').toString(), ParamType.String),
-                                    'quizTime': serializeParam(getJsonField(quiz, r'$.minutes_per_quiz').toString(), ParamType.String),
-                                    'description': serializeParam(getJsonField(quiz, r'$.description') is Map ? jsonEncode(getJsonField(quiz, r'$.description')) : getJsonField(quiz, r'$.description').toString(), ParamType.String),
-                                    'ques': serializeParam(getJsonField(quiz, r'$.total_questions'), ParamType.int),
-                                    'timerStatus': serializeParam(getJsonField(quiz, r'$.timer_status'), ParamType.int),
+                                    'quizID': serializeParam(
+                                        getJsonField(quiz, r'$._id').toString(),
+                                        ParamType.String),
+                                    'title': serializeParam(
+                                        getJsonField(quiz, r'$.name') is Map
+                                            ? jsonEncode(
+                                                getJsonField(quiz, r'$.name'))
+                                            : getJsonField(quiz, r'$.name')
+                                                .toString(),
+                                        ParamType.String),
+                                    'catId': serializeParam(
+                                        currentAffairsCategoryId,
+                                        ParamType.String),
+                                    'image': serializeParam(
+                                        getJsonField(quiz, r'$.image')
+                                            .toString(),
+                                        ParamType.String),
+                                    'quizTime': serializeParam(
+                                        getJsonField(
+                                                quiz, r'$.minutes_per_quiz')
+                                            .toString(),
+                                        ParamType.String),
+                                    'description': serializeParam(
+                                        getJsonField(quiz, r'$.description')
+                                                is Map
+                                            ? jsonEncode(getJsonField(
+                                                quiz, r'$.description'))
+                                            : getJsonField(
+                                                    quiz, r'$.description')
+                                                .toString(),
+                                        ParamType.String),
+                                    'ques': serializeParam(
+                                        getJsonField(
+                                            quiz, r'$.total_questions'),
+                                        ParamType.int),
+                                    'timerStatus': serializeParam(
+                                        getJsonField(quiz, r'$.timer_status'),
+                                        ParamType.int),
                                   }.withoutNulls,
                                 );
                               },
                               child: Container(
                                 padding: EdgeInsets.all(16.0),
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: Row(
@@ -143,11 +163,14 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(8.0),
                                       child: CachedNetworkImage(
-                                        imageUrl: '${FFAppConstants.imageBaseURL}${getJsonField(quiz, r'$.image').toString()}',
+                                        imageUrl:
+                                            '${FFAppConstants.imageBaseURL}${getJsonField(quiz, r'$.image').toString()}',
                                         width: 54.0,
                                         height: 54.0,
                                         fit: BoxFit.cover,
-                                        errorWidget: (context, error, stackTrace) => Image.asset(
+                                        errorWidget:
+                                            (context, error, stackTrace) =>
+                                                Image.asset(
                                           'assets/images/error_image.png',
                                           width: 54.0,
                                           height: 54.0,
@@ -158,28 +181,37 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
                                     SizedBox(width: 16.0),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            getJsonField(quiz, r'$.name').toString(),
-                                            style: FlutterFlowTheme.of(context).titleLarge.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: FFFont.f20,
-                                            ),
+                                            getJsonField(quiz, r'$.name')
+                                                .toString(),
+                                            style: FlutterFlowTheme.of(context)
+                                                .titleLarge
+                                                .copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: FFFont.f20,
+                                                ),
                                           ),
                                           SizedBox(height: 4.0),
                                           Text(
                                             'Questions: 0${getJsonField(quiz, r'$.total_questions')}',
-                                            style: FlutterFlowTheme.of(context).bodySmall,
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodySmall,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Icon(Icons.arrow_forward_ios, size: 20.0, color: FlutterFlowTheme.of(context).primary),
+                                    Icon(Icons.arrow_forward_ios,
+                                        size: 20.0,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary),
                                   ],
                                 ),
                               ),
-                            ).animateOnPageLoad(animationsMap['containerOnPageLoadAnimation']!);
+                            ).animateOnPageLoad(
+                                animationsMap['containerOnPageLoadAnimation']!);
                           },
                         );
                       },
@@ -204,4 +236,4 @@ class _CurrentAffairsWidgetState extends State<CurrentAffairsWidget>
       ),
     );
   }
-} 
+}

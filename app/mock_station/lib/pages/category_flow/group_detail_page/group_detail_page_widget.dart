@@ -33,7 +33,8 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
       appBar: AppBar(
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827), size: 22),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: Color(0xFF111827), size: 22),
           onPressed: () => context.safePop(),
         ),
         title: Text(
@@ -59,7 +60,8 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.school_outlined, size: 56, color: Colors.grey.shade400),
+                            Icon(Icons.school_outlined,
+                                size: 56, color: Colors.grey.shade400),
                             const SizedBox(height: 16),
                             Text(
                               'No exams available',
@@ -108,13 +110,15 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
           padding: const EdgeInsets.only(bottom: 10),
           child: InkWell(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) => CategoryDetailPageWidget(
-                  title: displayTitle,
-                  catId: catId.toString(),
-                  image: image.toString(),
-                ),
-              ));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CategoryDetailPageWidget(
+                      title: displayTitle,
+                      catId: catId.toString(),
+                      image: image.toString(),
+                    ),
+                  ));
             },
             borderRadius: BorderRadius.circular(14),
             child: Container(
@@ -140,7 +144,8 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
                         child: Row(
                           children: [
                             Container(
@@ -154,21 +159,27 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                               child: image.toString().isNotEmpty
                                   ? ClipOval(
                                       child: CachedNetworkImage(
-                                        imageUrl: image.toString().startsWith('http')
+                                        imageUrl: image
+                                                .toString()
+                                                .startsWith('http')
                                             ? image.toString()
                                             : '${FFAppConstants.imageBaseURL}$image',
                                         fit: BoxFit.cover,
-                                        placeholder: (context, url) => const Center(
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        placeholder: (context, url) =>
+                                            const Center(
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
                                         ),
-                                        errorWidget: (context, url, error) => const Icon(
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(
                                           Icons.category,
                                           size: 24,
                                           color: Color(0xFF2563EB),
                                         ),
                                       ),
                                     )
-                                  : const Icon(Icons.category, size: 24, color: Color(0xFF2563EB)),
+                                  : const Icon(Icons.category,
+                                      size: 24, color: Color(0xFF2563EB)),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -179,7 +190,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                                     displayTitle.toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: FFFont.f16,
-                                      fontWeight: FontWeight.normal,
+                                      fontWeight: FontWeight.w700,
                                       color: Color(0xFF111827),
                                       fontFamily: 'Roboto',
                                     ),
@@ -234,7 +245,8 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.verified_user_outlined, color: Color(0xFF2563EB), size: 18),
+            child: const Icon(Icons.verified_user_outlined,
+                color: Color(0xFF2563EB), size: 18),
           ),
           const SizedBox(width: 10),
           Expanded(

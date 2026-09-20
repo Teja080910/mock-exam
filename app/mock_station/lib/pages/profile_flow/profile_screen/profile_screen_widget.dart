@@ -1,5 +1,4 @@
 import '/backend/api_requests/api_calls.dart';
-import '/componants/subscription_required_dialog/subscription_required_dialog_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -28,7 +27,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileScreenModel());
-    
+
     // Fetch latest info on load
     if (FFAppState().isLogin) {
       WidgetsBinding.instance.addPostFrameCallback((_) => refreshProfile());
@@ -42,24 +41,39 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
     );
     if (QuizGroup.fetchUserPlanCall.success(response.jsonBody) == true) {
       safeSetState(() {
-        FFAppState().planStatus = QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
-        FFAppState().subsIsSelectedAll = QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ?? false;
-        FFAppState().expiresAt = QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
-        FFAppState().activePlanName = QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
-        FFAppState().activePlanCode = QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
-        FFAppState().hasEbookAccess = QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ?? false;
-        FFAppState().hasNotesAccess = QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ?? false;
-        FFAppState().hasMockTestAccess = QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ?? false;
-        
-        final rawCodes = QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
+        FFAppState().planStatus =
+            QuizGroup.fetchUserPlanCall.planStatus(response.jsonBody) ?? 'none';
+        FFAppState().subsIsSelectedAll =
+            QuizGroup.fetchUserPlanCall.isSelectedAll(response.jsonBody) ??
+                false;
+        FFAppState().expiresAt =
+            QuizGroup.fetchUserPlanCall.expiresAt(response.jsonBody) ?? '';
+        FFAppState().activePlanName =
+            QuizGroup.fetchUserPlanCall.planName(response.jsonBody) ?? '';
+        FFAppState().activePlanCode =
+            QuizGroup.fetchUserPlanCall.planCode(response.jsonBody) ?? '';
+        FFAppState().hasEbookAccess =
+            QuizGroup.fetchUserPlanCall.hasEbookAccess(response.jsonBody) ??
+                false;
+        FFAppState().hasNotesAccess =
+            QuizGroup.fetchUserPlanCall.hasNotesAccess(response.jsonBody) ??
+                false;
+        FFAppState().hasMockTestAccess =
+            QuizGroup.fetchUserPlanCall.hasMockTestAccess(response.jsonBody) ??
+                false;
+
+        final rawCodes =
+            QuizGroup.fetchUserPlanCall.activePlanCodes(response.jsonBody);
         if (rawCodes is List) {
-          FFAppState().activePlanCodes = rawCodes.map((c) => c.toString().toUpperCase()).toList();
+          FFAppState().activePlanCodes =
+              rawCodes.map((c) => c.toString().toUpperCase()).toList();
         } else {
           FFAppState().activePlanCodes = [];
         }
 
         List<String> categoryIds = [];
-        final categoryGroups = QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
+        final categoryGroups =
+            QuizGroup.fetchUserPlanCall.categoryGroupIds(response.jsonBody);
         if (categoryGroups != null) {
           for (var group in categoryGroups) {
             if (group['_id'] != null) {
@@ -78,7 +92,8 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
     );
     if (QuizGroup.getuserApiCall.success(userResponse.jsonBody) == 1) {
       safeSetState(() {
-        FFAppState().userDetils = QuizGroup.getuserApiCall.userCred(userResponse.jsonBody);
+        FFAppState().userDetils =
+            QuizGroup.getuserApiCall.userCred(userResponse.jsonBody);
       });
     }
   }
@@ -379,13 +394,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     icon: Icons.menu_book_outlined,
                     label: 'eBook',
                     color: const Color(0xFF6366F1),
-                    onTap: () async {
-                      final hasAccess = FFAppState().planStatus == 'active' &&
-                          FFAppState().hasEbookAccess;
-                      if (!hasAccess) {
-                        await showSubscriptionDialog(context);
-                        return;
-                      }
+                    onTap: () {
                       context.pushNamed(BooksScreenWidget.routeName);
                     },
                   ),
@@ -394,13 +403,7 @@ class _ProfileScreenWidgetState extends State<ProfileScreenWidget> {
                     icon: Icons.sticky_note_2_outlined,
                     label: 'Notes',
                     color: const Color(0xFF06B6D4),
-                    onTap: () async {
-                      final hasAccess = FFAppState().planStatus == 'active' &&
-                          FFAppState().hasNotesAccess;
-                      if (!hasAccess) {
-                        await showSubscriptionDialog(context);
-                        return;
-                      }
+                    onTap: () {
                       context.pushNamed(NotesScreenWidget.routeName);
                     },
                   ),

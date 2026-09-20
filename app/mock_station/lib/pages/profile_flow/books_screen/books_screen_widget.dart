@@ -42,8 +42,8 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
-    final hasAccess = FFAppState().planStatus == 'active' &&
-        FFAppState().hasEbookAccess;
+    final hasAccess =
+        FFAppState().planStatus == 'active' && FFAppState().hasEbookAccess;
 
     return Scaffold(
       key: scaffoldKey,
@@ -55,8 +55,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
             backIcon: true,
           ),
           Expanded(
-            child: hasAccess
-                ? FutureBuilder<ApiCallResponse>(
+            child: FutureBuilder<ApiCallResponse>(
               future: _ebooksFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -126,7 +125,11 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                       borderRadius: BorderRadius.circular(12.0),
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
-                        onTap: () {
+                        onTap: () async {
+                          if (!hasAccess) {
+                            await showSubscriptionDialog(context);
+                            return;
+                          }
                           if (openUrl.isNotEmpty) {
                             openNotePdf(context, openUrl, title: ebookName);
                           }
@@ -143,8 +146,7 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                   width: 4.0,
                                   height: 58.0,
                                   decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primary,
+                                    color: FlutterFlowTheme.of(context).primary,
                                     borderRadius: BorderRadius.circular(2.0),
                                   ),
                                 ),
@@ -219,15 +221,17 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                         ),
                                         const SizedBox(height: 4.0),
                                         Text(
-                                          'Tap to view PDF',
+                                          hasAccess
+                                              ? 'Tap to view PDF'
+                                              : 'Subscribe to access',
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
                                                 fontFamily: 'Roboto',
                                                 fontSize: FFFont.f14,
-                                                color: FlutterFlowTheme.of(
-                                                        context)
-                                                    .secondaryText,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryText,
                                                 useGoogleFonts: false,
                                               ),
                                         ),
@@ -236,10 +240,14 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                                   ),
                                   const SizedBox(width: 8.0),
                                   Icon(
-                                    Icons.chevron_right,
-                                    size: 24.0,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
+                                    hasAccess
+                                        ? Icons.chevron_right
+                                        : Icons.lock_outline_rounded,
+                                    size: hasAccess ? 24.0 : 20.0,
+                                    color: hasAccess
+                                        ? FlutterFlowTheme.of(context)
+                                            .secondaryText
+                                        : const Color(0xFF9CA3AF),
                                   ),
                                 ],
                               ),
@@ -251,51 +259,6 @@ class _BooksScreenWidgetState extends State<BooksScreenWidget> {
                   },
                 );
               },
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.lock_outline_rounded,
-                    size: 64,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Subscription Required',
-                    style: TextStyle(
-                      fontSize: FFFont.f18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Subscribe to access eBooks',
-                    style: TextStyle(
-                      fontSize: FFFont.f14,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => showSubscriptionDialog(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 14,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('View Plans'),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

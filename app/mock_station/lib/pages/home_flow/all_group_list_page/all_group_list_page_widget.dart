@@ -27,7 +27,8 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
       appBar: AppBar(
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827), size: 22),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: Color(0xFF111827), size: 22),
           onPressed: () => context.safePop(),
         ),
         title: Text(
@@ -72,18 +73,22 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
 
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) => GroupDetailPageWidget(
-            groupName: group.displayName,
-            groupId: group.id,
-            categoriesJson: group.categories.map((c) => {
-              '_id': c.id,
-              'name': c.name,
-              'displayName': c.displayName,
-              'image': c.image,
-            }).toList(),
-          ),
-        ));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GroupDetailPageWidget(
+                groupName: group.displayName,
+                groupId: group.id,
+                categoriesJson: group.categories
+                    .map((c) => {
+                          '_id': c.id,
+                          'name': c.name,
+                          'displayName': c.displayName,
+                          'image': c.image,
+                        })
+                    .toList(),
+              ),
+            ));
       },
       borderRadius: BorderRadius.circular(14),
       child: Container(
@@ -109,7 +114,8 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   child: Row(
                     children: [
                       Container(
@@ -126,9 +132,11 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
                                   imageUrl: imgUrl,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
                                   ),
-                                  errorWidget: (context, url, error) => const Icon(
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
                                     Icons.category,
                                     size: 24,
                                     color: Color(0xFF2563EB),
@@ -150,7 +158,7 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
                               group.displayName.toUpperCase(),
                               style: const TextStyle(
                                 fontSize: FFFont.f16,
-                                fontWeight: FontWeight.normal,
+                                fontWeight: FontWeight.w700,
                                 color: Color(0xFF111827),
                                 fontFamily: 'Roboto',
                               ),
@@ -191,7 +199,8 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
     if (s.contains('defence') || s.contains('defense')) return Icons.shield;
     if (s.contains('upsc')) return Icons.account_balance;
     if (s.contains('state') || s.contains('psc')) return Icons.location_city;
-    if (s.contains('bank') || s.contains('ibps')) return Icons.account_balance_wallet;
+    if (s.contains('bank') || s.contains('ibps'))
+      return Icons.account_balance_wallet;
     if (s.contains('engineer')) return Icons.engineering;
     return Icons.quiz;
   }

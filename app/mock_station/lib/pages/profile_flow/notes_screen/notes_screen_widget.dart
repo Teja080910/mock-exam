@@ -30,14 +30,16 @@ String _cleanNoteUrl(String? path) {
   return '$imgBase$clean';
 }
 
-Future<void> openNotePdf(BuildContext context, String fileUrl, {String? title}) async {
+Future<void> openNotePdf(BuildContext context, String fileUrl,
+    {String? title}) async {
   if (fileUrl.trim().isEmpty) return;
   final fullUrl = _cleanNoteUrl(fileUrl);
   final uri = Uri.parse(Uri.encodeFull(fullUrl));
 
   try {
     if (await canLaunchUrl(uri)) {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (launched) return;
     }
   } catch (e) {
@@ -46,9 +48,11 @@ Future<void> openNotePdf(BuildContext context, String fileUrl, {String? title}) 
 
   // Fallback: Google Docs PDF viewer in browser
   try {
-    final gdocsUri = Uri.parse('https://docs.google.com/viewer?url=${Uri.encodeComponent(fullUrl)}');
+    final gdocsUri = Uri.parse(
+        'https://docs.google.com/viewer?url=${Uri.encodeComponent(fullUrl)}');
     if (await canLaunchUrl(gdocsUri)) {
-      final launched = await launchUrl(gdocsUri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(gdocsUri, mode: LaunchMode.externalApplication);
       if (launched) return;
     }
   } catch (e) {
@@ -61,7 +65,8 @@ Future<void> openNotePdf(BuildContext context, String fileUrl, {String? title}) 
   } catch (_) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open PDF file. Please try again.')),
+        const SnackBar(
+            content: Text('Could not open PDF file. Please try again.')),
       );
     }
   }
@@ -95,8 +100,6 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
-    final hasAccess = FFAppState().planStatus == 'active' &&
-        FFAppState().hasNotesAccess;
 
     return Scaffold(
       key: scaffoldKey,
@@ -105,41 +108,7 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
         children: [
           AppBarWidget(title: 'Notes', backIcon: true),
           Expanded(
-            child: hasAccess
-                ? _buildSubjectsList()
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.lock_outline_rounded, size: 64, color: Colors.grey.shade400),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Subscription Required',
-                          style: TextStyle(
-                            fontSize: FFFont.f18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Subscribe to access study notes',
-                          style: TextStyle(fontSize: FFFont.f14, color: Colors.grey.shade500),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: () => showSubscriptionDialog(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          child: const Text('View Plans'),
-                        ),
-                      ],
-                    ),
-                  ),
+            child: _buildSubjectsList(),
           ),
         ],
       ),
@@ -156,7 +125,9 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
         if (!snapshot.hasData || snapshot.data == null) {
           return const Center(child: Text('No subjects available'));
         }
-        final subjects = QuizGroup.getNoteSubjectsCall.subjects(snapshot.data!.jsonBody) ?? [];
+        final subjects =
+            QuizGroup.getNoteSubjectsCall.subjects(snapshot.data!.jsonBody) ??
+                [];
         if (subjects.isEmpty) {
           return const Center(child: Text('No notes available yet'));
         }
@@ -222,7 +193,8 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
                     height: 40,
                     decoration: const BoxDecoration(
                       color: Color(0xFF2563EB),
-                      borderRadius: BorderRadius.horizontal(right: Radius.circular(4)),
+                      borderRadius:
+                          BorderRadius.horizontal(right: Radius.circular(4)),
                     ),
                   ),
                 ),
@@ -245,11 +217,18 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
                               child: CachedNetworkImage(
                                 imageUrl: _cleanNoteUrl(image),
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => const Icon(Icons.description_rounded, size: 26, color: Color(0xFF2563EB)),
-                                errorWidget: (_, __, ___) => const Icon(Icons.description_rounded, size: 26, color: Color(0xFF2563EB)),
+                                placeholder: (_, __) => const Icon(
+                                    Icons.description_rounded,
+                                    size: 26,
+                                    color: Color(0xFF2563EB)),
+                                errorWidget: (_, __, ___) => const Icon(
+                                    Icons.description_rounded,
+                                    size: 26,
+                                    color: Color(0xFF2563EB)),
                               ),
                             )
-                          : const Icon(Icons.description_rounded, size: 26, color: Color(0xFF2563EB)),
+                          : const Icon(Icons.description_rounded,
+                              size: 26, color: Color(0xFF2563EB)),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -278,7 +257,8 @@ class _NotesScreenWidgetState extends State<NotesScreenWidget> {
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded, size: 28, color: Color(0xFF9CA3AF)),
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 28, color: Color(0xFF9CA3AF)),
                   ],
                 ),
               ),
@@ -318,7 +298,8 @@ class _TopicsScreen extends StatelessWidget {
         if (!snapshot.hasData || snapshot.data == null) {
           return const Center(child: Text('No topics available'));
         }
-        final topics = QuizGroup.getNoteTopicsCall.topics(snapshot.data!.jsonBody) ?? [];
+        final topics =
+            QuizGroup.getNoteTopicsCall.topics(snapshot.data!.jsonBody) ?? [];
         if (topics.isEmpty) {
           return const Center(child: Text('No topics available yet'));
         }
@@ -339,7 +320,8 @@ class _TopicsScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => _NotesDetailScreen(subject: subject, topic: topicName),
+                    builder: (_) =>
+                        _NotesDetailScreen(subject: subject, topic: topicName),
                   ),
                 );
               },
@@ -386,7 +368,8 @@ class _TopicsScreen extends StatelessWidget {
                     height: 40,
                     decoration: const BoxDecoration(
                       color: Color(0xFF2563EB),
-                      borderRadius: BorderRadius.horizontal(right: Radius.circular(4)),
+                      borderRadius:
+                          BorderRadius.horizontal(right: Radius.circular(4)),
                     ),
                   ),
                 ),
@@ -409,11 +392,18 @@ class _TopicsScreen extends StatelessWidget {
                               child: CachedNetworkImage(
                                 imageUrl: _cleanNoteUrl(image),
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => const Icon(Icons.description_rounded, size: 26, color: Color(0xFF2563EB)),
-                                errorWidget: (_, __, ___) => const Icon(Icons.description_rounded, size: 26, color: Color(0xFF2563EB)),
+                                placeholder: (_, __) => const Icon(
+                                    Icons.description_rounded,
+                                    size: 26,
+                                    color: Color(0xFF2563EB)),
+                                errorWidget: (_, __, ___) => const Icon(
+                                    Icons.description_rounded,
+                                    size: 26,
+                                    color: Color(0xFF2563EB)),
                               ),
                             )
-                          : const Icon(Icons.description_rounded, size: 26, color: Color(0xFF2563EB)),
+                          : const Icon(Icons.description_rounded,
+                              size: 26, color: Color(0xFF2563EB)),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -442,7 +432,8 @@ class _TopicsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded, size: 28, color: Color(0xFF9CA3AF)),
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 28, color: Color(0xFF9CA3AF)),
                   ],
                 ),
               ),
@@ -462,6 +453,7 @@ class _NotesDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FFAppState>();
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: Column(
@@ -483,15 +475,19 @@ class _NotesDetailScreen extends StatelessWidget {
         if (!snapshot.hasData || snapshot.data == null) {
           return const Center(child: Text('No notes available'));
         }
-        final notes = QuizGroup.getNotesCall.notes(snapshot.data!.jsonBody) ?? [];
+        final notes =
+            QuizGroup.getNotesCall.notes(snapshot.data!.jsonBody) ?? [];
         if (notes.isEmpty) {
           return const Center(child: Text('No notes available yet'));
         }
+        final hasAccess =
+            FFAppState().planStatus == 'active' && FFAppState().hasNotesAccess;
         // If there is only 1 note for this topic, directly display the note content & PDF!
-        if (notes.length == 1) {
+        if (notes.length == 1 && hasAccess) {
           final n = notes[0];
           final title = getJsonField(n, r'$.title')?.toString() ?? '';
-          final description = getJsonField(n, r'$.description')?.toString() ?? '';
+          final description =
+              getJsonField(n, r'$.description')?.toString() ?? '';
           final fileUrl = getJsonField(n, r'$.file')?.toString() ?? '';
           final noteImage = getJsonField(n, r'$.image')?.toString() ?? '';
           return _NoteViewerScreen(
@@ -510,14 +506,21 @@ class _NotesDetailScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final n = notes[index];
             final title = getJsonField(n, r'$.title')?.toString() ?? '';
-            final description = getJsonField(n, r'$.description')?.toString() ?? '';
+            final description =
+                getJsonField(n, r'$.description')?.toString() ?? '';
             final fileUrl = getJsonField(n, r'$.file')?.toString() ?? '';
             final noteImage = getJsonField(n, r'$.image')?.toString() ?? '';
-            final hasFile = fileUrl.trim().isNotEmpty && fileUrl.trim() != 'null';
-            final hasContent = description.trim().isNotEmpty && description.trim() != 'null';
+            final hasFile =
+                fileUrl.trim().isNotEmpty && fileUrl.trim() != 'null';
+            final hasContent =
+                description.trim().isNotEmpty && description.trim() != 'null';
 
             return GestureDetector(
-              onTap: () {
+              onTap: () async {
+                if (!hasAccess) {
+                  await showSubscriptionDialog(context);
+                  return;
+                }
                 if (hasFile && !hasContent) {
                   openNotePdf(context, fileUrl, title: title);
                 } else {
@@ -561,7 +564,8 @@ class _NotesDetailScreen extends StatelessWidget {
                             height: 40,
                             decoration: const BoxDecoration(
                               color: Color(0xFF2563EB),
-                              borderRadius: BorderRadius.horizontal(right: Radius.circular(4)),
+                              borderRadius: BorderRadius.horizontal(
+                                  right: Radius.circular(4)),
                             ),
                           ),
                         ),
@@ -578,28 +582,37 @@ class _NotesDetailScreen extends StatelessWidget {
                                 color: Color(0xFFF0F5FF),
                                 shape: BoxShape.circle,
                               ),
-                              child: noteImage.trim().isNotEmpty && noteImage.trim() != 'null'
+                              child: noteImage.trim().isNotEmpty &&
+                                      noteImage.trim() != 'null'
                                   ? ClipRRect(
                                       borderRadius: BorderRadius.circular(28),
                                       child: CachedNetworkImage(
                                         imageUrl: _cleanNoteUrl(noteImage),
                                         fit: BoxFit.cover,
                                         placeholder: (_, __) => Icon(
-                                          hasFile ? Icons.picture_as_pdf_rounded : Icons.note_alt_rounded,
+                                          hasFile
+                                              ? Icons.picture_as_pdf_rounded
+                                              : Icons.note_alt_rounded,
                                           size: 26,
                                           color: const Color(0xFF2563EB),
                                         ),
                                         errorWidget: (_, __, ___) => Icon(
-                                          hasFile ? Icons.picture_as_pdf_rounded : Icons.note_alt_rounded,
+                                          hasFile
+                                              ? Icons.picture_as_pdf_rounded
+                                              : Icons.note_alt_rounded,
                                           size: 26,
                                           color: const Color(0xFF2563EB),
                                         ),
                                       ),
                                     )
                                   : Icon(
-                                      hasFile ? Icons.picture_as_pdf_rounded : Icons.note_alt_rounded,
+                                      hasFile
+                                          ? Icons.picture_as_pdf_rounded
+                                          : Icons.note_alt_rounded,
                                       size: 26,
-                                      color: hasFile ? const Color(0xFFDC2626) : const Color(0xFF2563EB),
+                                      color: hasFile
+                                          ? const Color(0xFFDC2626)
+                                          : const Color(0xFF2563EB),
                                     ),
                             ),
                             const SizedBox(width: 16),
@@ -620,9 +633,17 @@ class _NotesDetailScreen extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   if (hasContent)
                                     Text(
-                                      description.replaceAll(RegExp(r'<[^>]*>'), '').trim().length > 80
+                                      description
+                                                  .replaceAll(
+                                                      RegExp(r'<[^>]*>'), '')
+                                                  .trim()
+                                                  .length >
+                                              80
                                           ? '${description.replaceAll(RegExp(r'<[^>]*>'), '').trim().substring(0, 80)}...'
-                                          : description.replaceAll(RegExp(r'<[^>]*>'), '').trim(),
+                                          : description
+                                              .replaceAll(
+                                                  RegExp(r'<[^>]*>'), '')
+                                              .trim(),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -633,17 +654,26 @@ class _NotesDetailScreen extends StatelessWidget {
                                     )
                                   else if (hasFile)
                                     Text(
-                                      'PDF Document • Tap to view',
+                                      hasAccess
+                                          ? 'PDF Document • Tap to view'
+                                          : 'Subscribe to access',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: const Color(0xFF2563EB).withValues(alpha: 0.85),
+                                        color: const Color(0xFF2563EB)
+                                            .withValues(alpha: 0.85),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.chevron_right_rounded, size: 28, color: Color(0xFF9CA3AF)),
+                            Icon(
+                              hasAccess
+                                  ? Icons.chevron_right_rounded
+                                  : Icons.lock_outline_rounded,
+                              size: hasAccess ? 28 : 22,
+                              color: const Color(0xFF9CA3AF),
+                            ),
                           ],
                         ),
                       ),
@@ -683,8 +713,10 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
   @override
   void initState() {
     super.initState();
-    final hasContent = widget.description.trim().isNotEmpty && widget.description.trim() != 'null';
-    final hasFile = widget.fileUrl.trim().isNotEmpty && widget.fileUrl.trim() != 'null';
+    final hasContent = widget.description.trim().isNotEmpty &&
+        widget.description.trim() != 'null';
+    final hasFile =
+        widget.fileUrl.trim().isNotEmpty && widget.fileUrl.trim() != 'null';
     // If it's purely a PDF document with no text description, auto-open the PDF directly
     if (hasFile && !hasContent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -698,15 +730,18 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final fullFileUrl = _cleanNoteUrl(widget.fileUrl);
-    final hasFile = fullFileUrl.trim().isNotEmpty && fullFileUrl.trim() != 'null';
+    final hasFile =
+        fullFileUrl.trim().isNotEmpty && fullFileUrl.trim() != 'null';
     final isPdf = hasFile &&
-        (fullFileUrl.toLowerCase().endsWith('.pdf') || fullFileUrl.toLowerCase().contains('.pdf'));
+        (fullFileUrl.toLowerCase().endsWith('.pdf') ||
+            fullFileUrl.toLowerCase().contains('.pdf'));
     final isImageFile = hasFile &&
         (fullFileUrl.toLowerCase().endsWith('.png') ||
             fullFileUrl.toLowerCase().endsWith('.jpg') ||
             fullFileUrl.toLowerCase().endsWith('.jpeg') ||
             fullFileUrl.toLowerCase().endsWith('.webp'));
-    final hasContent = widget.description.trim().isNotEmpty && widget.description.trim() != 'null';
+    final hasContent = widget.description.trim().isNotEmpty &&
+        widget.description.trim() != 'null';
 
     final body = Column(
       children: [
@@ -746,12 +781,18 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: isPdf ? const Color(0xFFFEE2E2) : const Color(0xFFDBEAFE),
+                                color: isPdf
+                                    ? const Color(0xFFFEE2E2)
+                                    : const Color(0xFFDBEAFE),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                isPdf ? Icons.picture_as_pdf_rounded : Icons.description_rounded,
-                                color: isPdf ? const Color(0xFFDC2626) : const Color(0xFF2563EB),
+                                isPdf
+                                    ? Icons.picture_as_pdf_rounded
+                                    : Icons.description_rounded,
+                                color: isPdf
+                                    ? const Color(0xFFDC2626)
+                                    : const Color(0xFF2563EB),
                                 size: 28,
                               ),
                             ),
@@ -770,7 +811,9 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    isPdf ? 'PDF Document' : 'Attached Document',
+                                    isPdf
+                                        ? 'PDF Document'
+                                        : 'Attached Document',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.blueGrey.shade600,
@@ -785,18 +828,25 @@ class _NoteViewerScreenState extends State<_NoteViewerScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
-                            onPressed: () => openNotePdf(context, widget.fileUrl, title: widget.title),
-                            icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                            onPressed: () => openNotePdf(
+                                context, widget.fileUrl,
+                                title: widget.title),
+                            icon:
+                                const Icon(Icons.open_in_new_rounded, size: 18),
                             label: Text(
-                              isPdf ? 'Open PDF Document' : 'Open Attached File',
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              isPdf
+                                  ? 'Open PDF Document'
+                                  : 'Open Attached File',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 14),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                             ),
                           ),
                         ),
