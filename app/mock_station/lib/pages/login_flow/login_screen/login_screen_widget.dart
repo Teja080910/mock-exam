@@ -39,6 +39,8 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
     with TickerProviderStateMixin {
   late LoginScreenModel _model;
   bool _isLoading = false;
+  late final TapGestureRecognizer _termsRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -46,12 +48,35 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
   void initState() {
     super.initState();
     _model = createModel(context, () => LoginScreenModel());
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () => _openUrl('https://mockstation.blogspot.com/2026/05/terms-conditions-of-mockstation.html');
+    _privacyRecognizer = TapGestureRecognizer()
+      ..onTap = () => _openUrl('https://mockstation.blogspot.com/2026/05/privacy-policy-for-mockstation.html');
   }
 
   @override
   void dispose() {
     _model.dispose();
+    _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
     super.dispose();
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchURL(url);
+      }
+    } catch (_) {
+      try {
+        await launchURL(url);
+      } catch (e) {
+        debugPrint('Error launching URL: $e');
+      }
+    }
   }
 
   Future<UserCredential?> signInWithGoogle(BuildContext context) async {
@@ -583,6 +608,8 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
           _buildFeatureCard(),
           const SizedBox(height: 28),
           _buildSecureLine(),
+          const SizedBox(height: 12),
+          _buildTermsAndPrivacyLine(),
           const SizedBox(height: 0),
         ],
       ),
@@ -782,6 +809,47 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTermsAndPrivacyLine() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: GoogleFonts.roboto(
+            fontSize: FFFont.f11,
+            color: const Color(0xFF6B7280),
+            fontWeight: FontWeight.normal,
+            height: 1.4,
+          ),
+          children: [
+            const TextSpan(
+              text: 'By Continuing, You agree to Mock Station ',
+            ),
+            TextSpan(
+              text: 'T&C',
+              style: GoogleFonts.roboto(
+                color: const Color(0xFF1848D8),
+                fontWeight: FontWeight.bold,
+              ),
+              recognizer: _termsRecognizer,
+            ),
+            const TextSpan(
+              text: ' and ',
+            ),
+            TextSpan(
+              text: 'Privacy Policy',
+              style: GoogleFonts.roboto(
+                color: const Color(0xFF1848D8),
+                fontWeight: FontWeight.bold,
+              ),
+              recognizer: _privacyRecognizer,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

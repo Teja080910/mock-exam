@@ -70,26 +70,16 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
   void _computeCountsFromQuesList() {
     int correct = 0, wrong = 0, skipped = 0, review = 0;
-    for (final q in FFAppState().quesList) {
-      final markedForReview = q is Map
-          ? (q['markedForReview'] == true ||
-              q['markedForReview'].toString().toLowerCase() == 'true')
-          : false;
-      if (markedForReview) {
+    for (final q in _resultQuestionSource()) {
+      final status = _answerKeyStatus(q);
+      if (status == 'correct') {
+        correct++;
+      } else if (status == 'incorrect') {
+        wrong++;
+      } else if (status == 'review') {
         review++;
-        continue;
-      }
-      final userAnswer =
-          (q is Map ? (q['user_answer'] ?? '') : '').toString().toLowerCase();
-      if (userAnswer.isEmpty || userAnswer == 'skipped') {
-        skipped++;
       } else {
-        final status = _answerKeyStatus(q);
-        if (status == 'correct') {
-          correct++;
-        } else {
-          wrong++;
-        }
+        skipped++;
       }
     }
     _computedCorrect = correct;
@@ -106,7 +96,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   int get _skippedQuestions => _computedSkipped;
 
   double get _accuracy {
-    final total = widget.totalQuestion ?? 0;
+    final total = _displayTotalQuestions;
     if (total <= 0) {
       return 0;
     }
@@ -830,8 +820,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                       isBoldValue: true,
                     ),
                     _buildTableCell(
-                      text: (section['marks'] as double? ?? 0.0)
-                          .toStringAsFixed(1),
+                      text: _formatMarks(section['marks'] as double? ?? 0.0),
                       color: const Color(0xFF7C3AED),
                       isBoldValue: true,
                     ),
@@ -872,7 +861,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     isTotal: true,
                   ),
                   _buildTableCell(
-                    text: totalMarks.toStringAsFixed(1),
+                    text: _formatMarks(totalMarks),
                     color: const Color(0xFF7C3AED),
                     isTotal: true,
                   ),
@@ -947,6 +936,12 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final quizTimeRaw = widget.quizTime ?? '';
     if (quizTimeRaw.contains(':')) {
       final parts = quizTimeRaw.split(':');
+      if (parts.length == 3) {
+        final h = int.tryParse(parts[0]) ?? 0;
+        final m = int.tryParse(parts[1]) ?? 0;
+        final s = int.tryParse(parts[2]) ?? 0;
+        return h * 3600 + m * 60 + s;
+      }
       if (parts.length == 2) {
         final m = int.tryParse(parts[0]) ?? 0;
         final s = int.tryParse(parts[1]) ?? 0;
@@ -959,10 +954,61 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     return 600;
   }
 
+  int _totalTakenSeconds() {
+    final source = _resultQuestionSource();
+    if (_isSubjectWiseTest(source)) {
+      final sections = _sectionSummaryItems();
+      if (sections.isNotEmpty) {
+        var seconds = 0;
+        for (final section in sections) {
+          seconds += (section['seconds'] as int? ?? 0);
+        }
+        return seconds;
+      }
+    }
+    var seconds = 0;
+    for (final item in source) {
+      final raw = _answerKeyValue(item, 'time_taken') ??
+          _answerKeyValue(item, 'timeTaken') ??
+          _answerKeyValue(item, 'duration');
+      seconds += _parseAnswerKeySeconds(raw);
+    }
+    if (seconds > 0) return seconds;
+    return _parseTotalQuizSeconds();
+  }
+
   String _formatSeconds(int totalSeconds) {
     final m = totalSeconds ~/ 60;
     final s = totalSeconds % 60;
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  String _formatMarks(double value) {
+    if (value.truncateToDouble() == value) {
+      return value.truncateToDouble().toStringAsFixed(0);
+    }
+    return double.parse(value.toStringAsPrecision(12)).toString();
+  }
+
+  double get _displayTotalMarks {
+    final source = _resultQuestionSource();
+    if (_isSubjectWiseTest(source)) {
+      final sections = _sectionSummaryItems();
+      if (sections.isNotEmpty) {
+        var total = 0.0;
+        for (final sec in sections) {
+          total += (sec['marks'] as double? ?? 0.0);
+        }
+        return total;
+      }
+    }
+    return _score;
+  }
+
+  int get _displayTotalQuestions {
+    final source = _resultQuestionSource();
+    if (source.isNotEmpty) return source.length;
+    return widget.totalQuestion ?? 0;
   }
 
   List<Map<String, dynamic>> _sectionSummaryItems() {
@@ -1104,16 +1150,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     required double percent,
   }) {
     final accuracyLabel = '${_accuracy.toStringAsFixed(0)}%';
-    final quizTimeRaw = widget.quizTime ?? '';
-    String timeLabel;
-    if (quizTimeRaw.contains(':')) {
-      timeLabel = quizTimeRaw;
-    } else if (quizTimeRaw.isNotEmpty) {
-      final minutes = int.tryParse(quizTimeRaw) ?? 0;
-      timeLabel = '$minutes:00';
-    } else {
-      timeLabel = '10:21';
-    }
+    final timeLabel = _formatSeconds(_totalTakenSeconds());
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 20.0),
@@ -1234,8 +1271,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           backgroundColor: const Color(0xFFF1F6FF)),
                       _buildMetricCard(
                           title: 'Total Marks',
-                          value: _score.toStringAsFixed(
-                              _score.truncateToDouble() == _score ? 0 : 2),
+                          value: _formatMarks(_displayTotalMarks),
                           icon: Icons.emoji_events_rounded,
                           accentColor: const Color(0xFF7C3AED),
                           backgroundColor: const Color(0xFFF7F1FF)),
@@ -3252,7 +3288,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   Widget _buildResultContent() {
-    final total = widget.totalQuestion ?? 0;
+    final total = _displayTotalQuestions;
     final correct = _computedCorrect;
     final wrong = _computedWrong;
     final skipped = _computedSkipped;
