@@ -1,5 +1,6 @@
 import '';
 import '/backend/api_requests/api_calls.dart';
+import '/custom_code/widgets/math_text.dart';
 import '/componants/complete_quiz/complete_quiz_widget.dart';
 import '/componants/option_dialog/option_dialog_widget.dart';
 import '/componants/quit_quiz/quit_quiz_widget.dart';
@@ -741,7 +742,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                             child:
                                                                                 Padding(
                                                                               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
-                                                                              child: Text(
+                                                                              child: MathText(
                                                                                 biText(getJsonField(selfchallengeQuizItem, r'''$.question_title''')),
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -986,7 +987,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                             child:
                                                                                 Padding(
                                                                               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
-                                                                              child: Text(
+                                                                              child: MathText(
                                                                                 biText(getJsonField(selfchallengeQuizItem, r'''$.question_title''')),
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -1171,7 +1172,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                             child:
                                                                                 Padding(
                                                                               padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 24.0),
-                                                                              child: Text(
+                                                                              child: MathText(
                                                                                 biText(getJsonField(selfchallengeQuizItem, r'''$.question_title''')),
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -1415,7 +1416,7 @@ class _SelfChallengeQuizPageWidgetState
                                                                             child:
                                                                                 Padding(
                                                                               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
-                                                                              child: Text(
+                                                                              child: MathText(
                                                                                 biText(getJsonField(selfchallengeQuizItem, r'''$.question_title''')),
                                                                                 textAlign: TextAlign.start,
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(

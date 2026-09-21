@@ -1,5 +1,6 @@
 import '';
 import '/backend/api_requests/api_calls.dart';
+import '/custom_code/widgets/math_text.dart';
 import '/componants/complete_quiz/complete_quiz_widget.dart';
 import '/componants/quit_quiz/quit_quiz_widget.dart';
 import '/componants/timeout_dialog/timeout_dialog_widget.dart';
@@ -577,7 +578,7 @@ class _SelfChallengeQuizPageCopyWidgetState
                                                                         0.0,
                                                                         0.0,
                                                                         24.0),
-                                                            child: Text(
+                                                            child: MathText(
                                                               biText(getJsonField(selfchallengeQuizItem, r'''$.question_title''')),
                                                               textAlign:
                                                                   TextAlign

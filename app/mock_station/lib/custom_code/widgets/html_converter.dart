@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'math_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HtmlConverter extends StatefulWidget {
@@ -31,7 +32,7 @@ class _HtmlConverterState extends State<HtmlConverter> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Html(
+        MathHtml(
           data: widget.text.replaceAll("&quot;", '"'),
           onLinkTap: (url, attributes, element) {
             launchURL(url!);

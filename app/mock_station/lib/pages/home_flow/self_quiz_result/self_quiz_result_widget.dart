@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/shimmer/shimmer_block/shimmer_block_widget.dart';
 import '/custom_code/actions/index.dart' as actions;
+import '/custom_code/widgets/math_text.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -329,13 +330,20 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
           Expanded(
             child: RichText(
               text: TextSpan(
-                text: text,
                 style: TextStyle(
                   color: const Color(0xFF111827),
                   fontSize: FFFont.f14,
                   fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
                 ),
                 children: [
+                  ...mathInlineSpans(
+                    text,
+                    TextStyle(
+                      color: const Color(0xFF111827),
+                      fontSize: FFFont.f14,
+                      fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
+                    ),
+                  ),
                   if (suffix != null)
                     TextSpan(
                       text: suffix,
@@ -393,7 +401,7 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          MathText(
             'Q${index + 1}. $questionText',
             style: const TextStyle(
               color: Color(0xFF111827),

@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'quiz_questions_screen_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '/custom_code/widgets/math_text.dart';
 import 'dart:convert';
 import 'dart:async';
 export 'quiz_questions_screen_model.dart';
@@ -250,7 +251,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
       return cachedWidget;
     }
 
-    final htmlWidget = Html(
+    final htmlWidget = MathHtml(
       key: ValueKey('question-html-$cacheKey'),
       data: questionHtml,
       style: _questionHtmlStyle(context),
@@ -797,7 +798,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                 ),
                 const SizedBox(width: 14.0),
                 Expanded(
-                  child: Text(
+                  child: MathText(
                     text,
                     style: const TextStyle(
                       color: Color(0xFF111827),
@@ -2367,7 +2368,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           height: 80,
                                                                                                           fit: BoxFit.contain,
                                                                                                         ),
-                                                                                                      Text(optionAText),
+                                                                                                      MathText(optionAText),
                                                                                                     ],
                                                                                                   ),
                                                                                                 ),
@@ -2413,7 +2414,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           height: 80,
                                                                                                           fit: BoxFit.contain,
                                                                                                         ),
-                                                                                                      Text(optionBText),
+                                                                                                      MathText(optionBText),
                                                                                                     ],
                                                                                                   ),
                                                                                                 ),
@@ -2459,7 +2460,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           height: 80,
                                                                                                           fit: BoxFit.contain,
                                                                                                         ),
-                                                                                                      Text(optionCText),
+                                                                                                      MathText(optionCText),
                                                                                                     ],
                                                                                                   ),
                                                                                                 ),
@@ -2505,7 +2506,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           height: 80,
                                                                                                           fit: BoxFit.contain,
                                                                                                         ),
-                                                                                                      Text(optionDText),
+                                                                                                      MathText(optionDText),
                                                                                                     ],
                                                                                                   ),
                                                                                                 ),
@@ -2648,7 +2649,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               alignment: AlignmentDirectional(0.0, 0.0),
                                                                                               child: Padding(
                                                                                                 padding: EdgeInsets.all(16.0),
-                                                                                                child: Text(
+                                                                                                child: MathText(
                                                                                                   optionAText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
@@ -2701,7 +2702,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               alignment: AlignmentDirectional(0.0, 0.0),
                                                                                               child: Padding(
                                                                                                 padding: EdgeInsets.all(16.0),
-                                                                                                child: Text(
+                                                                                                child: MathText(
                                                                                                   optionBText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
@@ -2754,7 +2755,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                               alignment: AlignmentDirectional(0.0, 0.0),
                                                                                               child: Padding(
                                                                                                 padding: EdgeInsets.all(16.0),
-                                                                                                child: Text(
+                                                                                                child: MathText(
                                                                                                   optionCText,
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'Roboto',
@@ -2805,7 +2806,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                             alignment: AlignmentDirectional(0.0, 0.0),
                                                                                             child: Padding(
                                                                                               padding: EdgeInsets.all(16.0),
-                                                                                              child: Text(
+                                                                                              child: MathText(
                                                                                                 optionDText,
                                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                       fontFamily: 'Roboto',

@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '/custom_code/widgets/math_text.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
@@ -211,7 +212,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
 
     return Container(
       width: double.infinity,
-      child: Html(
+      child: MathHtml(
         data: cleanedHtml,
         style: _questionHtmlStyle(context),
         onLinkTap: (url, attributes, element) {
@@ -2306,9 +2307,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   textScaler: MediaQuery.of(context).textScaler,
                                   text: TextSpan(
                                     children: [
-                                      TextSpan(
-                                        text: extractOptionText(option),
-                                        style: const TextStyle(
+                                      ...mathInlineSpans(
+                                        extractOptionText(option),
+                                        const TextStyle(
                                           color: Color(0xFF111827),
                                           fontSize: FFFont.f14,
                                           fontWeight: FontWeight.w600,
@@ -2655,9 +2656,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   textScaler: MediaQuery.of(context).textScaler,
                                   text: TextSpan(
                                     children: [
-                                      TextSpan(
-                                        text: extractOptionText(option),
-                                        style: const TextStyle(
+                                      ...mathInlineSpans(
+                                        extractOptionText(option),
+                                        const TextStyle(
                                           color: Color(0xFF111827),
                                           fontSize: FFFont.f14,
                                           fontWeight: FontWeight.w600,

@@ -40,6 +40,7 @@
         "flutter_html",
         "flutter_local_notifications",
         "flutter_localizations",
+        "flutter_math_fork",
         "flutter_paypal",
         "flutter_plugin_android_lifecycle",
         "flutter_svg",
@@ -200,6 +201,18 @@
         "json_annotation",
         "path",
         "yaml"
+      ]
+    },
+    {
+      "name": "flutter_math_fork",
+      "version": "0.7.4",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "flutter_svg",
+        "meta",
+        "provider",
+        "tuple"
       ]
     },
     {
@@ -2163,6 +2176,11 @@
     {
       "name": "vm_service",
       "version": "15.2.0",
+      "dependencies": []
+    },
+    {
+      "name": "tuple",
+      "version": "2.0.2",
       "dependencies": []
     }
   ],

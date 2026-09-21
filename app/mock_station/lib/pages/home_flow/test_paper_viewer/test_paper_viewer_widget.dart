@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '/custom_code/widgets/math_text.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '/backend/api_requests/api_calls.dart';
@@ -830,7 +831,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
 
           // Question Titles (Bilingual)
           if (showHi)
-            Html(
+            MathHtml(
               data: titleHi,
               style: {
                 "body": Style(
@@ -845,7 +846,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
             ),
           if (showHi && showEn) const SizedBox(height: 6),
           if (showEn)
-            Html(
+            MathHtml(
               data: titleEn,
               style: {
                 "body": Style(
@@ -1140,7 +1141,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
               ),
               const SizedBox(height: 8),
               if (showHi)
-                Html(
+                MathHtml(
                   data: descHi,
                   style: {
                     "body": Style(
@@ -1154,7 +1155,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
                 ),
               if (showHi && showEn) const SizedBox(height: 6),
               if (showEn)
-                Html(
+                MathHtml(
                   data: descEn,
                   style: {
                     "body": Style(

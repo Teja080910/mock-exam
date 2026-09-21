@@ -252,11 +252,15 @@ const importQuestionsCSV = async (req, res) => {
             // `subcategoryId` above remains the quiz placement relationship.
             const subject = importText(row.subject) || importText(row.subcategory);
             const chapter = importText(row.chapter);
+            const requestedMode = importText(row.question_mode).toLowerCase();
+            const questionMode = (requestedMode === 'subject' || requestedMode === 'mix')
+                ? requestedMode
+                : (subject ? 'subject' : 'mix');
             const question = new Questions({
                 categoryId: req.body.categoryId,
                 subcategoryId: req.body.subcategoryId || null,
                 subject,
-                question_mode: subject ? 'subject' : 'mix',
+                question_mode: questionMode,
                 chapter,
                 quizId: req.body.quizId,
                 question_title: bilingual(row.question_title, row.question_title_hi),

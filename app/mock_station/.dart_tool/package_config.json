@@ -416,6 +416,12 @@
       "languageVersion": "3.10"
     },
     {
+      "name": "flutter_math_fork",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/flutter_math_fork-0.7.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "flutter_paypal",
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/flutter_paypal-0.2.1",
       "packageUri": "lib/",
@@ -1164,6 +1170,12 @@
       "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/timezone-0.11.0",
       "packageUri": "lib/",
       "languageVersion": "3.10"
+    },
+    {
+      "name": "tuple",
+      "rootUri": "file:///home/teja/.pub-cache/hosted/pub.dev/tuple-2.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "typed_data",

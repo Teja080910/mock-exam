@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '/custom_code/widgets/math_text.dart';
 import 'quiz_review_screen_model.dart';
 export 'quiz_review_screen_model.dart';
 
@@ -123,7 +124,7 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
 
     return Container(
       width: double.infinity,
-      child: Html(
+      child: MathHtml(
         data: cleanedHtml,
         style: _questionHtmlStyle(context),
         onLinkTap: (url, attributes, element) {
