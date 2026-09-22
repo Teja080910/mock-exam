@@ -7,6 +7,19 @@ final RegExp _texPattern = RegExp(
   dotAll: true,
 );
 
+final RegExp _htmlTagPattern = RegExp(r'<[^>]*>');
+
+final RegExp _texCommandPattern = RegExp(
+  r'\\(frac|dfrac|tfrac|sqrt|left|right|text|mathrm|mathbf|div|times|cdot|quad|qquad|pm|mp|leq|geq|neq|approx|sum|prod|int|lim|log|ln|sin|cos|tan|theta|alpha|beta|gamma|pi|infty|overline|underline|vec|bar|hat|binom|displaystyle|begin|end)\b',
+);
+
+String _cleanTex(String value) {
+  return value
+      .replaceAll(_htmlTagPattern, ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
+
 String _escapeAttribute(String value) {
   return value
       .replaceAll('&', '&amp;')
@@ -16,14 +29,21 @@ String _escapeAttribute(String value) {
 }
 
 String injectMathTags(String input) {
-  return input.replaceAllMapped(_texPattern, (match) {
+  final replaced = input.replaceAllMapped(_texPattern, (match) {
     final inline = match.group(1);
     final displayBlock = match.group(2);
     final displayDollar = match.group(3);
-    final tex = inline ?? displayBlock ?? displayDollar ?? '';
+    final tex = _cleanTex(inline ?? displayBlock ?? displayDollar ?? '');
     final display = inline == null;
     return '<math-tex tex="${_escapeAttribute(tex)}" display="$display"></math-tex>';
   });
+  if (replaced.contains('math-tex')) {
+    return replaced;
+  }
+  if (_texCommandPattern.hasMatch(replaced)) {
+    return '<math-tex tex="${_escapeAttribute(_cleanTex(replaced))}" display="true"></math-tex>';
+  }
+  return replaced;
 }
 
 List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
@@ -34,7 +54,7 @@ List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
       spans.add(TextSpan(text: text.substring(cursor, match.start)));
     }
     final inline = match.group(1);
-    final tex = inline ?? match.group(2) ?? match.group(3) ?? '';
+    final tex = _cleanTex(inline ?? match.group(2) ?? match.group(3) ?? '');
     final display = inline == null;
     spans.add(
       WidgetSpan(
@@ -56,10 +76,24 @@ List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
 }
 
 List<InlineSpan> mathInlineSpans(String text, TextStyle? style) {
-  if (!_texPattern.hasMatch(text)) {
-    return [TextSpan(text: text)];
+  if (_texPattern.hasMatch(text)) {
+    return _buildMathSpans(text, style);
   }
-  return _buildMathSpans(text, style);
+  if (_texCommandPattern.hasMatch(text)) {
+    final tex = _cleanTex(text);
+    return [
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Math.tex(
+          tex,
+          mathStyle: MathStyle.text,
+          textStyle: style,
+          onErrorFallback: (error) => Text(text, style: style),
+        ),
+      ),
+    ];
+  }
+  return [TextSpan(text: text)];
 }
 
 class MathTexElement extends StyledElement {
@@ -164,7 +198,7 @@ class MathText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!_texPattern.hasMatch(text)) {
+    if (!_texPattern.hasMatch(text) && !_texCommandPattern.hasMatch(text)) {
       return Text(
         text,
         style: style,
@@ -175,7 +209,7 @@ class MathText extends StatelessWidget {
       );
     }
     return Text.rich(
-      TextSpan(style: style, children: _buildMathSpans(text, style)),
+      TextSpan(style: style, children: mathInlineSpans(text, style)),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
