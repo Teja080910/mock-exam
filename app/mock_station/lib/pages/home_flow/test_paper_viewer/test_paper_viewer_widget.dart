@@ -943,7 +943,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (showHi)
-                  Text(
+                  MathText(
                     textHi,
                     style: const TextStyle(
                       color: Color(0xFF1E293B),
@@ -954,7 +954,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
                   ),
                 if (showHi && showEn) const SizedBox(height: 2),
                 if (showEn)
-                  Text(
+                  MathText(
                     textEn,
                     style: TextStyle(
                       color: showHi

@@ -2002,9 +2002,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                             textScaler: MediaQuery.of(context).textScaler,
                             text: TextSpan(
                               children: [
-                                TextSpan(
-                                  text: optionText,
-                                  style: const TextStyle(
+                                ...mathInlineSpans(
+                                  optionText,
+                                  const TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: FFFont.f14,
                                     fontWeight: FontWeight.w500,
