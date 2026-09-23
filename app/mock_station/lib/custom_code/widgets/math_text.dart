@@ -3,7 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
 final RegExp _texPattern = RegExp(
-  r'\\\((.+?)\\\)|\\\[(.+?)\\\]|\$\$(.+?)\$\$',
+  r'\\\((.+?)\\\)|\\\[(.+?)\\\]|\$\$(.+?)\$\$|(?<!\$)\$(?!\$)([^$\n]+?)\$(?!\$)',
   dotAll: true,
 );
 
@@ -12,6 +12,14 @@ final RegExp _htmlTagPattern = RegExp(r'<[^>]*>');
 final RegExp _texCommandPattern = RegExp(
   r'\\(frac|dfrac|tfrac|sqrt|left|right|text|mathrm|mathbf|div|times|cdot|quad|qquad|pm|mp|leq|geq|neq|approx|sum|prod|int|lim|log|ln|sin|cos|tan|theta|alpha|beta|gamma|pi|infty|overline|underline|vec|bar|hat|binom|displaystyle|begin|end)\b',
 );
+
+// Single-dollar math is only treated as TeX when the content actually looks
+// like TeX, so currency amounts such as "$100" stay untouched.
+bool _isDollarMath(String content) {
+  return content.contains(r'\') ||
+      content.contains('^') ||
+      content.contains('_');
+}
 
 String _cleanTex(String value) {
   return value
@@ -28,13 +36,39 @@ String _escapeAttribute(String value) {
       .replaceAll('>', '&gt;');
 }
 
+// Some admin editors (e.g. Quill) HTML-escape pasted markup, so tags arrive as
+// "&lt;p&gt;..." entities. Unescape known tags and drop the <p> wrappers that
+// Quill adds around block-level tags so the renderer shows real formatting.
+String _normalizeHtml(String input) {
+  final unescaped = input.replaceAllMapped(
+    RegExp(
+      r'&lt;(/?)(p|br|ul|ol|li|b|strong|i|em|u|span|div|h[1-6]|table|thead|tbody|tr|td|th|blockquote|pre|code|sub|sup)(\s[^<]*?)?&gt;',
+      caseSensitive: false,
+    ),
+    (match) => '<${match.group(1)}${match.group(2)}${match.group(3) ?? ''}>',
+  );
+  return unescaped
+      .replaceAll(
+          RegExp(r'<p>\s*(?=<(?:ul|ol|li|table|div|h[1-6]|blockquote|pre)\b)'),
+          '')
+      .replaceAll(
+          RegExp(
+              r'(?<=</(?:ul|ol|li|table|div|h[1-6]|blockquote|pre)>)\s*</p>'),
+          '');
+}
+
 String injectMathTags(String input) {
   final replaced = input.replaceAllMapped(_texPattern, (match) {
     final inline = match.group(1);
     final displayBlock = match.group(2);
     final displayDollar = match.group(3);
-    final tex = _cleanTex(inline ?? displayBlock ?? displayDollar ?? '');
-    final display = inline == null;
+    final inlineDollar = match.group(4);
+    if (inlineDollar != null && !_isDollarMath(inlineDollar)) {
+      return match.group(0)!;
+    }
+    final tex = _cleanTex(
+        inline ?? displayBlock ?? displayDollar ?? inlineDollar ?? '');
+    final display = inline == null && inlineDollar == null;
     return '<math-tex tex="${_escapeAttribute(tex)}" display="$display"></math-tex>';
   });
   if (replaced.contains('math-tex')) {
@@ -50,12 +84,17 @@ List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
   final spans = <InlineSpan>[];
   var cursor = 0;
   for (final match in _texPattern.allMatches(text)) {
+    final inlineDollar = match.group(4);
+    if (inlineDollar != null && !_isDollarMath(inlineDollar)) {
+      continue;
+    }
     if (match.start > cursor) {
       spans.add(TextSpan(text: text.substring(cursor, match.start), style: style));
     }
     final inline = match.group(1);
-    final tex = _cleanTex(inline ?? match.group(2) ?? match.group(3) ?? '');
-    final display = inline == null;
+    final tex = _cleanTex(
+        inline ?? match.group(2) ?? match.group(3) ?? inlineDollar ?? '');
+    final display = inline == null && inlineDollar == null;
     spans.add(
       WidgetSpan(
         alignment: PlaceholderAlignment.middle,
@@ -168,7 +207,7 @@ class MathHtml extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Html(
-      data: injectMathTags(data),
+      data: injectMathTags(_normalizeHtml(data)),
       onLinkTap: onLinkTap,
       onAnchorTap: onAnchorTap,
       style: style,

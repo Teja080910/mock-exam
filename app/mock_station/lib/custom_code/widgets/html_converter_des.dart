@@ -48,7 +48,6 @@ class _HtmlConverterDesState extends State<HtmlConverterDes> {
               fontSize: FontSize(17),
               fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
               letterSpacing: 0.17,
-              textAlign: TextAlign.left,
               fontWeight: FontWeight.w400,
             ),
           },

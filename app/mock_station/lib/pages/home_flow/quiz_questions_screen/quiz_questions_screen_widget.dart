@@ -1096,11 +1096,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
     // 1. Try standard JSON decode
     try {
       final decoded = jsonDecode(trimmed);
-      if (decoded is Map) {
+      if (decoded is Map &&
+          (decoded.containsKey('en') || decoded.containsKey('hi'))) {
         final en = decoded['en']?.toString() ?? '';
         final hi = decoded['hi']?.toString() ?? '';
-        final picked = biPick(en, hi, lang);
-        if (picked.trim().isNotEmpty) return picked;
+        return biPick(en, hi, lang);
       }
     } catch (_) {}
 
@@ -1143,6 +1143,14 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
             .replaceAll(r'\/', '/');
       }
     }
+
+    // A bilingual map with no usable text must not be shown as raw JSON.
+    final looksLikeBilingualMap = trimmed.startsWith('{') &&
+        (trimmed.contains('"en"') ||
+            trimmed.contains('"hi"') ||
+            trimmed.contains('en:') ||
+            trimmed.contains('hi:'));
+    if (looksLikeBilingualMap) return '';
 
     return trimmed;
   }
