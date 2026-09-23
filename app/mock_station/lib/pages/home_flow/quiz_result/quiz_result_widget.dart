@@ -2007,7 +2007,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                   const TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: FFFont.f14,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.normal,
                                     height: 1.35,
                                   ),
                                 ),
@@ -2312,7 +2312,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                         const TextStyle(
                                           color: Color(0xFF111827),
                                           fontSize: FFFont.f14,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.normal,
                                           height: 1.4,
                                         ),
                                       ),
@@ -2661,7 +2661,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                                         const TextStyle(
                                           color: Color(0xFF111827),
                                           fontSize: FFFont.f14,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.normal,
                                           height: 1.4,
                                         ),
                                       ),

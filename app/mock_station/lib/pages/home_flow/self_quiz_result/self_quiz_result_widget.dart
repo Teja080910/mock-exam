@@ -330,18 +330,18 @@ class _SelfQuizResultWidgetState extends State<SelfQuizResultWidget>
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: TextStyle(
-                  color: const Color(0xFF111827),
+                style: const TextStyle(
+                  color: Color(0xFF111827),
                   fontSize: FFFont.f14,
-                  fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
+                  fontWeight: FontWeight.normal,
                 ),
                 children: [
                   ...mathInlineSpans(
                     text,
-                    TextStyle(
-                      color: const Color(0xFF111827),
+                    const TextStyle(
+                      color: Color(0xFF111827),
                       fontSize: FFFont.f14,
-                      fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
                   if (suffix != null)

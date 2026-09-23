@@ -803,7 +803,7 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                     style: const TextStyle(
                       color: Color(0xFF111827),
                       fontSize: FFFont.f14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.normal,
                       height: 1.35,
                     ),
                   ),

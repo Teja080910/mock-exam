@@ -948,7 +948,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
                     style: const TextStyle(
                       color: Color(0xFF1E293B),
                       fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.normal,
                       height: 1.4,
                     ),
                   ),
@@ -961,7 +961,7 @@ class _TestPaperViewerWidgetState extends State<TestPaperViewerWidget>
                           ? const Color(0xFF64748B)
                           : const Color(0xFF1E293B),
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.normal,
                       height: 1.4,
                     ),
                   ),
