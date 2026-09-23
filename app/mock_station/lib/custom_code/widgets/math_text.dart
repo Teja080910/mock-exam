@@ -51,7 +51,7 @@ List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
   var cursor = 0;
   for (final match in _texPattern.allMatches(text)) {
     if (match.start > cursor) {
-      spans.add(TextSpan(text: text.substring(cursor, match.start)));
+      spans.add(TextSpan(text: text.substring(cursor, match.start), style: style));
     }
     final inline = match.group(1);
     final tex = _cleanTex(inline ?? match.group(2) ?? match.group(3) ?? '');
@@ -70,7 +70,7 @@ List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
     cursor = match.end;
   }
   if (cursor < text.length) {
-    spans.add(TextSpan(text: text.substring(cursor)));
+    spans.add(TextSpan(text: text.substring(cursor), style: style));
   }
   return spans;
 }
@@ -93,7 +93,7 @@ List<InlineSpan> mathInlineSpans(String text, TextStyle? style) {
       ),
     ];
   }
-  return [TextSpan(text: text)];
+  return [TextSpan(text: text, style: style)];
 }
 
 class MathTexElement extends StyledElement {
