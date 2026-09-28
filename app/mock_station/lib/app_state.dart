@@ -183,6 +183,21 @@ class FFAppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Not persisted: id of the intro poster shown in this app run. Tab switches
+  // don't re-show the same poster, but a new/changed intro (different id)
+  // does. Cleared on logout so the next login shows it again.
+  String _lastIntroShownId = '';
+  String get lastIntroShownId => _lastIntroShownId;
+  set lastIntroShownId(String value) {
+    _lastIntroShownId = value;
+  }
+
+  DateTime? _lastPosterShownAt;
+  DateTime? get lastPosterShownAt => _lastPosterShownAt;
+  set lastPosterShownAt(DateTime? value) {
+    _lastPosterShownAt = value;
+  }
+
   bool _isInite = false;
   bool get isInite => _isInite;
   set isInite(bool value) {

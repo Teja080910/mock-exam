@@ -75,6 +75,7 @@ api_route.post(
 
 // Intro
 api_route.post("/getintro", apiController.GetIntro);
+api_route.get("/getintro", apiController.GetIntro);
 
 // Banner
 api_route.post("/getallbanner", apiController.GetBanner);

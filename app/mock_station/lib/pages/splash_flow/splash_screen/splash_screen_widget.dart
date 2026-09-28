@@ -58,18 +58,17 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget>
         }
 
         
-        if (FFAppState().isInite == true) {
-          if (FFAppState().isLogin == true && FFAppState().loginToken.isNotEmpty) {
-            // Skip ad validation and set default values
-            FFAppState().isBannerAd = 0;
-            FFAppState().isInterstialAd = 0;
-            FFAppState().isRewardedVideoAd = 0;
-            FFAppState().rewardedPoints = 0;
-            FFAppState().update(() {});
-            context.goNamed(HomeScreenWidget.routeName);
-          } else {
-            context.goNamed(LoginScreenWidget.routeName);
-          }
+        // Intro/onboarding is shown to logged-out users on every launch so
+        // intros added in the admin panel reach existing installs. Logged-in
+        // users go straight to the home screen.
+        if (FFAppState().isLogin == true && FFAppState().loginToken.isNotEmpty) {
+          // Skip ad validation and set default values
+          FFAppState().isBannerAd = 0;
+          FFAppState().isInterstialAd = 0;
+          FFAppState().isRewardedVideoAd = 0;
+          FFAppState().rewardedPoints = 0;
+          FFAppState().update(() {});
+          context.goNamed(HomeScreenWidget.routeName);
         } else {
           try {
             _model.introRes = await QuizGroup.getIntroAPICall.call().timeout(

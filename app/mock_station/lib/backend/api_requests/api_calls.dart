@@ -1869,7 +1869,7 @@ class GetIntroAPICall {
     return ApiManager.instance.makeApiCall(
       callName: 'getIntroAPI',
       apiUrl: '${baseUrl}getintro',
-      callType: ApiCallType.GET,
+      callType: ApiCallType.POST,
       headers: {
         'Authorization': 'Bearer ${token}',
       },

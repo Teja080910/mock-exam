@@ -91,8 +91,11 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   }
 
   double get _score {
-    return (((_computedCorrect) * (widget.correctAnsReward ?? 0.0)) -
-        ((_computedWrong) * (widget.penaltyPerQuestion ?? 0.0)));
+    final reward = (widget.correctAnsReward != null && widget.correctAnsReward! > 0)
+        ? widget.correctAnsReward!
+        : 1.0;
+    final penalty = widget.penaltyPerQuestion ?? 0.0;
+    return (((_computedCorrect) * reward) - ((_computedWrong) * penalty));
   }
 
   int get _skippedQuestions => _computedSkipped;
@@ -264,32 +267,21 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     );
   }
 
+  // Mirrors the Explanation page (HtmlConverterExp) styling so the inline
+  // answer-key solution renders identically to the standalone explanation
+  // screen: paragraph margins/line-height left at flutter_html defaults.
   Map<String, Style> _solutionHtmlStyle(BuildContext context) {
-    final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
-          fontFamily: 'Roboto',
-          fontSize: FFFont.f14,
-          letterSpacing: 0.0,
-          fontWeight: FontWeight.normal,
-          useGoogleFonts: false,
-          lineHeight: 1.5,
-        );
-
     final style = Style(
-      margin: Margins.zero,
-      padding: HtmlPaddings.zero,
-      color: const Color(0xFF1E293B),
-      fontFamily: baseTextStyle.fontFamily,
-      fontSize: FontSize(baseTextStyle.fontSize ?? 14.0),
-      fontWeight: baseTextStyle.fontWeight,
-      letterSpacing: baseTextStyle.letterSpacing,
-      lineHeight: LineHeight(baseTextStyle.height ?? 1.5),
+      color: FlutterFlowTheme.of(context).primaryText,
+      fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
+      fontSize: FontSize(17.0),
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.17,
     );
 
     return {
       'body': style,
       'p': style,
-      'div': style,
-      'span': style,
     };
   }
 
@@ -844,9 +836,6 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
             ? _displayTotalQuestions
             : (widget.totalQuestion ?? 10))
         .toDouble();
-    final reward = widget.correctAnsReward ?? 1.0;
-    final maxMarks = totalQ * reward;
-
     final youCorrect = _computedCorrect.toDouble();
     final youWrong = _computedWrong.toDouble();
     final youAttempt = (youCorrect + youWrong).toDouble();
@@ -952,11 +941,11 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       maxY = (maxVal <= 0 ? 5.0 : (maxVal * 1.25)).ceilToDouble();
       if (maxY < 1.0) maxY = 1.0;
     } else if (_selectedCompareMetric == 'Score') {
-      final baseCap = (maxMarks > 0 && maxMarks > maxVal)
-          ? maxMarks
-          : (maxVal > 0 ? maxVal : 10.0);
-      final target = (baseCap * 1.15).ceilToDouble();
-      if (target <= 10) {
+      final baseCap = maxVal > 0 ? maxVal : 5.0;
+      final target = (baseCap * 1.25).ceilToDouble();
+      if (target <= 5) {
+        maxY = 5.0;
+      } else if (target <= 10) {
         maxY = 10.0;
       } else if (target <= 20) {
         maxY = 20.0;
@@ -1134,32 +1123,35 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     required String displayValue,
   }) {
     const maxBarHeight = 180.0;
-    final barHeight = maxY > 0
-        ? ((value / maxY) * maxBarHeight).clamp(0.0, maxBarHeight)
-        : 0.0;
-    final isZero = value <= 0.0;
+    final double barHeight;
+    if (maxY > 0 && value > 0) {
+      barHeight = ((value / maxY) * maxBarHeight).clamp(8.0, maxBarHeight);
+    } else {
+      barHeight = 4.0;
+    }
 
     return SizedBox(
       width: 56.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          if (!isZero) ...[
-            Text(
-              displayValue,
-              style: TextStyle(
-                color: color,
-                fontSize: FFFont.f10,
-                fontWeight: FontWeight.w700,
-              ),
+          Text(
+            displayValue,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: value > 0 ? color : const Color(0xFF64748B),
+              fontSize: FFFont.f10,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 4.0),
-          ],
+          ),
+          const SizedBox(height: 4.0),
           Container(
             width: 36.0,
-            height: isZero ? 2.0 : barHeight,
+            height: barHeight,
             decoration: BoxDecoration(
-              color: isZero ? const Color(0xFFE2E8F0) : color,
+              color: value > 0 ? color : color.withOpacity(0.35),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(8.0)),
             ),
@@ -1215,7 +1207,14 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       totalQuestions = totalCorrect + totalWrong + totalSkip + totalReview;
     }
 
-    const gridBorderColor = Color(0xFFCBD5E1);
+    const gridBorderColor = Color(0xFFE5E7EB);
+    const colSubjectHeaderColor = Color(0xFF8E92A4);
+    const colCorrectColor = Color(0xFF4BBC7A);
+    const colWrongColor = Color(0xFFC63F4D);
+    const colSkipColor = Color(0xFFE0BF50);
+    const colReviewColor = Color(0xFFE981D1);
+    const colMarksColor = Color(0xFFA965E5);
+    const colTimeColor = Color(0xFFEB8F70);
 
     return Container(
       width: double.infinity,
@@ -1265,38 +1264,38 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                 children: [
                   _buildTableCell(
                     text: 'Subject',
-                    color: const Color(0xFF64748B),
+                    color: colSubjectHeaderColor,
                     isHeader: true,
                     alignLeft: true,
                   ),
                   _buildTableCell(
                     text: 'Correct',
-                    color: const Color(0xFF16A34A),
+                    color: colCorrectColor,
                     isHeader: true,
                   ),
                   _buildTableCell(
                     text: 'Wrong',
-                    color: const Color(0xFFDC2626),
+                    color: colWrongColor,
                     isHeader: true,
                   ),
                   _buildTableCell(
                     text: 'Skip',
-                    color: const Color(0xFF2563EB),
+                    color: colSkipColor,
                     isHeader: true,
                   ),
                   _buildTableCell(
                     text: 'Review',
-                    color: const Color(0xFFF59E0B),
+                    color: colReviewColor,
                     isHeader: true,
                   ),
                   _buildTableCell(
                     text: 'Marks',
-                    color: const Color(0xFF7C3AED),
+                    color: colMarksColor,
                     isHeader: true,
                   ),
                   _buildTableCell(
                     text: 'Time',
-                    color: const Color(0xFFEA580C),
+                    color: colTimeColor,
                     isHeader: true,
                   ),
                 ],
@@ -1314,32 +1313,32 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                     _buildTableCell(
                       text:
                           '${section['correct'] ?? 0}/${section['total'] ?? 0}',
-                      color: const Color(0xFF16A34A),
+                      color: colCorrectColor,
                       isBoldValue: true,
                     ),
                     _buildTableCell(
                       text: '${section['wrong'] ?? 0}',
-                      color: const Color(0xFFDC2626),
+                      color: colWrongColor,
                       isBoldValue: true,
                     ),
                     _buildTableCell(
                       text: '${section['skipped'] ?? 0}',
-                      color: const Color(0xFF2563EB),
+                      color: colSkipColor,
                       isBoldValue: true,
                     ),
                     _buildTableCell(
                       text: '${section['review'] ?? 0}',
-                      color: const Color(0xFFF59E0B),
+                      color: colReviewColor,
                       isBoldValue: true,
                     ),
                     _buildTableCell(
                       text: _formatMarks(section['marks'] as double? ?? 0.0),
-                      color: const Color(0xFF7C3AED),
+                      color: colMarksColor,
                       isBoldValue: true,
                     ),
                     _buildTableCell(
                       text: section['time'] ?? '00:00',
-                      color: const Color(0xFFEA580C),
+                      color: colTimeColor,
                       isBoldValue: true,
                     ),
                   ],
@@ -1355,32 +1354,32 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   ),
                   _buildTableCell(
                     text: '$totalCorrect/$totalQuestions',
-                    color: const Color(0xFF16A34A),
+                    color: colCorrectColor,
                     isTotal: true,
                   ),
                   _buildTableCell(
                     text: '$totalWrong',
-                    color: const Color(0xFFDC2626),
+                    color: colWrongColor,
                     isTotal: true,
                   ),
                   _buildTableCell(
                     text: '$totalSkip',
-                    color: const Color(0xFF2563EB),
+                    color: colSkipColor,
                     isTotal: true,
                   ),
                   _buildTableCell(
                     text: '$totalReview',
-                    color: const Color(0xFFF59E0B),
+                    color: colReviewColor,
                     isTotal: true,
                   ),
                   _buildTableCell(
                     text: _formatMarks(totalMarks),
-                    color: const Color(0xFF7C3AED),
+                    color: colMarksColor,
                     isTotal: true,
                   ),
                   _buildTableCell(
                     text: _formatSeconds(totalSeconds),
-                    color: const Color(0xFFEA580C),
+                    color: colTimeColor,
                     isTotal: true,
                   ),
                 ],
@@ -1408,13 +1407,16 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       fontWeight = FontWeight.w700;
       fontSize = FFFont.f10;
     } else if (isTotal) {
-      fontWeight = FontWeight.w900;
+      fontWeight = FontWeight.w800;
       fontSize = FFFont.f12;
     } else if (isSubject) {
-      fontWeight = FontWeight.w800;
+      fontWeight = FontWeight.w700;
+      fontSize = FFFont.f12;
+    } else if (isBoldValue) {
+      fontWeight = FontWeight.w600;
       fontSize = FFFont.f12;
     } else {
-      fontWeight = FontWeight.w800;
+      fontWeight = FontWeight.w600;
       fontSize = FFFont.f12;
     }
 
@@ -1610,8 +1612,11 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     }
 
     final total = items.length;
-    final marks = (correct * (widget.correctAnsReward ?? 0.0)) -
-        (wrong * (widget.penaltyPerQuestion ?? 0.0));
+    final reward = (widget.correctAnsReward != null && widget.correctAnsReward! > 0)
+        ? widget.correctAnsReward!
+        : 1.0;
+    final penalty = widget.penaltyPerQuestion ?? 0.0;
+    final marks = (correct * reward) - (wrong * penalty);
 
     return {
       'label': label,
@@ -1780,58 +1785,58 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           title: 'Total Questions',
                           value: total.toString(),
                           icon: Icons.article_rounded,
-                          accentColor: const Color(0xFF0B84FF),
-                          backgroundColor: const Color(0xFFF1F6FF)),
+                          accentColor: const Color(0xFF1088EC),
+                          backgroundColor: const Color(0xFFEBF2FE)),
                       _buildMetricCard(
                           title: 'Total Marks',
                           value: _formatMarks(_displayTotalMarks),
                           icon: Icons.emoji_events_rounded,
-                          accentColor: const Color(0xFF7C3AED),
-                          backgroundColor: const Color(0xFFF7F1FF)),
+                          accentColor: const Color(0xFF9D52E8),
+                          backgroundColor: const Color(0xFFF5F1FF)),
                       _buildMetricCard(
                           title: 'Correct Answers',
                           value: correct.toString(),
                           icon: Icons.check_circle_rounded,
-                          accentColor: const Color(0xFF16A34A),
-                          backgroundColor: const Color(0xFFF0FBF4)),
+                          accentColor: const Color(0xFF2BB76F),
+                          backgroundColor: const Color(0xFFEBFBF1)),
                       _buildMetricCard(
                           title: 'Incorrect Answers',
                           value: wrong.toString(),
                           icon: Icons.cancel_rounded,
-                          accentColor: const Color(0xFFEF4444),
-                          backgroundColor: const Color(0xFFFFF3F3)),
+                          accentColor: const Color(0xFFEE0D08),
+                          backgroundColor: const Color(0xFFFEF0F0)),
                       _buildMetricCard(
                           title: 'Skipped Questions',
                           value: skipped.toString(),
                           icon: Icons.timer_rounded,
-                          accentColor: const Color(0xFFF59E0B),
-                          backgroundColor: const Color(0xFFFFFAEE)),
+                          accentColor: const Color(0xFFEEB123),
+                          backgroundColor: const Color(0xFFFFF8ED)),
                       _buildMetricCard(
                           title: 'Marked for Review',
                           value: _computedReview.toString(),
                           icon: Icons.star_rounded,
-                          accentColor: const Color(0xFFEC4899),
-                          backgroundColor: const Color(0xFFFDF2F8)),
+                          accentColor: const Color(0xFFED7BC3),
+                          backgroundColor: const Color(0xFFFDF0F9)),
                       _buildMetricCard(
                           title: 'Accuracy',
                           value: accuracyLabel,
                           icon: Icons.track_changes_rounded,
-                          accentColor: const Color(0xFF0B84FF),
-                          backgroundColor: const Color(0xFFF1F6FF)),
+                          accentColor: const Color(0xFF2297E6),
+                          backgroundColor: const Color(0xFFEAF7FF)),
                       _buildMetricCard(
                           title: 'Total Time Taken',
                           value: timeLabel,
                           icon: Icons.timer_outlined,
-                          accentColor: const Color(0xFFA855F7),
-                          backgroundColor: const Color(0xFFF7F1FF)),
+                          accentColor: const Color(0xFFEB6213),
+                          backgroundColor: const Color(0xFFFDF3E9)),
                       _buildMetricCard(
                           title: 'Percentile',
                           value: _percentile == null
                               ? '--'
                               : '${_percentile!.toStringAsFixed(1)}%',
-                          icon: Icons.insights_rounded,
-                          accentColor: const Color(0xFFF59E0B),
-                          backgroundColor: const Color(0xFFFFF7E8)),
+                          icon: Icons.trending_up_rounded,
+                          accentColor: const Color(0xFF0E665A),
+                          backgroundColor: const Color(0xFFC8FEF1)),
                     ],
                   ),
                   const SizedBox(height: 18.0),
@@ -1840,6 +1845,19 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   _buildStrengthWeaknesses(),
                   const SizedBox(height: 18.0),
                   _buildCompareSection(),
+                  const SizedBox(height: 18.0),
+                  GestureDetector(
+                    onTap: () => context.pushNamed(
+                        ReferAndEarnScreenWidget.routeName),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Image.asset(
+                        'assets/images/refer_earn_banner.png',
+                        width: double.infinity,
+                        fit: BoxFit.fitWidth,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -1196,6 +1196,8 @@ const GetIntro = async (req, res) => {
         title: intros.title,
         image: intros.image,
         description: intros.description,
+        createdAt: intros.createdAt,
+        updatedAt: intros.updatedAt,
       }));
       res.json({
         data: {

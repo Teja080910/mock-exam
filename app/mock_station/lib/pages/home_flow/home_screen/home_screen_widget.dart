@@ -28,7 +28,7 @@ class HomeScreenWidget extends StatefulWidget {
 }
 
 class _HomeScreenWidgetState extends State<HomeScreenWidget>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late HomeScreenModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final animationsMap = <String, AnimationInfo>{};
@@ -41,6 +41,138 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   // Max groups shown per scope section before a "View All" button appears
   // (4 columns x 3 rows = 12 slots; last slot is View All)
   static const int _maxGroupsPerSection = 11;
+
+  // Guards against stacking two poster dialogs when the home screen state
+  // is recreated quickly (tab switches / lifecycle events).
+  static bool _posterDialogOpen = false;
+
+  // Shows the most recently added/updated active admin Intro as a full
+  // poster popup. Banners stay in the home carousel; the client swaps the
+  // poster by adding a new Intro in the admin panel.
+  //
+  // - App open / after login: shows the poster.
+  // - Returning to the home tab: shows only when the intro changed
+  //   (different intro id), so the same poster is not repeated constantly.
+  // - App brought back to foreground after being closed/backgrounded:
+  //   shows again (forced, debounced).
+  Future<void> _showAppOpenPoster({bool force = false}) async {
+    if (_posterDialogOpen || !mounted) return;
+    if (force) {
+      final lastShown = FFAppState().lastPosterShownAt;
+      if (lastShown != null &&
+          DateTime.now().difference(lastShown) < const Duration(seconds: 8)) {
+        return;
+      }
+    }
+    try {
+      final res = await QuizGroup.getIntroAPICall.call();
+      if (QuizGroup.getIntroAPICall.success(res.jsonBody) != 1) return;
+      final intros = QuizGroup.getIntroAPICall
+          .introDetailsList(res.jsonBody)
+          ?.whereType<Map>()
+          .toList();
+      if (intros == null || intros.isEmpty || !mounted) return;
+
+      intros.sort((a, b) {
+        final aTime = DateTime.tryParse(
+                getJsonField(a, r'''$.updatedAt''').toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = DateTime.tryParse(
+                getJsonField(b, r'''$.updatedAt''').toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+
+      final intro = intros.first;
+      final introId = getJsonField(intro, r'''$._id''').toString();
+      if (!force &&
+          introId.isNotEmpty &&
+          introId == FFAppState().lastIntroShownId) {
+        return; // same poster already shown in this app run
+      }
+
+      final rawImg = getJsonField(intro, r'''$.image''').toString();
+      if (rawImg.isEmpty || !mounted) return;
+      final imgUrl = rawImg.startsWith('http')
+          ? rawImg
+          : '${FFAppConstants.imageBaseURL}$rawImg';
+
+      FFAppState().lastIntroShownId = introId;
+      FFAppState().lastPosterShownAt = DateTime.now();
+      _posterDialogOpen = true;
+      final posterWidth = MediaQuery.of(context).size.width - 44.0;
+      await showDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withValues(alpha: 0.75),
+        builder: (dialogContext) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 60),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: CachedNetworkImage(
+                  imageUrl: imgUrl,
+                  width: posterWidth,
+                  fit: BoxFit.fitWidth,
+                  placeholder: (_, __) => const SizedBox(
+                    height: 320,
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => const SizedBox(
+                    height: 220,
+                    child: Center(
+                      child: Icon(Icons.broken_image_outlined,
+                          color: Colors.white, size: 42),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: -14,
+                right: -14,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(dialogContext).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 6,
+                            offset: Offset(0, 2)),
+                      ],
+                    ),
+                    child:
+                        const Icon(Icons.close, size: 20, color: Colors.black87),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      print('App-open poster failed: $e');
+    } finally {
+      _posterDialogOpen = false;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _showAppOpenPoster(force: true);
+    }
+  }
 
   Future<_HomeData> _fetchHomeData() async {
     final results = await Future.wait([
@@ -65,11 +197,13 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _model = createModel(context, () => HomeScreenModel());
     _homeDataFuture = _fetchHomeData();
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      _showAppOpenPoster();
       if (FFAppState().isLogin &&
           FFAppState().loginToken.isNotEmpty &&
           FFAppState().userId.isNotEmpty) {
@@ -161,6 +295,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _model.dispose();
     super.dispose();
   }
@@ -629,29 +764,49 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                               ),
                       ),
 
+                      // Refer & Earn banner
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 0.0),
+                          child: GestureDetector(
+                            onTap: () => context.pushNamed(
+                                ReferAndEarnScreenWidget.routeName),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12.0),
+                              child: Image.asset(
+                                'assets/images/refer_earn_banner.png',
+                                width: double.infinity,
+                                fit: BoxFit.fitWidth,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                       SliverToBoxAdapter(
                         child: StatefulBuilder(
                           builder: (context, setBannerState) {
                             if (!_showDisclaimerBanner) return const SizedBox.shrink();
                             return Container(
-                              margin: const EdgeInsets.all(16),
-                              padding: const EdgeInsets.all(16),
+                              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFFF3CD),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: const Color(0xFFFFEEBA), width: 1),
                               ),
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.info, color: Color(0xFF0D6EFD), size: 20),
-                                  const SizedBox(width: 12),
+                                  const Icon(Icons.info, color: Color(0xFF0D6EFD), size: 18),
+                                  const SizedBox(width: 10),
                                   const Expanded(
                                     child: Text(
                                       "Disclaimer: This app is not affiliated with or represents any government entity.",
                                       style: TextStyle(
                                         color: Color(0xFF664D03),
                                         fontSize: FFFont.f12,
+                                        height: 1.3,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -664,12 +819,12 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                                       });
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.all(4),
+                                      padding: const EdgeInsets.all(2),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF2B3A67),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                      child: const Icon(Icons.close, color: Colors.white, size: 14),
                                     ),
                                   ),
                                 ],
