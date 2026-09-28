@@ -51,6 +51,15 @@
                                         </div>
                                     </div>
                                     <div class="row mb-3">
+                                        <label class="col-sm-2 col-form-label">Test Type</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-select" name="test_type" required>
+                                                <option value="pyq" <% if((subcategory.test_type || 'pyq') === 'pyq') { %> selected <% } %>>PYQs Based Tests</option>
+                                                <option value="subject_wise" <% if(subcategory.test_type === 'subject_wise') { %> selected <% } %>>Subject Wise Tests</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
                                         <label class="col-sm-2 col-form-label">is Active</label>
                                         <div class="col-sm-10">
                                             <div class="form-check form-switch mb-2">

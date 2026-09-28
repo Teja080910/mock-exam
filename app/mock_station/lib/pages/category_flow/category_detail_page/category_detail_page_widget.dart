@@ -2,11 +2,9 @@ import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'category_detail_page_model.dart';
 export 'category_detail_page_model.dart';
@@ -34,6 +32,7 @@ class CategoryDetailPageWidget extends StatefulWidget {
 class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
     with TickerProviderStateMixin {
   late CategoryDetailPageModel _model;
+  TabController? _tabController;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -46,7 +45,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 16.0),
+          padding: const EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 6.0),
           child: Row(
             children: [
               Material(
@@ -89,6 +88,34 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
     );
   }
 
+  Widget _buildTabBar() {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFDCEAFF),
+      child: TabBar(
+        controller: _tabController,
+        labelColor: const Color(0xFF2563EB),
+        unselectedLabelColor: const Color(0xFF6B7280),
+        indicatorColor: const Color(0xFF2563EB),
+        indicatorWeight: 2.5,
+        indicatorSize: TabBarIndicatorSize.label,
+        labelStyle: const TextStyle(
+          fontSize: FFFont.f14,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: FFFont.f14,
+          fontWeight: FontWeight.w500,
+        ),
+        dividerColor: Colors.transparent,
+        tabs: const [
+          Tab(text: 'PYQs Based Tests'),
+          Tab(text: 'Subject Wise Tests'),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDisclaimer() {
     return Container(
       margin: const EdgeInsets.fromLTRB(14.0, 0.0, 14.0, 16.0),
@@ -104,7 +131,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
             width: 30.0,
             height: 30.0,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.55),
+              color: Colors.white.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(10.0),
             ),
             alignment: Alignment.center,
@@ -255,10 +282,63 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
     );
   }
 
+  Widget _buildSubcategoryListView(List<dynamic> items,
+      {required bool isSubjectTab}) {
+    if (items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSubjectTab
+                    ? Icons.menu_book_outlined
+                    : Icons.assignment_outlined,
+                size: 48.0,
+                color: const Color(0xFF94A3B8),
+              ),
+              const SizedBox(height: 12.0),
+              Text(
+                isSubjectTab
+                    ? 'No subject-wise tests available yet'
+                    : 'No tests available for this category',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: FFFont.f16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF4B5563),
+                ),
+              ),
+              const SizedBox(height: 6.0),
+              Text(
+                'Check back soon for new mock tests',
+                style: TextStyle(
+                  fontSize: FFFont.f14,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 16.0),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 14.0),
+      itemBuilder: (context, subcategoryIndex) {
+        final subcategory = items[subcategoryIndex];
+        return _buildSubcategoryCard(subcategory);
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => CategoryDetailPageModel());
+    _tabController = TabController(length: 2, vsync: this);
 
     animationsMap.addAll({
       'containerOnPageLoadAnimation': AnimationInfo(
@@ -270,6 +350,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
 
   @override
   void dispose() {
+    _tabController?.dispose();
     _model.dispose();
 
     super.dispose();
@@ -285,6 +366,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
         child: Column(
           children: [
             _buildHeader(),
+            _buildTabBar(),
             Expanded(
               child: FutureBuilder<ApiCallResponse>(
                 future: FFAppState()
@@ -309,7 +391,7 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
                             'Error loading subcategories: ${snapshot.error}'));
                   }
                   if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   }
                   final response = snapshot.data!;
                   final subcategoryList = (QuizGroup.getSubcategoriesCall
@@ -341,32 +423,22 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
 
                       return nameA.compareTo(nameB);
                     });
-                  if (subcategoryList.isEmpty) {
-                    return Center(
-                        child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Column(
-                        children: [
-                          Text('No subcategories found for this category',
-                              style: Theme.of(context).textTheme.bodyLarge),
-                          SizedBox(height: 16),
-                          Text('Category ID: ${widget.catId}',
-                              style: Theme.of(context).textTheme.bodyMedium),
-                          SizedBox(height: 8),
-                          Text('Response: ${response.jsonBody}',
-                              style: Theme.of(context).textTheme.bodySmall),
-                        ],
-                      ),
-                    ));
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(14.0, 14.0, 14.0, 16.0),
-                    itemCount: subcategoryList.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14.0),
-                    itemBuilder: (context, subcategoryIndex) {
-                      final subcategory = subcategoryList[subcategoryIndex];
-                      return _buildSubcategoryCard(subcategory);
-                    },
+
+                  final allList = subcategoryList;
+                  final subjectWiseList = subcategoryList.where((s) {
+                    final testType = getJsonField(s, r'$.test_type')
+                        ?.toString()
+                        .trim()
+                        .toLowerCase();
+                    return testType == 'subject_wise';
+                  }).toList();
+
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildSubcategoryListView(allList, isSubjectTab: false),
+                      _buildSubcategoryListView(subjectWiseList, isSubjectTab: true),
+                    ],
                   );
                 },
               ),

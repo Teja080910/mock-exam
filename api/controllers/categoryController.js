@@ -290,6 +290,7 @@ const addSubcategory = async (req, res) => {
                 name: req.body.name,
                 image: req.file.filename,
                 categoryId: req.body.categoryId,
+                test_type: req.body.test_type || 'pyq',
                 is_feature: req.body.is_feature == "on" ? 1 : 0,
                 is_active: req.body.is_active == "on" ? 1 : 0
             });
@@ -326,6 +327,9 @@ const viewSubcategory = async (req, res) => {
         if (req.query.is_feature !== undefined && req.query.is_feature !== '') {
             filter.is_feature = parseInt(req.query.is_feature, 10);
         }
+        if (req.query.test_type && req.query.test_type.trim() !== '') {
+            filter.test_type = req.query.test_type.trim();
+        }
         if (req.query.search && String(req.query.search).trim() !== '') {
             const term = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             filter.name = { $regex: term, $options: 'i' };
@@ -340,6 +344,7 @@ const viewSubcategory = async (req, res) => {
         if (req.query.categoryId) params.push(`categoryId=${encodeURIComponent(req.query.categoryId)}`);
         if (req.query.is_active !== undefined && req.query.is_active !== '') params.push(`is_active=${encodeURIComponent(req.query.is_active)}`);
         if (req.query.is_feature !== undefined && req.query.is_feature !== '') params.push(`is_feature=${encodeURIComponent(req.query.is_feature)}`);
+        if (req.query.test_type) params.push(`test_type=${encodeURIComponent(req.query.test_type)}`);
         if (req.query.search) params.push(`search=${encodeURIComponent(req.query.search)}`);
         const extraParams = params.length > 0 ? '&' + params.join('&') : '';
 
@@ -356,6 +361,7 @@ const viewSubcategory = async (req, res) => {
                 categoryId: req.query.categoryId || '',
                 is_active: req.query.is_active !== undefined ? req.query.is_active : '',
                 is_feature: req.query.is_feature !== undefined ? req.query.is_feature : '',
+                test_type: req.query.test_type || '',
                 search: req.query.search || ''
             }
         });
@@ -410,7 +416,8 @@ const updateSubcategory = async (req, res) => {
                     $set: {
                         name: req.body.name,
                         image: req.file.filename,
-                        categoryId: req.body.categoryId
+                        categoryId: req.body.categoryId,
+                        test_type: req.body.test_type || 'pyq'
                     }
                 });
                 res.redirect(returnUrl);
@@ -418,7 +425,8 @@ const updateSubcategory = async (req, res) => {
                 await Subcategory.findByIdAndUpdate({ _id: id }, {
                     $set: {
                         name: req.body.name,
-                        categoryId: req.body.categoryId
+                        categoryId: req.body.categoryId,
+                        test_type: req.body.test_type || 'pyq'
                     }
                 });
                 res.redirect(returnUrl);

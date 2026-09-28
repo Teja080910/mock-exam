@@ -22,6 +22,11 @@ const subcategorySchema = new mongoose.Schema({
     is_active: {
         type: Number,
         default: 0
+    },
+    test_type: {
+        type: String,
+        enum: ['pyq', 'subject_wise'],
+        default: 'pyq'
     }
 },
 { timestamps: true });

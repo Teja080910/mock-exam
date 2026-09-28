@@ -68,6 +68,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   int _computedWrong = 0;
   int _computedSkipped = 0;
   int _computedReview = 0;
+  final Set<String> _expandedSolutions = {};
 
   void _computeCountsFromQuesList() {
     int correct = 0, wrong = 0, skipped = 0, review = 0;
@@ -218,6 +219,81 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         onLinkTap: (url, attributes, element) {
           // Handle link taps if needed
         },
+      ),
+    );
+  }
+
+  Map<String, Style> _solutionHtmlStyle(BuildContext context) {
+    final baseTextStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          fontFamily: 'Roboto',
+          fontSize: FFFont.f14,
+          letterSpacing: 0.0,
+          fontWeight: FontWeight.normal,
+          useGoogleFonts: false,
+          lineHeight: 1.5,
+        );
+
+    final style = Style(
+      margin: Margins.zero,
+      padding: HtmlPaddings.zero,
+      color: const Color(0xFF1E293B),
+      fontFamily: baseTextStyle.fontFamily,
+      fontSize: FontSize(baseTextStyle.fontSize ?? 14.0),
+      fontWeight: baseTextStyle.fontWeight,
+      letterSpacing: baseTextStyle.letterSpacing,
+      lineHeight: LineHeight(baseTextStyle.height ?? 1.5),
+    );
+
+    return {
+      'body': style,
+      'p': style,
+      'div': style,
+      'span': style,
+    };
+  }
+
+  Widget _buildSolutionCard(String description) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 10.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(
+                Icons.lightbulb_rounded,
+                color: Color(0xFFF59E0B),
+                size: 18.0,
+              ),
+              SizedBox(width: 6.0),
+              Text(
+                'Solution',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: FFFont.f14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          const Divider(height: 1.0, color: Color(0xFFE2E8F0)),
+          const SizedBox(height: 8.0),
+          MathHtml(
+            data: (description.isNotEmpty
+                    ? description
+                    : 'No explanation available for this question.')
+                .replaceAll('&quot;', '"'),
+            style: _solutionHtmlStyle(context),
+          ),
+        ],
       ),
     );
   }
@@ -2051,41 +2127,52 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
           }),
           _buildAnswerKeyStats(question),
           const SizedBox(height: 10.0),
-          SizedBox(
-            width: double.infinity,
-            child: FFButtonWidget(
-              onPressed: () {
-                context.pushNamed(
-                  ExplanationPageWidget.routeName,
-                  queryParameters: {
-                    'explanation': serializeParam(
-                      description.isNotEmpty
-                          ? description
-                          : 'No explanation available for this question.',
-                      ParamType.String,
+          Builder(
+            builder: (context) {
+              final solKey = 'ak_${_answerKeyValue(question, '_id') ?? _answerKeyValue(question, 'id') ?? questionNumber}';
+              final isExpanded = _expandedSolutions.contains(solKey);
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: FFButtonWidget(
+                      onPressed: () {
+                        safeSetState(() {
+                          if (isExpanded) {
+                            _expandedSolutions.remove(solKey);
+                          } else {
+                            _expandedSolutions.add(solKey);
+                          }
+                        });
+                      },
+                      text: isExpanded ? 'Hide Solution' : 'View Solution',
+                      icon: Icon(
+                        isExpanded
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        color: const Color(0xFF1D66E5),
+                        size: 18.0,
+                      ),
+                      options: FFButtonOptions(
+                        width: double.infinity,
+                        height: 44.0,
+                        color: const Color(0xFFEAF3FF),
+                        textStyle: const TextStyle(
+                          color: Color(0xFF1D66E5),
+                          fontSize: FFFont.f14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        elevation: 0.0,
+                        borderRadius: BorderRadius.circular(9.0),
+                      ),
                     ),
-                  }.withoutNulls,
-                );
-              },
-              text: 'View Solution',
-              icon: const Icon(
-                Icons.visibility_rounded,
-                color: Color(0xFF1D66E5),
-                size: 18.0,
-              ),
-              options: FFButtonOptions(
-                width: double.infinity,
-                height: 44.0,
-                color: const Color(0xFFEAF3FF),
-                textStyle: const TextStyle(
-                  color: Color(0xFF1D66E5),
-                  fontSize: FFFont.f14,
-                  fontWeight: FontWeight.w700,
-                ),
-                elevation: 0.0,
-                borderRadius: BorderRadius.circular(9.0),
-              ),
-            ),
+                  ),
+                  if (isExpanded) _buildSolutionCard(description),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -2356,51 +2443,62 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   );
                 }),
                 const SizedBox(height: 14.0),
-                SizedBox(
-                  width: double.infinity,
-                  child: FFButtonWidget(
-                    onPressed: () async {
-                      final desc = biText(
-                        (quesItem is Map ? quesItem['description'] : null) ??
-                            (quesItem is Map && quesItem['question'] is Map
-                                ? quesItem['question']['description']
-                                : null),
-                      );
-                      context.pushNamed(
-                        ExplanationPageWidget.routeName,
-                        queryParameters: {
-                          'explanation': serializeParam(
-                            desc.isNotEmpty
-                                ? desc
-                                : 'No explanation available for this question.',
-                            ParamType.String,
+                Builder(
+                  builder: (context) {
+                    final desc = biText(
+                      (quesItem is Map ? quesItem['description'] : null) ??
+                          (quesItem is Map && quesItem['question'] is Map
+                              ? quesItem['question']['description']
+                              : null),
+                    );
+                    final solKey = 'ans_${_answerKeyValue(quesItem, '_id') ?? _answerKeyValue(quesItem, 'id') ?? quesIndex}';
+                    final isExpanded = _expandedSolutions.contains(solKey);
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: FFButtonWidget(
+                            onPressed: () {
+                              safeSetState(() {
+                                if (isExpanded) {
+                                  _expandedSolutions.remove(solKey);
+                                } else {
+                                  _expandedSolutions.add(solKey);
+                                }
+                              });
+                            },
+                            text: isExpanded ? 'Hide Solution' : 'View Solution',
+                            icon: Icon(
+                              isExpanded
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
+                              color: const Color(0xFF1D66E5),
+                              size: 18.0,
+                            ),
+                            options: FFButtonOptions(
+                              width: double.infinity,
+                              height: 44.0,
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 0.0, 0.0),
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 8.0, 0.0),
+                              color: const Color(0xFFF1F6FF),
+                              textStyle: const TextStyle(
+                                color: Color(0xFF1D66E5),
+                                fontSize: FFFont.f14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              elevation: 0.0,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
                           ),
-                        }.withoutNulls,
-                      );
-                    },
-                    text: 'View Solution',
-                    icon: const Icon(
-                      Icons.visibility_rounded,
-                      color: Color(0xFF1D66E5),
-                      size: 18.0,
-                    ),
-                    options: FFButtonOptions(
-                      width: double.infinity,
-                      height: 44.0,
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 0.0, 0.0, 0.0),
-                      iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 0.0, 8.0, 0.0),
-                      color: const Color(0xFFF1F6FF),
-                      textStyle: const TextStyle(
-                        color: Color(0xFF1D66E5),
-                        fontSize: FFFont.f14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      elevation: 0.0,
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
+                        ),
+                        if (isExpanded) _buildSolutionCard(desc),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -2686,54 +2784,65 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   );
                 }),
                 const SizedBox(height: 14.0),
-                SizedBox(
-                  width: double.infinity,
-                  child: FFButtonWidget(
-                    onPressed: () async {
-                      final desc = biText(
-                        (questionItem is Map
-                                ? questionItem['description']
-                                : null) ??
-                            (questionItem is Map &&
-                                    questionItem['question'] is Map
-                                ? questionItem['question']['description']
-                                : null),
-                      );
-                      context.pushNamed(
-                        ExplanationPageWidget.routeName,
-                        queryParameters: {
-                          'explanation': serializeParam(
-                            desc.isNotEmpty
-                                ? desc
-                                : 'No explanation available for this question.',
-                            ParamType.String,
+                Builder(
+                  builder: (context) {
+                    final desc = biText(
+                      (questionItem is Map
+                              ? questionItem['description']
+                              : null) ??
+                          (questionItem is Map &&
+                                  questionItem['question'] is Map
+                              ? questionItem['question']['description']
+                              : null),
+                    );
+                    final solKey = 'skip_${_answerKeyValue(questionItem, '_id') ?? _answerKeyValue(questionItem, 'id') ?? questionIndex}';
+                    final isExpanded = _expandedSolutions.contains(solKey);
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: FFButtonWidget(
+                            onPressed: () {
+                              safeSetState(() {
+                                if (isExpanded) {
+                                  _expandedSolutions.remove(solKey);
+                                } else {
+                                  _expandedSolutions.add(solKey);
+                                }
+                              });
+                            },
+                            text: isExpanded ? 'Hide Solution' : 'View Solution',
+                            icon: Icon(
+                              isExpanded
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
+                              color: const Color(0xFF1D66E5),
+                              size: 18.0,
+                            ),
+                            options: FFButtonOptions(
+                              width: double.infinity,
+                              height: 44.0,
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 0.0, 0.0),
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 8.0, 0.0),
+                              color: const Color(0xFFF1F6FF),
+                              textStyle: const TextStyle(
+                                color: Color(0xFF1D66E5),
+                                fontSize: FFFont.f14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              elevation: 0.0,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
                           ),
-                        }.withoutNulls,
-                      );
-                    },
-                    text: 'View Solution',
-                    icon: const Icon(
-                      Icons.visibility_rounded,
-                      color: Color(0xFF1D66E5),
-                      size: 18.0,
-                    ),
-                    options: FFButtonOptions(
-                      width: double.infinity,
-                      height: 44.0,
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 0.0, 0.0, 0.0),
-                      iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 0.0, 8.0, 0.0),
-                      color: const Color(0xFFF1F6FF),
-                      textStyle: const TextStyle(
-                        color: Color(0xFF1D66E5),
-                        fontSize: FFFont.f14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      elevation: 0.0,
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
+                        ),
+                        if (isExpanded) _buildSolutionCard(desc),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
