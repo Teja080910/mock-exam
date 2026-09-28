@@ -447,11 +447,12 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 height: 46.0,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    FFAppState().isQuizActive = false;
                     if (FFAppState().quesReviewList.isNotEmpty) {
                       FFAppState().quesList =
                           FFAppState().quesReviewList.toList();
                     }
-                    context.pushNamed(
+                    context.goNamed(
                       QuizResultWidget.routeName,
                       queryParameters: {
                         'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),
@@ -824,11 +825,12 @@ class _QuizReviewScreenWidgetState extends State<QuizReviewScreenWidget> {
                 height: 46.0,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    FFAppState().isQuizActive = false;
                     if (FFAppState().quesReviewList.isNotEmpty) {
                       FFAppState().quesList =
                           FFAppState().quesReviewList.toList();
                     }
-                    context.pushNamed(
+                    context.goNamed(
                       QuizResultWidget.routeName,
                       queryParameters: {
                         'correctAnswer': serializeParam(FFAppState().correctQues, ParamType.int),

@@ -13,6 +13,36 @@ final RegExp _texCommandPattern = RegExp(
   r'\\(frac|dfrac|tfrac|sqrt|left|right|text|mathrm|mathbf|div|times|cdot|quad|qquad|pm|mp|leq|geq|neq|approx|sum|prod|int|lim|log|ln|sin|cos|tan|theta|alpha|beta|gamma|pi|infty|overline|underline|vec|bar|hat|binom|displaystyle|begin|end)\b',
 );
 
+// Commands that paint taller than the line box flutter_math_fork reports
+// (fractions, roots, large operators, accents). Widgets for these need extra
+// vertical room or the surrounding paragraph lines overlap them.
+final RegExp _tallTexPattern = RegExp(
+  r'\\(frac|dfrac|tfrac|sqrt|binom|sum|prod|int|oint|lim|overline|underline|vec|bar|hat|begin|substack|stackrel|overset|underset)\b',
+);
+
+Widget _mathWidget(
+  String tex, {
+  required bool display,
+  TextStyle? textStyle,
+  required OnErrorFallback onErrorFallback,
+}) {
+  final fontSize = textStyle?.fontSize ?? 14.0;
+  final vertical = display
+      ? fontSize * 0.22
+      : (_tallTexPattern.hasMatch(tex) ? fontSize * 0.15 : 0.0);
+  final math = Math.tex(
+    tex,
+    mathStyle: display ? MathStyle.display : MathStyle.text,
+    textStyle: textStyle,
+    onErrorFallback: onErrorFallback,
+  );
+  if (vertical == 0.0) return math;
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: vertical),
+    child: math,
+  );
+}
+
 // Single-dollar math is only treated as TeX when the content actually looks
 // like TeX, so currency amounts such as "$100" stay untouched.
 bool _isDollarMath(String content) {
@@ -98,9 +128,9 @@ List<InlineSpan> _buildMathSpans(String text, TextStyle? style) {
     spans.add(
       WidgetSpan(
         alignment: PlaceholderAlignment.middle,
-        child: Math.tex(
+        child: _mathWidget(
           tex,
-          mathStyle: display ? MathStyle.display : MathStyle.text,
+          display: display,
           textStyle: style,
           onErrorFallback: (error) => Text(tex, style: style),
         ),
@@ -123,9 +153,9 @@ List<InlineSpan> mathInlineSpans(String text, TextStyle? style) {
     return [
       WidgetSpan(
         alignment: PlaceholderAlignment.middle,
-        child: Math.tex(
+        child: _mathWidget(
           tex,
-          mathStyle: MathStyle.text,
+          display: false,
           textStyle: style,
           onErrorFallback: (error) => Text(text, style: style),
         ),
@@ -176,9 +206,9 @@ class MathTexExtension extends HtmlExtension {
     final textStyle = styledElement?.style.generateTextStyle();
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
-      child: Math.tex(
+      child: _mathWidget(
         tex,
-        mathStyle: display ? MathStyle.display : MathStyle.text,
+        display: display,
         textStyle: textStyle,
         onErrorFallback: (error) => Text(tex, style: textStyle),
       ),

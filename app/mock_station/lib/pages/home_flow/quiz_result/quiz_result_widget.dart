@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import '/backend/api_requests/api_calls.dart';
 import '/custom_code/utils/html_stripper.dart';
 import '/flutter_flow/flutter_flow_audio_player.dart';
@@ -64,6 +62,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
   String _answerKeyLanguage = 'en';
   double? _percentile;
   String _strengthFilter = 'Strong';
+  String _selectedCompareMetric = 'Score';
+  Map<String, dynamic>? _compareData;
   int _computedCorrect = 0;
   int _computedWrong = 0;
   int _computedSkipped = 0;
@@ -129,6 +129,47 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       }
     } catch (_) {
       // The local result remains usable when the percentile request is offline.
+    }
+  }
+
+  Future<void> _loadCompareStats() async {
+    final quizId = widget.quizID ?? '';
+    if (quizId.isEmpty) return;
+
+    final userId = getJsonField(
+      FFAppState().userDetils,
+      r'''$.id''',
+    ).toString();
+    final youScore = _displayTotalMarks;
+    final youTimeSec = _totalTakenSeconds();
+
+    try {
+      final response = await QuizGroup.quizCompareApiCall.call(
+        quizId: quizId,
+        userId: userId,
+        userScore: youScore,
+        userCorrect: _computedCorrect,
+        userWrong: _computedWrong,
+        userTime: youTimeSec,
+        totalQuestions: _displayTotalQuestions,
+        token: FFAppState().loginToken,
+      );
+      if (QuizGroup.quizCompareApiCall.success(response.jsonBody) == 1) {
+        final topperData =
+            QuizGroup.quizCompareApiCall.topper(response.jsonBody);
+        final avgData =
+            QuizGroup.quizCompareApiCall.average(response.jsonBody);
+        if (mounted && topperData != null && avgData != null) {
+          safeSetState(() {
+            _compareData = {
+              'topper': topperData,
+              'average': avgData,
+            };
+          });
+        }
+      }
+    } catch (_) {
+      // The local result remains usable when the compare request is offline.
     }
   }
 
@@ -744,6 +785,401 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
               );
             }),
         ],
+      ),
+    );
+  }
+
+  Color _metricColor(String metric) {
+    switch (metric) {
+      case 'Score':
+        return const Color(0xFF8B5CF6); // Purple
+      case 'Accuracy':
+        return const Color(0xFF0284C7); // Sky Blue
+      case 'Attempt':
+        return const Color(0xFFF59E0B); // Amber / Orange
+      case 'Correct':
+        return const Color(0xFF16A34A); // Emerald Green
+      case 'Incorrect':
+        return const Color(0xFFEF4444); // Red
+      case 'Time':
+        return const Color(0xFF0D9488); // Teal
+      default:
+        return const Color(0xFF8B5CF6);
+    }
+  }
+
+  Widget _buildComparePill(String metric) {
+    final isSelected = _selectedCompareMetric == metric;
+    final color = _metricColor(metric);
+
+    return InkWell(
+      onTap: () => safeSetState(() => _selectedCompareMetric = metric),
+      borderRadius: BorderRadius.circular(22.0),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(22.0),
+          border: Border.all(
+            color: isSelected ? color : const Color(0xFFCBD5E1),
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          metric,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF64748B),
+            fontSize: FFFont.f12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompareSection() {
+    final totalQ = (_displayTotalQuestions > 0
+            ? _displayTotalQuestions
+            : (widget.totalQuestion ?? 10))
+        .toDouble();
+    final reward = widget.correctAnsReward ?? 1.0;
+    final maxMarks = totalQ * reward;
+
+    final youCorrect = _computedCorrect.toDouble();
+    final youWrong = _computedWrong.toDouble();
+    final youAttempt = (youCorrect + youWrong).toDouble();
+    final youAccuracy =
+        youAttempt > 0 ? ((youCorrect / youAttempt) * 100.0) : 0.0;
+    final youScore = _displayTotalMarks;
+    final youTimeSec = _totalTakenSeconds().toDouble();
+
+    final topperMap = _compareData?['topper'] is Map
+        ? (_compareData!['topper'] as Map)
+        : null;
+    final topperScore =
+        double.tryParse((topperMap?['score'] ?? '').toString()) ?? youScore;
+    final topperAccuracy =
+        double.tryParse((topperMap?['accuracy'] ?? '').toString()) ??
+            youAccuracy;
+    final topperAttempt =
+        double.tryParse((topperMap?['attempt'] ?? '').toString()) ?? youAttempt;
+    final topperCorrect =
+        double.tryParse((topperMap?['correct'] ?? '').toString()) ?? youCorrect;
+    final topperIncorrect =
+        double.tryParse((topperMap?['incorrect'] ?? '').toString()) ?? youWrong;
+    final topperTimeSec =
+        double.tryParse((topperMap?['time'] ?? '').toString()) ?? youTimeSec;
+
+    final avgMap = _compareData?['average'] is Map
+        ? (_compareData!['average'] as Map)
+        : null;
+    final avgScore =
+        double.tryParse((avgMap?['score'] ?? '').toString()) ?? youScore;
+    final avgAccuracy =
+        double.tryParse((avgMap?['accuracy'] ?? '').toString()) ?? youAccuracy;
+    final avgAttempt =
+        double.tryParse((avgMap?['attempt'] ?? '').toString()) ?? youAttempt;
+    final avgCorrect =
+        double.tryParse((avgMap?['correct'] ?? '').toString()) ?? youCorrect;
+    final avgIncorrect =
+        double.tryParse((avgMap?['incorrect'] ?? '').toString()) ?? youWrong;
+    final avgTimeSec =
+        double.tryParse((avgMap?['time'] ?? '').toString()) ?? youTimeSec;
+
+    double youVal = 0.0;
+    double topperVal = 0.0;
+    double avgVal = 0.0;
+    String Function(double) formatFunc;
+
+    switch (_selectedCompareMetric) {
+      case 'Score':
+        youVal = youScore;
+        topperVal = topperScore;
+        avgVal = avgScore;
+        formatFunc = (v) => _formatMarks(v);
+        break;
+      case 'Accuracy':
+        youVal = youAccuracy;
+        topperVal = topperAccuracy;
+        avgVal = avgAccuracy;
+        formatFunc = (v) => '${v.toStringAsFixed(0)}%';
+        break;
+      case 'Attempt':
+        youVal = youAttempt;
+        topperVal = topperAttempt;
+        avgVal = avgAttempt;
+        formatFunc = (v) => v.toStringAsFixed(v == v.roundToDouble() ? 0 : 1);
+        break;
+      case 'Correct':
+        youVal = youCorrect;
+        topperVal = topperCorrect;
+        avgVal = avgCorrect;
+        formatFunc = (v) => v.toStringAsFixed(v == v.roundToDouble() ? 0 : 1);
+        break;
+      case 'Incorrect':
+        youVal = youWrong;
+        topperVal = topperIncorrect;
+        avgVal = avgIncorrect;
+        formatFunc = (v) => v.toStringAsFixed(v == v.roundToDouble() ? 0 : 1);
+        break;
+      case 'Time':
+        youVal = youTimeSec / 60.0;
+        topperVal = topperTimeSec / 60.0;
+        avgVal = avgTimeSec / 60.0;
+        formatFunc = (v) {
+          final totalS = (v * 60.0).round();
+          final m = totalS ~/ 60;
+          final s = totalS % 60;
+          return m > 0 ? '${m}m ${s}s' : '${s}s';
+        };
+        break;
+      default:
+        youVal = youScore;
+        topperVal = topperScore;
+        avgVal = avgScore;
+        formatFunc = (v) => _formatMarks(v);
+    }
+
+    final activeColor = _metricColor(_selectedCompareMetric);
+    final maxVal = [youVal, topperVal, avgVal].reduce((a, b) => a > b ? a : b);
+
+    double maxY;
+    if (_selectedCompareMetric == 'Accuracy') {
+      maxY = 100.0;
+    } else if (_selectedCompareMetric == 'Time') {
+      maxY = (maxVal <= 0 ? 5.0 : (maxVal * 1.25)).ceilToDouble();
+      if (maxY < 1.0) maxY = 1.0;
+    } else if (_selectedCompareMetric == 'Score') {
+      final baseCap = (maxMarks > 0 && maxMarks > maxVal)
+          ? maxMarks
+          : (maxVal > 0 ? maxVal : 10.0);
+      final target = (baseCap * 1.15).ceilToDouble();
+      if (target <= 10) {
+        maxY = 10.0;
+      } else if (target <= 20) {
+        maxY = 20.0;
+      } else if (target <= 50) {
+        maxY = 50.0;
+      } else if (target <= 100) {
+        maxY = 100.0;
+      } else {
+        maxY = (target / 20).ceil() * 20.0;
+      }
+    } else {
+      final baseCap = (totalQ > 0 && totalQ > maxVal)
+          ? totalQ
+          : (maxVal > 0 ? maxVal : 5.0);
+      final target = (baseCap * 1.15).ceilToDouble();
+      if (target <= 5) {
+        maxY = 5.0;
+      } else if (target <= 10) {
+        maxY = 10.0;
+      } else if (target <= 20) {
+        maxY = 20.0;
+      } else if (target <= 50) {
+        maxY = 50.0;
+      } else if (target <= 100) {
+        maxY = 100.0;
+      } else {
+        maxY = (target / 10).ceil() * 10.0;
+      }
+    }
+
+    final ticks = [
+      maxY,
+      maxY * 0.8,
+      maxY * 0.6,
+      maxY * 0.4,
+      maxY * 0.2,
+      0.0,
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 18.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x06000000),
+            blurRadius: 10.0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'COMPARE',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: FFFont.f12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 14.0),
+          Row(
+            children: [
+              Expanded(child: _buildComparePill('Score')),
+              const SizedBox(width: 8.0),
+              Expanded(child: _buildComparePill('Accuracy')),
+              const SizedBox(width: 8.0),
+              Expanded(child: _buildComparePill('Attempt')),
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          Row(
+            children: [
+              Expanded(child: _buildComparePill('Correct')),
+              const SizedBox(width: 8.0),
+              Expanded(child: _buildComparePill('Incorrect')),
+              const SizedBox(width: 8.0),
+              Expanded(child: _buildComparePill('Time')),
+            ],
+          ),
+          const SizedBox(height: 24.0),
+          SizedBox(
+            height: 220.0,
+            child: Stack(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: ticks.map((t) {
+                    final label = t == t.roundToDouble()
+                        ? t.toInt().toString()
+                        : t.toStringAsFixed(1);
+                    return Row(
+                      children: [
+                        SizedBox(
+                          width: 32.0,
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: FFFont.f10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6.0),
+                        Expanded(
+                          child: Container(
+                            height: 1.0,
+                            color: const Color(0xFFF1F5F9),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+                Positioned.fill(
+                  left: 42.0,
+                  right: 12.0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildCompareBar(
+                        value: youVal,
+                        maxY: maxY,
+                        color: activeColor,
+                        displayValue: formatFunc(youVal),
+                      ),
+                      _buildCompareBar(
+                        value: topperVal,
+                        maxY: maxY,
+                        color: activeColor,
+                        displayValue: formatFunc(topperVal),
+                      ),
+                      _buildCompareBar(
+                        value: avgVal,
+                        maxY: maxY,
+                        color: activeColor,
+                        displayValue: formatFunc(avgVal),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12.0),
+          Padding(
+            padding: const EdgeInsets.only(left: 42.0, right: 12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildCompareXLabel('You'),
+                _buildCompareXLabel('Topper'),
+                _buildCompareXLabel('Average'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompareBar({
+    required double value,
+    required double maxY,
+    required Color color,
+    required String displayValue,
+  }) {
+    const maxBarHeight = 180.0;
+    final barHeight = maxY > 0
+        ? ((value / maxY) * maxBarHeight).clamp(0.0, maxBarHeight)
+        : 0.0;
+    final isZero = value <= 0.0;
+
+    return SizedBox(
+      width: 56.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (!isZero) ...[
+            Text(
+              displayValue,
+              style: TextStyle(
+                color: color,
+                fontSize: FFFont.f10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4.0),
+          ],
+          Container(
+            width: 36.0,
+            height: isZero ? 2.0 : barHeight,
+            decoration: BoxDecoration(
+              color: isZero ? const Color(0xFFE2E8F0) : color,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(8.0)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompareXLabel(String label) {
+    return SizedBox(
+      width: 60.0,
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Color(0xFF111827),
+          fontSize: FFFont.f12,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
@@ -1402,6 +1838,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                   _buildSectionalSummary(),
                   const SizedBox(height: 18.0),
                   _buildStrengthWeaknesses(),
+                  const SizedBox(height: 18.0),
+                  _buildCompareSection(),
                 ],
               ),
             ),
@@ -3501,7 +3939,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         userId: getJsonField(
           FFAppState().userDetils,
           r'''$.id''',
-        ).toString().toString(),
+        ).toString(),
         quizId: widget.quizID,
         questionsJson: FFAppState().quesList,
         totalQuestions: widget.totalQuestion,
@@ -3509,9 +3947,13 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         wrongAnswers: _computedWrong,
         score: (((_computedCorrect) * (widget.correctAnsReward ?? 0.0)) -
             ((_computedWrong) * (widget.penaltyPerQuestion ?? 0.0))),
+        timeTaken: _totalTakenSeconds(),
         token: FFAppState().loginToken,
       );
-      await _loadPercentile();
+      await Future.wait([
+        _loadPercentile(),
+        _loadCompareStats(),
+      ]);
     });
   }
 

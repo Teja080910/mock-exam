@@ -129,6 +129,7 @@ api_route.post("/getPoints", apiController.GetPoints);
 //LeaderBoard
 api_route.post("/leaderboard", apiController.LeaderBoard);
 api_route.post("/getuserrank", apiController.GetUserRank);
+api_route.post("/quiz-compare", apiController.QuizCompare);
 
 // Pages
 api_route.post("/pages", apiController.getPages);

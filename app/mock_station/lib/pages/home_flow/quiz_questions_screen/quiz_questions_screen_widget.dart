@@ -704,6 +704,9 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                             'quizTime': serializeParam(
                                 _elapsedTimeLabel, ParamType.String),
                           }.withoutNulls);
+                      if (!mounted || !FFAppState().isQuizActive || quizAutoSubmitted) {
+                        return;
+                      }
                       _resumeQuestionTiming();
                       if (result != null && _model.pageViewController != null) {
                         _model.pageViewController!.animateToPage(
@@ -1199,6 +1202,11 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
 
   @override
   void dispose() {
+    quizAutoSubmitted = true;
+    _pauseTimer();
+    try {
+      _model.timerController.onStopTimer();
+    } catch (_) {}
     WidgetsBinding.instance.removeObserver(this); // Remove lifecycle observer
     _pauseQuestionTiming();
     _reviewToastTimer?.cancel();
@@ -1863,12 +1871,16 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                           // a stale timer widget after its
                                                                                                           // page was disposed (swiped away).
                                                                                                           // Only proceed if this page is
-                                                                                                          // still mounted.
-                                                                                                          if (quizAutoSubmitted || !mounted) {
+                                                                                                          // still mounted and quiz is active.
+                                                                                                          if (quizAutoSubmitted || !mounted || !FFAppState().isQuizActive) {
                                                                                                             return;
                                                                                                           }
 
                                                                                                           quizAutoSubmitted = true;
+                                                                                                          _pauseTimer();
+                                                                                                          try {
+                                                                                                            _model.timerController.onStopTimer();
+                                                                                                          } catch (_) {}
                                                                                                           _pauseQuestionTiming();
 
                                                                                                           await showDialog(
@@ -2221,11 +2233,15 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                                                   ),
                                                                                               onEnded: () async {
                                                                                                 // Prevent multiple auto-submits
-                                                                                                if (quizAutoSubmitted || !mounted) {
+                                                                                                if (quizAutoSubmitted || !mounted || !FFAppState().isQuizActive) {
                                                                                                   return;
                                                                                                 }
 
                                                                                                 quizAutoSubmitted = true;
+                                                                                                _pauseTimer();
+                                                                                                try {
+                                                                                                  _model.timerController.onStopTimer();
+                                                                                                } catch (_) {}
                                                                                                 _pauseQuestionTiming();
 
                                                                                                 await showDialog(
@@ -3439,6 +3455,13 @@ class _QuizQuestionsScreenWidgetState extends State<QuizQuestionsScreenWidget>
                                                                           quesList;
                                                                       // Debug print to verify outgoing JSON
 
+                                                                      quizAutoSubmitted = true;
+                                                                      _pauseTimer();
+                                                                      _pauseQuestionTiming();
+                                                                      try {
+                                                                        _model.timerController.onStopTimer();
+                                                                      } catch (_) {}
+                                                                      FFAppState().isQuizActive = false;
                                                                       context
                                                                           .goNamed(
                                                                         QuizResultWidget

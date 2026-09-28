@@ -369,12 +369,8 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
             _buildTabBar(),
             Expanded(
               child: FutureBuilder<ApiCallResponse>(
-                future: FFAppState()
-                    .details(
-                  uniqueQueryKey: valueOrDefault<String>(widget.catId, '65498'),
-                  requestFn: () => QuizGroup.getSubcategoriesCall
-                      .call(categoryId: widget.catId),
-                )
+                future: QuizGroup.getSubcategoriesCall
+                    .call(categoryId: widget.catId)
                     .then((result) {
                   _model.apiRequestCompleted = true;
                   _model.apiRequestLastUniqueKey =
@@ -426,11 +422,13 @@ class _CategoryDetailPageWidgetState extends State<CategoryDetailPageWidget>
 
                   final allList = subcategoryList;
                   final subjectWiseList = subcategoryList.where((s) {
-                    final testType = getJsonField(s, r'$.test_type')
-                        ?.toString()
+                    final rawType = (s is Map
+                            ? (s['test_type'] ?? '')
+                            : (getJsonField(s, r'$.test_type') ?? ''))
+                        .toString()
                         .trim()
                         .toLowerCase();
-                    return testType == 'subject_wise';
+                    return rawType == 'subject_wise';
                   }).toList();
 
                   return TabBarView(

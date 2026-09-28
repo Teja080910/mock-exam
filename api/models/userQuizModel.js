@@ -78,6 +78,10 @@ const quizDetailSchema = new mongoose.Schema({
     },
     score: {
         type: Number
+    },
+    time_taken: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

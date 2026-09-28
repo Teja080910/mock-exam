@@ -605,7 +605,7 @@ class _QuizquestionsScreenCopyWidgetState
                                       useGoogleFonts: false,
                                     ),
                                     onEnded: () async {
-                                      if (quizAutoSubmitted || !mounted) {
+                                      if (quizAutoSubmitted || !mounted || !FFAppState().isQuizActive) {
                                         return;
                                       }
                                       quizAutoSubmitted = true;
@@ -773,7 +773,7 @@ class _QuizquestionsScreenCopyWidgetState
                                           if (shouldUpdate) safeSetState(() {});
                                         },
                                         onEnded: () async {
-                                          if (quizAutoSubmitted || !mounted) {
+                                          if (quizAutoSubmitted || !mounted || !FFAppState().isQuizActive) {
                                             return;
                                           }
                                           quizAutoSubmitted = true;

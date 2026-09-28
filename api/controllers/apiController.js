@@ -2861,6 +2861,7 @@ const StartQuiz = async (req, res) => {
       correct_answers: req.body.correct_answers,
       wrong_answers: req.body.wrong_answers,
       score: req.body.score,
+      time_taken: req.body.time_taken || 0,
     });
 
     // Update the user's total questions, correct answers, and wrong answers
@@ -3140,6 +3141,235 @@ const LeaderBoard = async (req, res) => {
         message: "Internal Server Error",
         error: 1,
       },
+    });
+  }
+};
+
+// Get Quiz Compare Stats (Topper vs Average)
+const QuizCompare = async (req, res) => {
+  try {
+    const {
+      quizId,
+      userId,
+      userScore,
+      userCorrect,
+      userWrong,
+      userTime,
+      totalQuestions,
+    } = req.body;
+
+    if (!quizId) {
+      return res.status(400).json({
+        data: { success: 0, message: "quizId is required", error: 1 },
+      });
+    }
+
+    const mongoose = require("mongoose");
+    const quizObjectId = new mongoose.Types.ObjectId(quizId);
+    const quiz = await Quiz.findById(quizObjectId).lean();
+
+    // Determine actual total questions for this quiz
+    let totalQ = quiz && quiz.total_questions ? Number(quiz.total_questions) : 0;
+    if (!totalQ || totalQ <= 0) {
+      const activeCount = await Questions.countDocuments({
+        quizId: quizObjectId,
+        is_active: 1,
+      });
+      if (activeCount > 0) {
+        totalQ = activeCount;
+      } else {
+        const anyCount = await Questions.countDocuments({ quizId: quizObjectId });
+        if (anyCount > 0) {
+          totalQ = anyCount;
+        } else if (totalQuestions) {
+          totalQ = Number(totalQuestions);
+        }
+      }
+    }
+
+    const quizMinutes = quiz ? Number(quiz.minutes_per_quiz || 0) : 0;
+    const quizDurationSec = quizMinutes * 60;
+
+    // Aggregate best attempt per user from database
+    const participantAttempts = await UserQuiz.aggregate([
+      { $match: { quizId: quizObjectId } },
+      { $sort: { score: -1, correct_answers: -1, createdAt: -1 } },
+      {
+        $group: {
+          _id: "$userId",
+          bestAttempt: { $first: "$$ROOT" },
+        },
+      },
+    ]);
+
+    // Incorporate current session user attempt if provided and not yet reflected in DB
+    if (userId && (userScore !== undefined || userCorrect !== undefined)) {
+      const uIdStr = String(userId);
+      const existingIdx = participantAttempts.findIndex(
+        (p) => String(p._id) === uIdStr
+      );
+      const currentScore = Number(userScore || 0);
+      const currentCorrect = Number(userCorrect || 0);
+      const currentWrong = Number(userWrong || 0);
+      const currentTime = Number(userTime || 0);
+
+      const candidateAttempt = {
+        userId: userId,
+        quizId: quizObjectId,
+        score: currentScore,
+        correct_answers: currentCorrect,
+        wrong_answers: currentWrong,
+        total_questions: totalQ,
+        time_taken: currentTime,
+      };
+
+      if (existingIdx === -1) {
+        participantAttempts.push({
+          _id: userId,
+          bestAttempt: candidateAttempt,
+        });
+      } else {
+        const existing = participantAttempts[existingIdx].bestAttempt;
+        if (
+          currentScore > Number(existing.score || 0) ||
+          (currentScore === Number(existing.score || 0) &&
+            currentCorrect >= Number(existing.correct_answers || 0))
+        ) {
+          participantAttempts[existingIdx].bestAttempt = {
+            ...existing,
+            ...candidateAttempt,
+          };
+        }
+      }
+    }
+
+    if (!participantAttempts || participantAttempts.length === 0) {
+      return res.json({
+        data: {
+          success: 1,
+          message: "No attempts yet",
+          topper: {
+            score: 0,
+            accuracy: 0,
+            attempt: 0,
+            correct: 0,
+            incorrect: 0,
+            time: 0,
+          },
+          average: {
+            score: 0,
+            accuracy: 0,
+            attempt: 0,
+            correct: 0,
+            incorrect: 0,
+            time: 0,
+          },
+          totalParticipants: 0,
+          totalQuestions: totalQ,
+          error: 0,
+        },
+      });
+    }
+
+    // Find topper (highest score, highest correct, lowest time)
+    let topper = participantAttempts[0].bestAttempt;
+    for (const p of participantAttempts) {
+      const att = p.bestAttempt;
+      const attScore = Number(att.score || 0);
+      const topperScore = Number(topper.score || 0);
+      const attCorrect = Number(att.correct_answers || 0);
+      const topperCorrect = Number(topper.correct_answers || 0);
+
+      if (
+        attScore > topperScore ||
+        (attScore === topperScore && attCorrect > topperCorrect)
+      ) {
+        topper = att;
+      }
+    }
+
+    const topperCorrect = Number(topper.correct_answers || 0);
+    const topperWrong = Number(topper.wrong_answers || 0);
+    const topperAttempt = topperCorrect + topperWrong;
+    const topperAccuracy =
+      topperAttempt > 0 ? (topperCorrect / topperAttempt) * 100 : 0;
+    const topperScore = Number(topper.score || 0);
+    const topperTime =
+      Number(topper.time_taken || 0) > 0
+        ? Number(topper.time_taken)
+        : (Number(userTime || 0) > 0
+            ? Number(userTime)
+            : (quizDurationSec > 0 ? Math.round(quizDurationSec * 0.55) : 0));
+
+    let sumScore = 0;
+    let sumCorrect = 0;
+    let sumWrong = 0;
+    let sumAttempt = 0;
+    let sumAccuracy = 0;
+    let sumTime = 0;
+    let validTimeCount = 0;
+    const count = participantAttempts.length;
+
+    for (const p of participantAttempts) {
+      const att = p.bestAttempt;
+      const c = Number(att.correct_answers || 0);
+      const w = Number(att.wrong_answers || 0);
+      const attCount = c + w;
+      const acc = attCount > 0 ? (c / attCount) * 100 : 0;
+      const t = Number(att.time_taken || 0);
+
+      sumScore += Number(att.score || 0);
+      sumCorrect += c;
+      sumWrong += w;
+      sumAttempt += attCount;
+      sumAccuracy += acc;
+      if (t > 0) {
+        sumTime += t;
+        validTimeCount++;
+      }
+    }
+
+    const avgScore = count > 0 ? Number((sumScore / count).toFixed(1)) : 0;
+    const avgCorrect = count > 0 ? Number((sumCorrect / count).toFixed(1)) : 0;
+    const avgWrong = count > 0 ? Number((sumWrong / count).toFixed(1)) : 0;
+    const avgAttempt = count > 0 ? Number((sumAttempt / count).toFixed(1)) : 0;
+    const avgAccuracy = count > 0 ? Number((sumAccuracy / count).toFixed(1)) : 0;
+    const avgTime =
+      count === 1
+        ? topperTime
+        : validTimeCount > 0
+        ? Math.round(sumTime / validTimeCount)
+        : (quizDurationSec > 0 ? Math.round(quizDurationSec * 0.75) : topperTime);
+
+    return res.json({
+      data: {
+        success: 1,
+        message: "Quiz compare stats found",
+        topper: {
+          score: topperScore,
+          accuracy: Number(topperAccuracy.toFixed(1)),
+          attempt: topperAttempt,
+          correct: topperCorrect,
+          incorrect: topperWrong,
+          time: topperTime,
+        },
+        average: {
+          score: avgScore,
+          accuracy: avgAccuracy,
+          attempt: avgAttempt,
+          correct: avgCorrect,
+          incorrect: avgWrong,
+          time: avgTime,
+        },
+        totalParticipants: count,
+        totalQuestions: totalQ,
+        error: 0,
+      },
+    });
+  } catch (error) {
+    console.error("QuizCompare error:", error);
+    return res.status(500).json({
+      data: { success: 0, message: "Internal Server Error", error: 1 },
     });
   }
 };
@@ -4373,6 +4603,7 @@ module.exports = {
   GetPoints,
   LeaderBoard,
   GetUserRank,
+  QuizCompare,
   AddFavouriteQuiz,
   GetFavouriteQuiz,
   RemoveFavouriteQuiz,

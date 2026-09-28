@@ -77,6 +77,7 @@ class QuizGroup {
       SelfchallangequizApiCall();
   static LeaderboardApiCall leaderboardApiCall = LeaderboardApiCall();
   static GetuserrankApiCall getuserrankApiCall = GetuserrankApiCall();
+  static QuizCompareApiCall quizCompareApiCall = QuizCompareApiCall();
   static GetAllCategoriesCall getAllCategoriesCall = GetAllCategoriesCall();
   static GetCategoryGroupsCall getCategoryGroupsCall = GetCategoryGroupsCall();
   static GetPlanCall getPlanCall = GetPlanCall();
@@ -1104,6 +1105,7 @@ class StartquizApiCall {
     int? correctAnswers,
     int? wrongAnswers,
     double? score,
+    int? timeTaken,
     String? token = '',
   }) async {
     final baseUrl = QuizGroup.getBaseUrl(
@@ -1119,7 +1121,8 @@ class StartquizApiCall {
   "total_questions": ${totalQuestions},
   "correct_answers": ${correctAnswers},
   "wrong_answers": ${wrongAnswers},
-  "score": ${score}
+  "score": ${score},
+  "time_taken": ${timeTaken ?? 0}
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'StartquizApi',
@@ -1596,6 +1599,67 @@ class GetuserrankApiCall {
         response,
         r'''$.data.user.percentile''',
       ));
+  int? success(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.data.success''',
+      ));
+}
+
+class QuizCompareApiCall {
+  Future<ApiCallResponse> call({
+    String? quizId = '',
+    String? userId = '',
+    double? userScore,
+    int? userCorrect,
+    int? userWrong,
+    int? userTime,
+    int? totalQuestions,
+    String? token = '',
+  }) async {
+    final baseUrl = QuizGroup.getBaseUrl(
+      token: token,
+    );
+
+    final Map<String, dynamic> body = {
+      'quizId': quizId ?? '',
+    };
+    if (userId != null && userId.isNotEmpty) body['userId'] = userId;
+    if (userScore != null) body['userScore'] = userScore;
+    if (userCorrect != null) body['userCorrect'] = userCorrect;
+    if (userWrong != null) body['userWrong'] = userWrong;
+    if (userTime != null) body['userTime'] = userTime;
+    if (totalQuestions != null && totalQuestions > 0) {
+      body['totalQuestions'] = totalQuestions;
+    }
+
+    final ffApiRequestBody = jsonEncode(body);
+    return ApiManager.instance.makeApiCall(
+      callName: 'QuizCompareApi',
+      apiUrl: '${baseUrl}quiz-compare',
+      callType: ApiCallType.POST,
+      headers: {
+        'Authorization': 'Bearer ${token}',
+      },
+      params: {},
+      body: ffApiRequestBody,
+      bodyType: BodyType.JSON,
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  dynamic topper(dynamic response) => getJsonField(
+        response,
+        r'''$.data.topper''',
+      );
+  dynamic average(dynamic response) => getJsonField(
+        response,
+        r'''$.data.average''',
+      );
   int? success(dynamic response) => castToType<int>(getJsonField(
         response,
         r'''$.data.success''',
