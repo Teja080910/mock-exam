@@ -35,7 +35,6 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   
   // Banner carousel current index
   int _bannerCurrentIndex = 0;
-  bool _showDisclaimerBanner = true;
   Future<_HomeData>? _homeDataFuture;
 
   // Max groups shown per scope section before a "View All" button appears
@@ -46,24 +45,23 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   // is recreated quickly (tab switches / lifecycle events).
   static bool _posterDialogOpen = false;
 
+  // The app-open intro poster is limited to once every 24 hours (persisted
+  // across app restarts), so it is not repeated on every open/tab change.
+  static const Duration _posterInterval = Duration(hours: 24);
+
   // Shows the most recently added/updated active admin Intro as a full
   // poster popup. Banners stay in the home carousel; the client swaps the
   // poster by adding a new Intro in the admin panel.
-  //
-  // - App open / after login: shows the poster.
-  // - Returning to the home tab: shows only when the intro changed
-  //   (different intro id), so the same poster is not repeated constantly.
-  // - App brought back to foreground after being closed/backgrounded:
-  //   shows again (forced, debounced).
-  Future<void> _showAppOpenPoster({bool force = false}) async {
+  Future<void> _showAppOpenPoster() async {
     if (_posterDialogOpen || !mounted) return;
-    if (force) {
-      final lastShown = FFAppState().lastPosterShownAt;
-      if (lastShown != null &&
-          DateTime.now().difference(lastShown) < const Duration(seconds: 8)) {
-        return;
-      }
+
+    final lastShownMs = FFAppState().posterLastShownAtMs;
+    if (lastShownMs > 0 &&
+        DateTime.now().millisecondsSinceEpoch - lastShownMs <
+            _posterInterval.inMilliseconds) {
+      return; // already shown within the last 24 hours
     }
+
     try {
       final res = await QuizGroup.getIntroAPICall.call();
       if (QuizGroup.getIntroAPICall.success(res.jsonBody) != 1) return;
@@ -84,21 +82,13 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
       });
 
       final intro = intros.first;
-      final introId = getJsonField(intro, r'''$._id''').toString();
-      if (!force &&
-          introId.isNotEmpty &&
-          introId == FFAppState().lastIntroShownId) {
-        return; // same poster already shown in this app run
-      }
-
       final rawImg = getJsonField(intro, r'''$.image''').toString();
       if (rawImg.isEmpty || !mounted) return;
       final imgUrl = rawImg.startsWith('http')
           ? rawImg
           : '${FFAppConstants.imageBaseURL}$rawImg';
 
-      FFAppState().lastIntroShownId = introId;
-      FFAppState().lastPosterShownAt = DateTime.now();
+      FFAppState().posterLastShownAtMs = DateTime.now().millisecondsSinceEpoch;
       _posterDialogOpen = true;
       final posterWidth = MediaQuery.of(context).size.width - 44.0;
       await showDialog(
@@ -170,7 +160,8 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      _showAppOpenPoster(force: true);
+      // Only shows when the 24h window has passed; cheap no-op otherwise.
+      _showAppOpenPoster();
     }
   }
 
@@ -767,7 +758,7 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                       // Refer & Earn banner
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 0.0),
+                          padding: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 0.0),
                           child: GestureDetector(
                             onTap: () => context.pushNamed(
                                 ReferAndEarnScreenWidget.routeName),
@@ -783,56 +774,6 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
                         ),
                       ),
 
-                      SliverToBoxAdapter(
-                        child: StatefulBuilder(
-                          builder: (context, setBannerState) {
-                            if (!_showDisclaimerBanner) return const SizedBox.shrink();
-                            return Container(
-                              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF3CD),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFFFEEBA), width: 1),
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.info, color: Color(0xFF0D6EFD), size: 18),
-                                  const SizedBox(width: 10),
-                                  const Expanded(
-                                    child: Text(
-                                      "Disclaimer: This app is not affiliated with or represents any government entity.",
-                                      style: TextStyle(
-                                        color: Color(0xFF664D03),
-                                        fontSize: FFFont.f12,
-                                        height: 1.3,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  InkWell(
-                                    onTap: () {
-                                      setBannerState(() {
-                                        _showDisclaimerBanner = false;
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF2B3A67),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: const Icon(Icons.close, color: Colors.white, size: 14),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                        ),
-                      ),
                       const SliverToBoxAdapter(child: SizedBox(height: 12)),
                     ],
                   );

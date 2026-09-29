@@ -26,7 +26,7 @@ class AppConfig {
   // ============================================
   // Razorpay (key ID only - keep secret on backend)
   // ============================================
-  static const String razorpayKeyID = 'rzp_test_rtsWNkrDp1dlT7';
+  static const String razorpayKeyID = 'rzp_live_Thnwr2PJRD1xML';
 
   // ============================================
   // PayPal (client ID only - keep secret on backend)

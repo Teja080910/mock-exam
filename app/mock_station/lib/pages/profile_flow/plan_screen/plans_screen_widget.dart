@@ -209,8 +209,14 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
 
       _currentOrderId = orderId;
 
+      // Prefer the publishable key returned by the backend so the checkout
+      // key always matches the key the order was created with (test vs live).
+      final serverKey = QuizGroup.buyPlanCall.key(buyResponse.jsonBody);
+
       var options = {
-        'key': FFAppConstants.razorpayKeyID,
+        'key': (serverKey != null && serverKey.isNotEmpty)
+            ? serverKey
+            : FFAppConstants.razorpayKeyID,
         'amount':
             orderAmountPaise ?? ((double.tryParse(price) ?? 0) * 100).round(),
         'name': 'Mock Station',

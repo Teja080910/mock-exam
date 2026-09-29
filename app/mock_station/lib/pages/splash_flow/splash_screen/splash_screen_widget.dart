@@ -1,4 +1,3 @@
-import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -7,7 +6,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'splash_screen_model.dart';
 export 'splash_screen_model.dart';
@@ -58,9 +56,9 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget>
         }
 
         
-        // Intro/onboarding is shown to logged-out users on every launch so
-        // intros added in the admin panel reach existing installs. Logged-in
-        // users go straight to the home screen.
+        // Logged-in users go straight to the home screen. Everyone else goes
+        // straight to the login screen - the onboarding slides are no longer
+        // shown (promos are handled by the app-open poster popup instead).
         if (FFAppState().isLogin == true && FFAppState().loginToken.isNotEmpty) {
           // Skip ad validation and set default values
           FFAppState().isBannerAd = 0;
@@ -70,105 +68,9 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget>
           FFAppState().update(() {});
           context.goNamed(HomeScreenWidget.routeName);
         } else {
-          try {
-            _model.introRes = await QuizGroup.getIntroAPICall.call().timeout(
-              const Duration(seconds: 10),
-              onTimeout: () {
-                return ApiCallResponse(
-                  '{"success":0,"message":"Timeout getting intro data"}',
-                  {'content-type': 'application/json'},
-                  -1,
-                );
-              },
-            );
-            
-
-            if (_model.introRes == null) {
-              FFAppState().isInite = true;
-              FFAppState().update(() {});
-              context.goNamed(LoginScreenWidget.routeName);
-              return;
-            }
-
-            if (_model.introRes?.statusCode == -1) {
-              print('Intro API call failed with status code -1, proceeding to login...');
-              FFAppState().isInite = true;
-              FFAppState().update(() {});
-              context.goNamed(LoginScreenWidget.routeName);
-              return;
-            }
-
-            final success = QuizGroup.getIntroAPICall.success(
-              (_model.introRes?.jsonBody ?? ''),
-            );
-
-            if (success == 1) {
-              context.goNamed(
-                OnBordingScreenWidget.routeName,
-                queryParameters: {
-                  'introsList': serializeParam(
-                    QuizGroup.getIntroAPICall.introDetailsList(
-                      (_model.introRes?.jsonBody ?? ''),
-                    ),
-                    ParamType.JSON,
-                    isList: true,
-                  ),
-                }.withoutNulls,
-              );
-            } else {
-              if (FFAppState().isLogin == true) {
-                _model.getAds = await QuizGroup.getadssettingsApiCall.call(
-                  token: FFAppState().loginToken,
-                ).timeout(
-                  const Duration(seconds: 10),
-                  onTimeout: () {
-                    print('Ad settings API call timed out after 10 seconds');
-                    return ApiCallResponse(
-                      '{"success":0,"message":"Timeout getting ad settings"}',
-                      {'content-type': 'application/json'},
-                      -1,
-                    );
-                  },
-                );
-
-                print('Ad Settings Response: ${_model.getAds?.jsonBody}');
-
-                if (QuizGroup.getadssettingsApiCall.success(
-                      (_model.getAds?.jsonBody ?? ''),
-                    ) == 1) {
-                  print('Ad settings successful, updating app state...');
-                  FFAppState().isBannerAd = (QuizGroup.getadssettingsApiCall.banner(
-                    (_model.getAds?.jsonBody ?? ''),
-                  ) as int?) ?? 0;
-                  FFAppState().isInterstialAd = (QuizGroup.getadssettingsApiCall.interstial(
-                    (_model.getAds?.jsonBody ?? ''),
-                  ) as int?) ?? 0;
-                  FFAppState().isRewardedVideoAd = (QuizGroup.getadssettingsApiCall.rewarded(
-                    (_model.getAds?.jsonBody ?? ''),
-                  ) as int?) ?? 0;
-                  FFAppState().rewardedPoints = (QuizGroup.getadssettingsApiCall.points(
-                    (_model.getAds?.jsonBody ?? ''),
-                  ) as int?) ?? 0;
-                  FFAppState().update(() {});
-                }
-
-                print('Proceeding to home screen...');
-                context.goNamed(HomeScreenWidget.routeName);
-              } else {
-                print('User is not logged in, proceeding to login screen...');
-                FFAppState().isInite = true;
-                FFAppState().update(() {});
-
-                context.goNamed(LoginScreenWidget.routeName);
-              }
-            }
-          } catch (e, stackTrace) {
-            print('Error in intro API call: $e');
-            print('Stack trace: $stackTrace');
-            FFAppState().isInite = true;
-            FFAppState().update(() {});
-            context.goNamed(LoginScreenWidget.routeName);
-          }
+          FFAppState().isInite = true;
+          FFAppState().update(() {});
+          context.goNamed(LoginScreenWidget.routeName);
         }
       } catch (e) {
         print('Error in splash screen initialization: $e');

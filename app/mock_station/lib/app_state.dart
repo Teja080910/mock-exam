@@ -33,6 +33,10 @@ class FFAppState extends ChangeNotifier {
       _introIndex = prefs.getInt('ff_introIndex') ?? _introIndex;
     });
     _safeInit(() {
+      _posterLastShownAtMs =
+          prefs.getInt('ff_posterLastShownAt') ?? _posterLastShownAtMs;
+    });
+    _safeInit(() {
       _favoriteList = prefs
               .getStringList('ff_favoriteList')
               ?.map((x) {
@@ -183,19 +187,13 @@ class FFAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Not persisted: id of the intro poster shown in this app run. Tab switches
-  // don't re-show the same poster, but a new/changed intro (different id)
-  // does. Cleared on logout so the next login shows it again.
-  String _lastIntroShownId = '';
-  String get lastIntroShownId => _lastIntroShownId;
-  set lastIntroShownId(String value) {
-    _lastIntroShownId = value;
-  }
-
-  DateTime? _lastPosterShownAt;
-  DateTime? get lastPosterShownAt => _lastPosterShownAt;
-  set lastPosterShownAt(DateTime? value) {
-    _lastPosterShownAt = value;
+  // Persisted: timestamp (ms) the app-open intro poster was last shown.
+  // The poster is limited to once every 24 hours, across app restarts.
+  int _posterLastShownAtMs = 0;
+  int get posterLastShownAtMs => _posterLastShownAtMs;
+  set posterLastShownAtMs(int value) {
+    _posterLastShownAtMs = value;
+    prefs.setInt('ff_posterLastShownAt', value);
   }
 
   bool _isInite = false;

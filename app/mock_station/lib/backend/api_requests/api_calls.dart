@@ -1856,6 +1856,13 @@ class BuyPlanCall {
         response,
         r'''$.data.success''',
       ));
+  String? key(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.key''',
+      )) ?? castToType<String>(getJsonField(
+        response,
+        r'''$.data.key''',
+      ));
 }
 
 class GetIntroAPICall {

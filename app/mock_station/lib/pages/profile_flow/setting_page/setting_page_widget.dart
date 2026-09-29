@@ -587,9 +587,6 @@ class _SettingPageWidgetState extends State<SettingPageWidget>
                                                               FFAppState()
                                                                   .loginToken = '';
                                                               FFAppState()
-                                                                  .lastIntroShownId =
-                                                                  '';
-                                                              FFAppState()
                                                                       .userDetils =
                                                                   null;
                                                               FFAppState()

@@ -291,7 +291,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       margin: const EdgeInsets.only(top: 10.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -1207,14 +1207,14 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
       totalQuestions = totalCorrect + totalWrong + totalSkip + totalReview;
     }
 
-    const gridBorderColor = Color(0xFFE5E7EB);
-    const colSubjectHeaderColor = Color(0xFF8E92A4);
-    const colCorrectColor = Color(0xFF4BBC7A);
-    const colWrongColor = Color(0xFFC63F4D);
-    const colSkipColor = Color(0xFFE0BF50);
-    const colReviewColor = Color(0xFFE981D1);
-    const colMarksColor = Color(0xFFA965E5);
-    const colTimeColor = Color(0xFFEB8F70);
+    const gridBorderColor = Color(0xFFCBD5E1);
+    const colSubjectHeaderColor = Color(0xFF64748B);
+    const colCorrectColor = Color(0xFF16A34A);
+    const colWrongColor = Color(0xFFDC2626);
+    const colSkipColor = Color(0xFF2563EB);
+    const colReviewColor = Color(0xFFF59E0B);
+    const colMarksColor = Color(0xFF7C3AED);
+    const colTimeColor = Color(0xFFEA580C);
 
     return Container(
       width: double.infinity,

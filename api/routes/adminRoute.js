@@ -66,6 +66,18 @@ admin_route.get('/', adminController.loginLoad);
 admin_route.get('/login', adminController.loginLoad);
 admin_route.post('/login', adminController.login);
 
+// Require an admin session for every route except the login page and logout.
+// Anonymous/expired sessions are redirected to the login page instead of
+// reaching controllers (which otherwise crash the process on a missing
+// session id).
+const { isLogin } = require('../middleware/auth');
+admin_route.use((req, res, next) => {
+  if (req.path === '/' || req.path === '/login' || req.path === '/logout') {
+    return next();
+  }
+  return isLogin(req, res, next);
+});
+
 // Dashboard, Profile 
 admin_route.get('/dashboard', adminController.dashboardLoad);
 admin_route.get('/edit-profile', adminController.adminProfile);
