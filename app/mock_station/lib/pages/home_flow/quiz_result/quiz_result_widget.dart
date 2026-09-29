@@ -1211,8 +1211,8 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     const colSubjectHeaderColor = Color(0xFF64748B);
     const colCorrectColor = Color(0xFF16A34A);
     const colWrongColor = Color(0xFFDC2626);
-    const colSkipColor = Color(0xFF2563EB);
-    const colReviewColor = Color(0xFFF59E0B);
+    const colSkipColor = Color(0xFFC98A00);
+    const colReviewColor = Color(0xFFC74E9C);
     const colMarksColor = Color(0xFF7C3AED);
     const colTimeColor = Color(0xFFEA580C);
 
@@ -1786,49 +1786,49 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                           value: total.toString(),
                           icon: Icons.article_rounded,
                           accentColor: const Color(0xFF1088EC),
-                          backgroundColor: const Color(0xFFEBF2FE)),
+                          backgroundColor: const Color(0xFFDCE9FC)),
                       _buildMetricCard(
                           title: 'Total Marks',
                           value: _formatMarks(_displayTotalMarks),
                           icon: Icons.emoji_events_rounded,
                           accentColor: const Color(0xFF9D52E8),
-                          backgroundColor: const Color(0xFFF5F1FF)),
+                          backgroundColor: const Color(0xFFEAE2FF)),
                       _buildMetricCard(
                           title: 'Correct Answers',
                           value: correct.toString(),
                           icon: Icons.check_circle_rounded,
                           accentColor: const Color(0xFF2BB76F),
-                          backgroundColor: const Color(0xFFEBFBF1)),
+                          backgroundColor: const Color(0xFFDCF5E7)),
                       _buildMetricCard(
                           title: 'Incorrect Answers',
                           value: wrong.toString(),
                           icon: Icons.cancel_rounded,
                           accentColor: const Color(0xFFEE0D08),
-                          backgroundColor: const Color(0xFFFEF0F0)),
+                          backgroundColor: const Color(0xFFFCE3E3)),
                       _buildMetricCard(
                           title: 'Skipped Questions',
                           value: skipped.toString(),
                           icon: Icons.timer_rounded,
                           accentColor: const Color(0xFFEEB123),
-                          backgroundColor: const Color(0xFFFFF8ED)),
+                          backgroundColor: const Color(0xFFFDEDD6)),
                       _buildMetricCard(
                           title: 'Marked for Review',
                           value: _computedReview.toString(),
                           icon: Icons.star_rounded,
                           accentColor: const Color(0xFFED7BC3),
-                          backgroundColor: const Color(0xFFFDF0F9)),
+                          backgroundColor: const Color(0xFFFBDDEE)),
                       _buildMetricCard(
                           title: 'Accuracy',
                           value: accuracyLabel,
                           icon: Icons.track_changes_rounded,
                           accentColor: const Color(0xFF2297E6),
-                          backgroundColor: const Color(0xFFEAF7FF)),
+                          backgroundColor: const Color(0xFFD6EDFF)),
                       _buildMetricCard(
                           title: 'Total Time Taken',
                           value: timeLabel,
                           icon: Icons.timer_outlined,
                           accentColor: const Color(0xFFEB6213),
-                          backgroundColor: const Color(0xFFFDF3E9)),
+                          backgroundColor: const Color(0xFFFAE6D2)),
                       _buildMetricCard(
                           title: 'Percentile',
                           value: _percentile == null
@@ -1836,7 +1836,7 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
                               : '${_percentile!.toStringAsFixed(1)}%',
                           icon: Icons.trending_up_rounded,
                           accentColor: const Color(0xFF0E665A),
-                          backgroundColor: const Color(0xFFC8FEF1)),
+                          backgroundColor: const Color(0xFFB0F5E3)),
                     ],
                   ),
                   const SizedBox(height: 18.0),
