@@ -19,15 +19,15 @@ class ReferAndEarnScreenWidget extends StatefulWidget {
 class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   String referralCode = '';
-  String? upiId;
   int cashbackPercent = 20;
   int discountPercent = 12;
   double totalCashback = 0;
-  double totalPending = 0;
+  double totalRedeemed = 0;
+  double walletBalance = 0;
   List<dynamic> cashbackRecords = [];
+  List<dynamic> walletTransactions = [];
   bool hasReferrer = false;
   bool _loading = true;
-  bool _savingUpi = false;
 
   @override
   void initState() {
@@ -64,8 +64,9 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
             QuizGroup.getReferralInfoCall.cashbackPercent(infoBody) ?? 20;
         discountPercent =
             QuizGroup.getReferralInfoCall.discountPercent(infoBody) ?? 12;
-        upiId = QuizGroup.getReferralInfoCall.upiId(infoBody);
         hasReferrer = QuizGroup.getReferralInfoCall.hasReferrer(infoBody) ?? false;
+        walletBalance =
+            (QuizGroup.getReferralInfoCall.walletBalancePaise(infoBody) ?? 0) / 100;
       });
     }
 
@@ -74,117 +75,17 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
     if (cashBody != null) {
       setState(() {
         totalCashback = QuizGroup.getReferralCashbacksCall.totalEarned(cashBody) ?? 0;
-        totalPending = QuizGroup.getReferralCashbacksCall.totalPending(cashBody) ?? 0;
+        totalRedeemed = QuizGroup.getReferralCashbacksCall.totalRedeemed(cashBody) ?? 0;
+        walletBalance =
+            (QuizGroup.getReferralCashbacksCall.walletBalancePaise(cashBody) ?? 0) / 100;
         cashbackRecords =
             QuizGroup.getReferralCashbacksCall.cashbacks(cashBody) ?? [];
+        walletTransactions =
+            QuizGroup.getReferralCashbacksCall.transactions(cashBody) ?? [];
       });
     }
 
     setState(() => _loading = false);
-  }
-
-  void _showAddUpiDialog() {
-    final textController = TextEditingController(text: upiId ?? '');
-    showDialog(
-      context: context,
-      builder: (context) => AppDialogShell(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Add Your UPI ID',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: FFFont.f18, color: Color(0xFF111827)),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Enter your UPI ID to receive direct cashback into your bank account.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: FFFont.f14, color: Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: textController,
-              decoration: InputDecoration(
-                hintText: 'e.g. username@oksbi',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF64748B),
-                      side: const BorderSide(color: Color(0xFFE5E7EB)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel', style: TextStyle(fontSize: FFFont.f14)),
-                  ),
-                ),
-                const SizedBox(width: 10.0),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF059669),
-                      disabledBackgroundColor: const Color(0xFF94A3B8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    ),
-                    onPressed: _savingUpi
-                        ? null
-                        : () async {
-                            if (textController.text.trim().isNotEmpty) {
-                              final token = FFAppState().loginToken;
-                              if (token.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please login to continue')),
-                                );
-                                return;
-                              }
-                              setState(() => _savingUpi = true);
-                              final res = await QuizGroup.saveUpiIdCall.call(
-                                token: token,
-                                upiId: textController.text.trim(),
-                              );
-                              final resBody = res.jsonBody;
-                              setState(() => _savingUpi = false);
-                              if (resBody != null) {
-                                final success = QuizGroup.saveUpiIdCall.success(resBody) ?? false;
-                                if (success) {
-                                  setState(() => upiId = textController.text.trim());
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('UPI ID saved successfully!')),
-                                  );
-                                } else {
-                                  final msg = QuizGroup.saveUpiIdCall.message(resBody);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(msg ?? 'Failed to save UPI ID')),
-                                  );
-                                }
-                              }
-                            }
-                          },
-                    child: _savingUpi
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('Save', style: TextStyle(color: Colors.white, fontSize: FFFont.f14)),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -341,11 +242,15 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                     ),
                     const SizedBox(height: 20.0),
 
-                    // Add UPI ID Card (dashed border)
+                    // Cashback Wallet Card
                     Container(
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFECFDF5), Color(0xFFF0FDF4)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
                         borderRadius: BorderRadius.circular(16.0),
                         border: Border.all(
                           color: const Color(0xFF10B981),
@@ -368,70 +273,39 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                               color: const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
-                            child: const Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Icon(Icons.account_balance_wallet_rounded,
-                                    color: Color(0xFF059669), size: 24.0),
-                                Positioned(
-                                  right: 4,
-                                  bottom: 4,
-                                  child: Icon(Icons.add_circle,
-                                      size: 14.0, color: Color(0xFF059669)),
-                                ),
-                              ],
-                            ),
+                            child: const Icon(Icons.account_balance_wallet_rounded,
+                                color: Color(0xFF059669), size: 24.0),
                           ),
                           const SizedBox(width: 14.0),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                const Text(
+                                  'Cashback Wallet Balance',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: FFFont.f14,
+                                    color: Color(0xFF047857),
+                                  ),
+                                ),
+                                const SizedBox(height: 4.0),
                                 Text(
-                                  upiId != null
-                                      ? 'UPI ID: $upiId'
-                                      : 'Add Your UPI ID',
+                                  '\u20b9${walletBalance.toStringAsFixed(2)}',
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: FFFont.f16,
-                                    color: Color(0xFF1E293B),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: FFFont.f24,
+                                    color: Color(0xFF065F46),
                                   ),
                                 ),
                                 const SizedBox(height: 3.0),
-                                Text(
-                                  upiId != null
-                                      ? 'Tap to edit your payout UPI'
-                                      : 'Add your UPI ID to get cashback directly into your bank account!',
-                                  style: const TextStyle(
+                                const Text(
+                                  'Auto-applied on your next plan purchase',
+                                  style: TextStyle(
                                     fontSize: FFFont.f12,
                                     color: Color(0xFF64748B),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF059669),
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14.0, vertical: 10.0),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0)),
-                            ),
-                            onPressed: _showAddUpiDialog,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Text('Add UPI ID',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: FFFont.f12)),
-                                SizedBox(width: 4.0),
-                                Icon(Icons.chevron_right,
-                                    color: Colors.white, size: 16.0),
                               ],
                             ),
                           ),
@@ -695,7 +569,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                   color: Colors.white, size: 18.0),
               SizedBox(width: 8.0),
               Text(
-                'Your Cashback',
+                'Cashback Wallet',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -712,7 +586,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '₹${totalCashback.toStringAsFixed(2)}',
+                      '\u20b9${walletBalance.toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -720,7 +594,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       ),
                     ),
                     const Text(
-                      'Credited',
+                      'Available',
                       style: TextStyle(color: Colors.white70, fontSize: FFFont.f11),
                     ),
                   ],
@@ -731,7 +605,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '₹${totalPending.toStringAsFixed(2)}',
+                      '\u20b9${totalRedeemed.toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -739,7 +613,26 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       ),
                     ),
                     const Text(
-                      'Pending',
+                      'Used',
+                      style: TextStyle(color: Colors.white70, fontSize: FFFont.f11),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '\u20b9${totalCashback.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: FFFont.f20,
+                      ),
+                    ),
+                    const Text(
+                      'Total Earned',
                       style: TextStyle(color: Colors.white70, fontSize: FFFont.f11),
                     ),
                   ],
@@ -747,45 +640,43 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
               ),
             ],
           ),
-          if (cashbackRecords.isNotEmpty) ...[
+          if (walletTransactions.isNotEmpty) ...[
             const SizedBox(height: 12.0),
             const Divider(color: Colors.white24, height: 1),
             const SizedBox(height: 10.0),
-            ...cashbackRecords.take(5).map((record) {
-              final rec = record as Map<String, dynamic>;
-              final status = rec['status'] == 'paid' ? 'Paid' : 'Pending';
-              final amount = (rec['cashbackAmount'] ?? 0).toStringAsFixed(2);
+            ...walletTransactions.take(6).map((tx) {
+              final item = tx as Map;
+              final isEarn = item['type'] == 'earn';
+              final amountPaise =
+                  int.tryParse((item['amountPaise'] ?? 0).toString()) ?? 0;
+              final amount = (amountPaise / 100).toStringAsFixed(2);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
-                    Icon(Icons.card_giftcard,
+                    Icon(
+                        isEarn
+                            ? Icons.arrow_downward_rounded
+                            : Icons.arrow_upward_rounded,
                         size: 16.0,
-                        color: rec['status'] == 'paid'
-                            ? Colors.white70
-                            : Colors.amberAccent),
+                        color: Colors.white70),
                     const SizedBox(width: 8.0),
                     Expanded(
                       child: Text(
-                        rec['planName'] ?? 'Plan purchase',
+                        (item['title'] ?? '').toString().isNotEmpty
+                            ? item['title'].toString()
+                            : (isEarn ? 'Cashback earned' : 'Cashback used'),
                         style: const TextStyle(
                             color: Colors.white, fontSize: FFFont.f12),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Text('₹$amount',
+                    Text(
+                        '${isEarn ? '+' : '-'}\u20b9$amount',
                         style: const TextStyle(
                             color: Colors.white,
                             fontSize: FFFont.f12,
                             fontWeight: FontWeight.bold)),
-                    const SizedBox(width: 10.0),
-                    Text(status,
-                        style: TextStyle(
-                            color: rec['status'] == 'paid'
-                                ? Colors.white70
-                                : Colors.amberAccent,
-                            fontSize: FFFont.f11,
-                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               );

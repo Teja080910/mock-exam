@@ -69,6 +69,11 @@ const userSchema = new mongoose.Schema ({
     upi_id:{
         type:String,
         default:''
+    },
+    // Referral cashback wallet. Stored in paise so money math stays integer.
+    cashback_balance_paise:{
+        type:Number,
+        default:0
     }
 },
 { timestamps: true });

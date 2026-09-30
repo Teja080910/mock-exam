@@ -40,6 +40,32 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) => refreshProfile());
   }
 
+  Future<void> _showPlanSuccessDialog() async {
+    await refreshProfile();
+    if (!mounted) return;
+    await showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          elevation: 0,
+          insetPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          alignment: AlignmentDirectional(0.0, 0.0),
+          child: PaymentSuccessComponantWidget(
+            title: 'Subscription Successful!',
+            message:
+                'Your plan has been activated successfully. You can now access your mock tests.',
+            onTapHome: () async {
+              Navigator.pop(dialogContext);
+              context.goNamed(HomeScreenWidget.routeName);
+            },
+          ),
+        );
+      },
+    );
+  }
+
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
     print('Payment Success: ${response.paymentId}');
     final orderId = response.orderId ?? _currentOrderId;
@@ -60,30 +86,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
           getJsonField(verifyRes.jsonBody, r'''$.data.success''');
 
       if (vSuccess == true || vSuccess == 1) {
-        await refreshProfile();
-        if (mounted) {
-          await showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (dialogContext) {
-              return Dialog(
-                elevation: 0,
-                insetPadding: EdgeInsets.zero,
-                backgroundColor: Colors.transparent,
-                alignment: AlignmentDirectional(0.0, 0.0),
-                child: PaymentSuccessComponantWidget(
-                  title: 'Subscription Successful!',
-                  message:
-                      'Your plan has been activated successfully. You can now access your mock tests.',
-                  onTapHome: () async {
-                    Navigator.pop(dialogContext);
-                    context.goNamed(HomeScreenWidget.routeName);
-                  },
-                ),
-              );
-            },
-          );
-        }
+        await _showPlanSuccessDialog();
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -206,6 +209,16 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
       print(
         '=== ORDER DATA -> ID: $orderId, PAISE: $orderAmountPaise, INR: $orderAmountINR ===',
       );
+
+      // Wallet covered the full amount - the backend already activated the
+      // plan, no Razorpay checkout needed.
+      final paidWithWallet =
+          QuizGroup.buyPlanCall.paidWithWallet(buyResponse.jsonBody) ?? false;
+      if (paidWithWallet) {
+        print('=== Paid fully with cashback wallet ===');
+        await _showPlanSuccessDialog();
+        return;
+      }
 
       _currentOrderId = orderId;
 

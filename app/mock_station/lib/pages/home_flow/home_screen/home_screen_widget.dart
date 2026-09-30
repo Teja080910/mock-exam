@@ -3,6 +3,7 @@ import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/componants/referral_prompt/referral_prompt.dart';
 import '/pages/category_flow/group_detail_page/group_detail_page_widget.dart';
 import '/pages/home_flow/all_group_list_page/all_group_list_page_widget.dart';
 import '/pages/home_flow/search_screen/search_screen_widget.dart';
@@ -194,11 +195,13 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _showAppOpenPoster();
+      await _showAppOpenPoster();
       if (FFAppState().isLogin &&
           FFAppState().loginToken.isNotEmpty &&
           FFAppState().userId.isNotEmpty) {
-        // showReferralPromptOnce(context);
+        // Ask referred users for a referral code once (Google-only signup has
+        // no code field, so this is where B can apply A's code).
+        await showReferralPromptOnce(context);
       }
       if (FFAppState().isLogin) {
         _model.apiResultaov = await QuizGroup.isVerifyAccountCall.call(

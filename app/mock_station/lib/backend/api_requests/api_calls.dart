@@ -1863,6 +1863,26 @@ class BuyPlanCall {
         response,
         r'''$.data.key''',
       ));
+  bool? paidWithWallet(dynamic response) => castToType<bool>(getJsonField(
+        response,
+        r'''$.paidWithWallet''',
+      ));
+  int? payablePaise(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.payablePaise''',
+      ));
+  int? walletUsedPaise(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.walletUsedPaise''',
+      ));
+  int? walletBalancePaise(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.walletBalancePaise''',
+      ));
+  int? discountPaise(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.discountPaise''',
+      ));
 }
 
 class GetIntroAPICall {
@@ -2220,6 +2240,10 @@ class GetReferralInfoCall {
         response,
         r'''$.hasReferrer''',
       ));
+  int? walletBalancePaise(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.walletBalancePaise''',
+      ));
 }
 
 class GetReferralCashbacksCall {
@@ -2265,6 +2289,19 @@ class GetReferralCashbacksCall {
         r'''$.cashbacks''',
         true,
       ) as List?;
+  int? walletBalancePaise(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.walletBalancePaise''',
+      ));
+  double? totalRedeemed(dynamic response) => castToType<double>(getJsonField(
+        response,
+        r'''$.totalRedeemed''',
+      ));
+  List? transactions(dynamic response) => getJsonField(
+        response,
+        r'''$.transactions''',
+        true,
+      ) as List?;
 }
 
 class ApplyReferralCodeCall {
@@ -2299,10 +2336,15 @@ class ApplyReferralCodeCall {
     );
   }
 
-  bool? success(dynamic response) => castToType<bool>(getJsonField(
-        response,
-        r'''$.success''',
-      ));
+  // Backend may return success as bool (true/false) or int (1/0).
+  bool? success(dynamic response) {
+    final value = getJsonField(response, r'''$.success''');
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    return value.toString().toLowerCase() == 'true';
+  }
+
   String? message(dynamic response) => castToType<String>(getJsonField(
         response,
         r'''$.message''',

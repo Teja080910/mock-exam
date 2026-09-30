@@ -87,6 +87,7 @@ admin_route.post('/change-password', adminController.resetAdminPassword);
 admin_route.get('/currency', CurrencyController.currency);
 admin_route.post('/currency', CurrencyController.currencydata);
 admin_route.get('/view-users', adminController.viewUsers);
+admin_route.get('/view-cashbacks', adminController.viewCashbacks);
 admin_route.post('/view-users/:id/toggle', adminController.userStatus);
 admin_route.get('/logout', adminController.adminLogout);
 

@@ -30,6 +30,7 @@ const Plan = require("../models/planModel");
 const UserPlan = require("../models/userPlanModel");
 const Page = require("../models/pagesModel");
 const ReferralCashback = require("../models/referralCashbackModel");
+const CashbackTransaction = require("../models/cashbackTransactionModel");
 const admin = require("../config/firebase");
 const SMTP = require("../models/smtpModel");
 const CategoryGroup = require("../models/categoryGroupModel");
@@ -3745,14 +3746,141 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Referral settings with schema defaults (used when no Setting doc exists)
+// Referral settings. Empty/null fields fall back to the product defaults so
+// a partially configured Setting doc doesn't silently disable rewards.
 async function getReferralSettings() {
   const setting = await Setting.findOne();
+  const val = (v, def) => (v === null || v === undefined || v === '' ? def : Number(v));
   return {
-    rewardPoints: setting ? setting.referral_reward_points || 0 : 0,
-    discountPercent: setting ? setting.referral_discount_percent || 0 : 12,
-    cashbackPercent: setting ? setting.referral_cashback_percent || 0 : 20,
+    rewardPoints: val(setting ? setting.referral_reward_points : null, 0),
+    discountPercent: val(setting ? setting.referral_discount_percent : null, 12),
+    cashbackPercent: val(setting ? setting.referral_cashback_percent : null, 20),
   };
+}
+
+// Activates (or extends) a user's plan subscription. Shared by Razorpay
+// payment verification and by wallet-only (fully covered) purchases.
+async function activatePlanForUser(userId, plan) {
+  let userPlan = await UserPlan.findOne({ userId });
+
+  if (!userPlan) {
+    userPlan = new UserPlan({
+      userId,
+      subscriptions: [],
+      categoryGroupIds: [],
+    });
+  }
+
+  if (!userPlan.subscriptions) {
+    userPlan.subscriptions = [];
+  }
+
+  const now = new Date();
+  // Auto-migrate legacy userPlan if subscriptions is empty
+  if (userPlan.subscriptions.length === 0 && userPlan.planId) {
+    const isLegacyExpired = userPlan.expiresAt && new Date(userPlan.expiresAt) < now;
+    userPlan.subscriptions.push({
+      planId: userPlan.planId,
+      planName: "",
+      planCode: "",
+      categoryGroupId: userPlan.categoryGroupIds && userPlan.categoryGroupIds.length === 1 ? userPlan.categoryGroupIds[0] : null,
+      price: userPlan.price || 0,
+      planStatus: isLegacyExpired ? "expired" : (userPlan.planStatus || "active"),
+      purchasedAt: userPlan.createdAt || now,
+      expiresAt: userPlan.expiresAt,
+    });
+  }
+
+  let subExpiryDate = null;
+  const validityText = (plan.planValidity || "").toLowerCase();
+  if (validityText.includes("lifetime")) {
+    subExpiryDate = null;
+  } else {
+    subExpiryDate = new Date();
+    const validityNumber = parseInt(validityText, 10) || 1;
+    if (validityText.includes("month")) {
+      subExpiryDate.setMonth(subExpiryDate.getMonth() + validityNumber);
+    } else {
+      subExpiryDate.setFullYear(subExpiryDate.getFullYear() + validityNumber);
+    }
+  }
+
+  const newSubItem = {
+    planId: plan._id,
+    planName: plan.planName || "",
+    planCode: plan.planId || "",
+    categoryGroupId: plan.categoryGroup || null,
+    price: plan.price || 0,
+    planStatus: "active",
+    purchasedAt: new Date(),
+    expiresAt: subExpiryDate,
+  };
+
+  const existingSubIdx = userPlan.subscriptions.findIndex(
+    (s) => s.planId && s.planId.toString() === plan._id.toString()
+  );
+
+  if (existingSubIdx >= 0) {
+    userPlan.subscriptions[existingSubIdx] = newSubItem;
+  } else {
+    userPlan.subscriptions.push(newSubItem);
+  }
+
+  const activeSubs = userPlan.subscriptions.filter(
+    (s) => s.planStatus === "active" && (!s.expiresAt || new Date(s.expiresAt) > now)
+  );
+
+  let hasLifetime = false;
+  let hasMockAll = false;
+  const activeCategoryGroupIds = new Set();
+  let maxExpiryDate = null;
+
+  for (const sub of activeSubs) {
+    const code = (sub.planCode || "").toUpperCase();
+    const name = (sub.planName || "").toLowerCase();
+
+    const isSubLifetime = code === "PLAN-LTP01" || name.includes("lifetime");
+    const isSubAIO =
+      code === "PLAN-AIO01" ||
+      name.includes("all in one") ||
+      name.includes("all-in-one") ||
+      name.includes("all access") ||
+      name.includes("all-access");
+    const isSubEbook = code === "PLAN-EBK01" || name.includes("ebook");
+    const isSubNotes = code === "PLAN-NOT01" || name.includes("notes");
+    const isSubMockAll = code === "PLAN-MKT01" || (!sub.categoryGroupId && !isSubEbook && !isSubNotes && !isSubAIO && !isSubLifetime);
+
+    if (isSubLifetime) hasLifetime = true;
+    if (isSubLifetime || isSubAIO || isSubMockAll) hasMockAll = true;
+
+    if (sub.categoryGroupId) {
+      activeCategoryGroupIds.add(sub.categoryGroupId.toString());
+    }
+
+    if (sub.expiresAt) {
+      const exp = new Date(sub.expiresAt);
+      if (!maxExpiryDate || exp > maxExpiryDate) {
+        maxExpiryDate = exp;
+      }
+    }
+  }
+
+  if (hasMockAll) {
+    userPlan.isSelectedAll = true;
+    const allGroups = await CategoryGroup.find({}, "_id");
+    userPlan.categoryGroupIds = allGroups.map((g) => g._id);
+  } else {
+    userPlan.isSelectedAll = false;
+    userPlan.categoryGroupIds = Array.from(activeCategoryGroupIds);
+  }
+
+  userPlan.planId = plan._id;
+  userPlan.price = plan.price;
+  userPlan.planStatus = activeSubs.length > 0 ? "active" : "expired";
+  userPlan.expiresAt = hasLifetime ? null : (maxExpiryDate || subExpiryDate);
+
+  await userPlan.save();
+  return userPlan;
 }
 
 const buyPlan = async (req, res) => {
@@ -3923,28 +4051,71 @@ const buyPlan = async (req, res) => {
     }
 
     // ============================
+    // 💳 CASHBACK WALLET
+    // ============================
+    const discountedPaise = finalAmount * 100;
+    const balancePaise = user ? user.cashback_balance_paise || 0 : 0;
+    const walletUsedPaise = Math.min(balancePaise, discountedPaise);
+    const payablePaise = discountedPaise - walletUsedPaise;
+    const discountPaise = amount * 100 - discountedPaise;
+
+    // Wallet covers the full amount - activate immediately, no Razorpay.
+    if (payablePaise === 0) {
+      let balanceAfter = balancePaise;
+      if (user && walletUsedPaise > 0) {
+        user.cashback_balance_paise = balancePaise - walletUsedPaise;
+        await user.save();
+        await CashbackTransaction.create({
+          userId: user._id,
+          type: "redeem",
+          amountPaise: walletUsedPaise,
+          title: `Used for ${plan.planName || "plan purchase"}`,
+          orderId: `wallet_${Date.now()}`,
+          balanceAfterPaise: user.cashback_balance_paise,
+        });
+        balanceAfter = user.cashback_balance_paise;
+      }
+      await activatePlanForUser(userId, plan);
+      return res.status(200).json({
+        success: true,
+        paidWithWallet: true,
+        planName: plan.planName,
+        amount: 0,
+        payablePaise: 0,
+        walletUsedPaise,
+        walletBalancePaise: balanceAfter,
+        discountPaise,
+        key: process.env.RAZORPAY_KEY_ID,
+      });
+    }
+
+    // ============================
     // 🔐 RAZORPAY ORDER
     // ============================
 
-    const amountInPaise = finalAmount * 100;
-
     const order = await razorpay.orders.create({
-      amount: amountInPaise,
+      amount: payablePaise,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
       notes: {
         userId: userId.toString(),
         planId: plan._id.toString(),
+        walletUsedPaise: String(walletUsedPaise),
       },
     });
 
     res.status(200).json({
       success: true,
+      paidWithWallet: false,
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
       key: process.env.RAZORPAY_KEY_ID,
       planName: plan.planName,
+      payablePaise,
+      walletUsedPaise,
+      walletBalancePaise: balancePaise,
+      discountPaise,
     });
   } catch (error) {
     console.error("Create Order Error:", error);
@@ -3996,136 +4167,31 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    let userPlan = await UserPlan.findOne({ userId });
-
-    if (!userPlan) {
-      userPlan = new UserPlan({
-        userId,
-        subscriptions: [],
-        categoryGroupIds: [],
-      });
-    }
-
-    if (!userPlan.subscriptions) {
-      userPlan.subscriptions = [];
-    }
-
-    // Auto-migrate legacy userPlan if subscriptions is empty
-    const now = new Date();
-    if (userPlan.subscriptions.length === 0 && userPlan.planId) {
-      const isLegacyExpired = userPlan.expiresAt && new Date(userPlan.expiresAt) < now;
-      userPlan.subscriptions.push({
-        planId: userPlan.planId,
-        planName: "",
-        planCode: "",
-        categoryGroupId: userPlan.categoryGroupIds && userPlan.categoryGroupIds.length === 1 ? userPlan.categoryGroupIds[0] : null,
-        price: userPlan.price || 0,
-        planStatus: isLegacyExpired ? "expired" : (userPlan.planStatus || "active"),
-        purchasedAt: userPlan.createdAt || now,
-        expiresAt: userPlan.expiresAt,
-      });
-    }
-
     // ===============================
-    // 🧠 ACTIVATE PLAN DATA (MULTI-SUBSCRIPTION)
+    // 💳 WALLET (CASHBACK) DEDUCTION
     // ===============================
-    let subExpiryDate = null;
-    const validityText = (plan.planValidity || "").toLowerCase();
-    if (validityText.includes("lifetime")) {
-      subExpiryDate = null;
-    } else {
-      subExpiryDate = new Date();
-      const validityNumber = parseInt(validityText, 10) || 1;
-      if (validityText.includes("month")) {
-        subExpiryDate.setMonth(subExpiryDate.getMonth() + validityNumber);
-      } else {
-        subExpiryDate.setFullYear(subExpiryDate.getFullYear() + validityNumber);
-      }
-    }
-
-    const newSubItem = {
-      planId: plan._id,
-      planName: plan.planName || "",
-      planCode: plan.planId || "",
-      categoryGroupId: plan.categoryGroup || null,
-      price: plan.price || 0,
-      planStatus: "active",
-      purchasedAt: new Date(),
-      expiresAt: subExpiryDate,
-    };
-
-    // Update existing subscription entry if exists, or append new
-    const existingSubIdx = userPlan.subscriptions.findIndex(
-      (s) => s.planId && s.planId.toString() === plan._id.toString()
-    );
-
-    if (existingSubIdx >= 0) {
-      userPlan.subscriptions[existingSubIdx] = newSubItem;
-    } else {
-      userPlan.subscriptions.push(newSubItem);
-    }
-
-    // Recalculate aggregate permissions & access across all active subscriptions
-    const activeSubs = userPlan.subscriptions.filter(
-      (s) => s.planStatus === "active" && (!s.expiresAt || new Date(s.expiresAt) > now)
-    );
-
-    let hasLifetime = false;
-    let hasAIO = false;
-    let hasEbook = false;
-    let hasNotes = false;
-    let hasMockAll = false;
-    const activeCategoryGroupIds = new Set();
-    let maxExpiryDate = null;
-
-    for (const sub of activeSubs) {
-      const code = (sub.planCode || "").toUpperCase();
-      const name = (sub.planName || "").toLowerCase();
-
-      const isSubLifetime = code === "PLAN-LTP01" || name.includes("lifetime");
-      const isSubAIO =
-        code === "PLAN-AIO01" ||
-        name.includes("all in one") ||
-        name.includes("all-in-one") ||
-        name.includes("all access") ||
-        name.includes("all-access");
-      const isSubEbook = code === "PLAN-EBK01" || name.includes("ebook");
-      const isSubNotes = code === "PLAN-NOT01" || name.includes("notes");
-      const isSubMockAll = code === "PLAN-MKT01" || (!sub.categoryGroupId && !isSubEbook && !isSubNotes && !isSubAIO && !isSubLifetime);
-
-      if (isSubLifetime) hasLifetime = true;
-      if (isSubAIO) hasAIO = true;
-      if (isSubLifetime || isSubAIO || isSubEbook) hasEbook = true;
-      if (isSubLifetime || isSubAIO || isSubNotes) hasNotes = true;
-      if (isSubLifetime || isSubAIO || isSubMockAll) hasMockAll = true;
-
-      if (sub.categoryGroupId) {
-        activeCategoryGroupIds.add(sub.categoryGroupId.toString());
-      }
-
-      if (sub.expiresAt) {
-        const exp = new Date(sub.expiresAt);
-        if (!maxExpiryDate || exp > maxExpiryDate) {
-          maxExpiryDate = exp;
+    const walletUsedPaise = parseInt(order.notes?.walletUsedPaise || "0", 10) || 0;
+    if (walletUsedPaise > 0) {
+      const buyer = await User.findById(userId);
+      if (buyer) {
+        const currentBalance = buyer.cashback_balance_paise || 0;
+        const deducted = Math.min(currentBalance, walletUsedPaise);
+        if (deducted > 0) {
+          buyer.cashback_balance_paise = currentBalance - deducted;
+          await buyer.save();
+          await CashbackTransaction.create({
+            userId: buyer._id,
+            type: "redeem",
+            amountPaise: deducted,
+            title: `Used for ${plan.planName || "plan purchase"}`,
+            orderId: razorpay_order_id,
+            balanceAfterPaise: buyer.cashback_balance_paise,
+          });
         }
       }
     }
 
-    if (hasMockAll) {
-      userPlan.isSelectedAll = true;
-      const allGroups = await CategoryGroup.find({}, "_id");
-      userPlan.categoryGroupIds = allGroups.map((g) => g._id);
-    } else {
-      userPlan.isSelectedAll = false;
-      userPlan.categoryGroupIds = Array.from(activeCategoryGroupIds);
-    }
-
-    userPlan.planId = plan._id;
-    userPlan.price = plan.price;
-    userPlan.planStatus = activeSubs.length > 0 ? "active" : "expired";
-    userPlan.expiresAt = hasLifetime ? null : (maxExpiryDate || subExpiryDate);
-
-    await userPlan.save();
+    const userPlan = await activatePlanForUser(userId, plan);
 
     // ===============================
     // 🎁 REFERRAL REWARD
@@ -4156,41 +4222,60 @@ const verifyPayment = async (req, res) => {
     }
 
     // ===============================
-    // 💸 REFERRAL CASHBACK (UPI)
+    // 💸 REFERRAL CASHBACK → REFERRER WALLET
     // ===============================
-    if (user && user.referred_by && user.upi_id) {
+    if (user && user.referred_by && (order.amount || 0) > 0) {
       const settings = await getReferralSettings();
       const cashbackPercent = settings.cashbackPercent;
 
       if (cashbackPercent > 0) {
-        const paidAmount = (order.amount || 0) / 100; // paise -> rupees
-        const cashbackAmount = Math.round(paidAmount * cashbackPercent) / 100;
-        const discountAmount = plan.price - paidAmount;
+        const paidPaise = order.amount || 0;
+        const cashbackPaise = Math.round((paidPaise * cashbackPercent) / 100);
+        const discountAmount = plan.price - paidPaise / 100;
 
-        // 🔁 Guard: only credit one cashback flow per referred purchase
+        // 🔁 Guard: only credit once per referred user
         const existingCashback = await ReferralCashback.findOne({
           referrerId: user.referred_by,
           referredUserId: user._id,
-          status: { $in: ['pending', 'paid'] },
+          status: { $in: ['pending', 'credited', 'used', 'paid'] },
         });
 
-        if (!existingCashback) {
-          await ReferralCashback.create({
-            referrerId: user.referred_by,
-            referredUserId: user._id,
-            planId: plan._id,
-            planName: plan.planName || 'Plan',
-            planAmount: plan.price,
-            discountAmount: Math.max(discountAmount, 0),
-            paidAmount: paidAmount,
-            cashbackPercent: cashbackPercent,
-            cashbackAmount: cashbackAmount,
-            status: 'pending',
-          });
+        if (!existingCashback && cashbackPaise > 0) {
+          const referrer = await User.findById(user.referred_by);
+          if (referrer) {
+            const record = await ReferralCashback.create({
+              referrerId: referrer._id,
+              referredUserId: user._id,
+              planId: plan._id,
+              planName: plan.planName || 'Plan',
+              planAmount: plan.price,
+              discountAmount: Math.max(discountAmount, 0),
+              paidAmount: paidPaise / 100,
+              cashbackPercent: cashbackPercent,
+              cashbackAmount: cashbackPaise / 100,
+              status: 'credited',
+              paidAt: new Date(),
+            });
 
-          console.log(
-            `Referral cashback credited: referrer=${user.referred_by}, amount=₹${cashbackAmount}`
-          );
+            referrer.cashback_balance_paise =
+              (referrer.cashback_balance_paise || 0) + cashbackPaise;
+            await referrer.save();
+
+            await CashbackTransaction.create({
+              userId: referrer._id,
+              type: 'earn',
+              amountPaise: cashbackPaise,
+              title: `Referral cashback - ${user.firstname || 'friend'} purchased ${plan.planName || 'a plan'}`,
+              relatedUserId: user._id,
+              referralCashbackId: record._id,
+              orderId: razorpay_order_id,
+              balanceAfterPaise: referrer.cashback_balance_paise,
+            });
+
+            console.log(
+              `Referral cashback wallet credited: referrer=${referrer._id}, amount=₹${cashbackPaise / 100}`
+            );
+          }
         }
       }
     }
@@ -4420,7 +4505,7 @@ const applyReferralCode = async (req, res) => {
 
     if (user.referred_by) {
       return res.json({
-        success: 0,
+        success: false,
         message: "Referral code already applied",
       });
     }
@@ -4428,7 +4513,7 @@ const applyReferralCode = async (req, res) => {
     const code = referralCode.trim().toUpperCase();
     if (user.referral_code && user.referral_code.toUpperCase() === code) {
       return res.json({
-        success: 0,
+        success: false,
         message: "You cannot use your own referral code",
       });
     }
@@ -4436,7 +4521,7 @@ const applyReferralCode = async (req, res) => {
     const referrer = await User.findOne({ referral_code: code });
     if (!referrer) {
       return res.json({
-        success: 0,
+        success: false,
         message: "Invalid referral code",
       });
     }
@@ -4479,6 +4564,8 @@ const getReferralInfo = async (req, res) => {
       discountPercent: settings.discountPercent,
       cashbackPercent: settings.cashbackPercent,
       upiId: user.upi_id || "",
+      walletBalancePaise: user.cashback_balance_paise || 0,
+      walletBalance: (user.cashback_balance_paise || 0) / 100,
       hasReferrer: Boolean(user.referred_by),
     });
   } catch (error) {
@@ -4531,21 +4618,32 @@ const getReferralCashbacks = async (req, res) => {
   try {
     const { id: userId } = req.user;
 
+    const user = await User.findById(userId);
+
     const cashbacks = await ReferralCashback.find({ referrerId: userId })
       .sort({ createdAt: -1 })
       .limit(50);
 
-    const totalEarned = cashbacks
-      .filter((c) => c.status === 'paid')
-      .reduce((sum, c) => sum + (c.cashbackAmount || 0), 0);
-    const totalPending = cashbacks
-      .filter((c) => c.status === 'pending')
-      .reduce((sum, c) => sum + (c.cashbackAmount || 0), 0);
+    const transactions = await CashbackTransaction.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    const totalEarned = cashbacks.reduce(
+      (sum, c) => sum + (c.cashbackAmount || 0),
+      0,
+    );
+    const totalRedeemed =
+      transactions
+        .filter((t) => t.type === 'redeem')
+        .reduce((sum, t) => sum + (t.amountPaise || 0), 0) / 100;
 
     res.json({
       success: true,
+      walletBalancePaise: user ? user.cashback_balance_paise || 0 : 0,
+      walletBalance: user ? (user.cashback_balance_paise || 0) / 100 : 0,
       totalEarned: Math.round(totalEarned * 100) / 100,
-      totalPending: Math.round(totalPending * 100) / 100,
+      totalRedeemed: Math.round(totalRedeemed * 100) / 100,
+      totalPending: 0,
       cashbacks: cashbacks.map((c) => ({
         _id: c._id,
         referredUserId: c.referredUserId,
@@ -4557,6 +4655,13 @@ const getReferralCashbacks = async (req, res) => {
         cashbackAmount: c.cashbackAmount,
         status: c.status,
         createdAt: c.createdAt,
+      })),
+      transactions: transactions.map((t) => ({
+        _id: t._id,
+        type: t.type,
+        amountPaise: t.amountPaise,
+        title: t.title,
+        createdAt: t.createdAt,
       })),
     });
   } catch (error) {

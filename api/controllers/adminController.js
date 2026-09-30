@@ -219,6 +219,69 @@ const userStatus = async (req, res) => {
     }
 }
 
+// Cashback wallet ledger (earn/redeem transactions + outstanding liability)
+const CashbackTransaction = require('../models/cashbackTransactionModel');
+const ReferralCashback = require('../models/referralCashbackModel');
+
+const viewCashbacks = async (req, res) => {
+    try {
+        await verifyAdminAccess(req, res, async () => {
+            const loginData = await Admin.findById({ _id: req.session.user_id });
+            const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+            const limit = 20;
+            const skip = (page - 1) * limit;
+
+            const typeFilter = (req.query.type || '').trim();
+            const filter = {};
+            if (typeFilter === 'earn' || typeFilter === 'redeem') {
+                filter.type = typeFilter;
+            }
+
+            const [transactions, totalItems] = await Promise.all([
+                CashbackTransaction.find(filter)
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .populate('userId', 'firstname lastname email')
+                    .populate('relatedUserId', 'firstname lastname email')
+                    .lean(),
+                CashbackTransaction.countDocuments(filter),
+            ]);
+
+            const totalsAgg = await CashbackTransaction.aggregate([
+                { $group: { _id: '$type', totalPaise: { $sum: '$amountPaise' }, count: { $sum: 1 } } },
+            ]);
+            const totals = { earn: { totalPaise: 0, count: 0 }, redeem: { totalPaise: 0, count: 0 } };
+            totalsAgg.forEach((t) => {
+                if (totals[t._id]) totals[t._id] = { totalPaise: t.totalPaise || 0, count: t.count || 0 };
+            });
+
+            const balanceAgg = await User.aggregate([
+                { $match: { cashback_balance_paise: { $gt: 0 } } },
+                { $group: { _id: null, totalPaise: { $sum: '$cashback_balance_paise' }, users: { $sum: 1 } } },
+            ]);
+            const liability = balanceAgg[0] || { totalPaise: 0, users: 0 };
+
+            const referrals = await ReferralCashback.countDocuments({});
+
+            res.render('viewCashbacks', {
+                loginData,
+                transactions,
+                totals,
+                liability,
+                referrals,
+                typeFilter,
+                currentPage: page,
+                totalPages: Math.max(1, Math.ceil(totalItems / limit)),
+                totalItems,
+                limit,
+            });
+        });
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+
 module.exports = {
     loginLoad,
     login,
@@ -229,5 +292,6 @@ module.exports = {
     changePassword,
     resetAdminPassword,
     viewUsers,
-    userStatus
+    userStatus,
+    viewCashbacks
 }

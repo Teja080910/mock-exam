@@ -17,6 +17,21 @@ Future<void> showReferralPromptOnce(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
   if (prefs.getBool(flagKey) ?? false) return;
 
+  // Don't ask users who already have a referrer on their account.
+  final token = FFAppState().loginToken;
+  if (token.isEmpty) return;
+  try {
+    final infoRes = await QuizGroup.getReferralInfoCall.call(token: token);
+    final hasReferrer =
+        QuizGroup.getReferralInfoCall.hasReferrer(infoRes.jsonBody) ?? false;
+    if (hasReferrer) {
+      await prefs.setBool(flagKey, true);
+      return;
+    }
+  } catch (_) {
+    // If the check fails, still allow the user to apply a code.
+  }
+
   final codeController = TextEditingController();
   var applying = false;
 
