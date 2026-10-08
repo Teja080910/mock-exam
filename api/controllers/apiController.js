@@ -1199,6 +1199,10 @@ const GetIntro = async (req, res) => {
         description: intros.description,
         createdAt: intros.createdAt,
         updatedAt: intros.updatedAt,
+        discounts: (intros.discounts || []).map((d) => ({
+          planId: d.planId ? d.planId.toString() : '',
+          discountPercent: d.discountPercent || 0,
+        })),
       }));
       res.json({
         data: {
@@ -3294,15 +3298,12 @@ const QuizCompare = async (req, res) => {
     const topperCorrect = Number(topper.correct_answers || 0);
     const topperWrong = Number(topper.wrong_answers || 0);
     const topperAttempt = topperCorrect + topperWrong;
+    const accuracyDenominator =
+      totalQ > 0 ? totalQ : topperAttempt; // match the app: accuracy = correct / total questions
     const topperAccuracy =
-      topperAttempt > 0 ? (topperCorrect / topperAttempt) * 100 : 0;
+      accuracyDenominator > 0 ? (topperCorrect / accuracyDenominator) * 100 : 0;
     const topperScore = Number(topper.score || 0);
-    const topperTime =
-      Number(topper.time_taken || 0) > 0
-        ? Number(topper.time_taken)
-        : (Number(userTime || 0) > 0
-            ? Number(userTime)
-            : (quizDurationSec > 0 ? Math.round(quizDurationSec * 0.55) : 0));
+    const topperTime = Number(topper.time_taken || 0);
 
     let sumScore = 0;
     let sumCorrect = 0;
@@ -3318,7 +3319,9 @@ const QuizCompare = async (req, res) => {
       const c = Number(att.correct_answers || 0);
       const w = Number(att.wrong_answers || 0);
       const attCount = c + w;
-      const acc = attCount > 0 ? (c / attCount) * 100 : 0;
+      const attDenominator =
+        totalQ > 0 ? totalQ : Number(att.total_questions || 0) || attCount;
+      const acc = attDenominator > 0 ? (c / attDenominator) * 100 : 0;
       const t = Number(att.time_taken || 0);
 
       sumScore += Number(att.score || 0);
@@ -3338,11 +3341,23 @@ const QuizCompare = async (req, res) => {
     const avgAttempt = count > 0 ? Number((sumAttempt / count).toFixed(1)) : 0;
     const avgAccuracy = count > 0 ? Number((sumAccuracy / count).toFixed(1)) : 0;
     const avgTime =
-      count === 1
-        ? topperTime
-        : validTimeCount > 0
-        ? Math.round(sumTime / validTimeCount)
-        : (quizDurationSec > 0 ? Math.round(quizDurationSec * 0.75) : topperTime);
+      validTimeCount > 0 ? Math.round(sumTime / validTimeCount) : 0;
+
+    // A single participant means there is nobody to compare against -
+    // return zeros for topper and average.
+    if (count <= 1) {
+      return res.json({
+        data: {
+          success: 1,
+          message: "No comparison available yet",
+          topper: { score: 0, accuracy: 0, attempt: 0, correct: 0, incorrect: 0, time: 0 },
+          average: { score: 0, accuracy: 0, attempt: 0, correct: 0, incorrect: 0, time: 0 },
+          totalParticipants: count,
+          totalQuestions: totalQ,
+          error: 0,
+        },
+      });
+    }
 
     return res.json({
       data: {
@@ -3665,20 +3680,31 @@ const getPages = async (req, res) => {
 const GetNotifications = async (req, res) => {
   try {
     const userdata = await User.findOne({ _id: req.body.userId });
-    // compare the user created date with the current date
-    const currentDate = new Date();
+    if (!userdata) {
+      return res.json({
+        data: {
+          success: 0,
+          message: "User not found",
+          notificationDetails: [],
+          error: 1,
+        },
+      });
+    }
+    // Only notifications created after the account was created are relevant.
     const userCreatedDate = userdata.createdAt;
 
     // Compare the user created date with Notification Created Date
     const notifications = await CommonNotification.find({
       createdAt: { $gte: userCreatedDate },
-    });
+    }).sort({ createdAt: -1 });
     if (notifications.length > 0) {
       const notificationData = notifications.map((notification) => ({
         _id: notification._id,
         title: notification.title,
         description: notification.description,
         image: notification.image || '',
+        link: notification.link || '',
+        screen: notification.screen || '',
         createdAt: notification.createdAt,
       }));
       res.json({
@@ -4039,23 +4065,47 @@ const buyPlan = async (req, res) => {
     const amount = plan.price;
 
     // ============================
-    // 🎁 REFERRAL DISCOUNT
+    // 🎁 OFFER + REFERRAL DISCOUNT (best of)
     // ============================
-    let finalAmount = amount;
     const user = await User.findById(userId);
-    if (user && user.referred_by) {
-      const settings = await getReferralSettings();
-      if (settings.discountPercent > 0) {
-        finalAmount = Math.round((amount * (100 - settings.discountPercent)) / 100);
+
+    // Newest active offer's discount for this plan (admin: Offers page)
+    let offerPercent = 0;
+    const activeOffers = await Intro.find({ is_active: 1 }).sort({ createdAt: -1 }).limit(1);
+    if (activeOffers.length > 0 && activeOffers[0].discounts) {
+      const match = activeOffers[0].discounts.find(
+        (d) => d.planId && d.planId.toString() === plan._id.toString()
+      );
+      if (match && match.discountPercent > 0) {
+        offerPercent = match.discountPercent;
       }
     }
+
+    // Referred users get their referral discount on their FIRST plan
+    // purchase only (instant discount); admin offers apply as usual.
+    let referralPercent = 0;
+    if (user && user.referred_by && !user.referral_discount_used) {
+      const settings = await getReferralSettings();
+      referralPercent = settings.discountPercent || 0;
+    }
+    const effectivePercent = Math.max(offerPercent, referralPercent);
+    // Keep paise precision: 10% off Rs.199 = Rs.179.10, not Rs.179.
+    const discountedPaise = effectivePercent > 0
+      ? Math.round((amount * 100 * (100 - effectivePercent)) / 100)
+      : amount * 100;
 
     // ============================
     // 💳 CASHBACK WALLET
     // ============================
-    const discountedPaise = finalAmount * 100;
     const balancePaise = user ? user.cashback_balance_paise || 0 : 0;
-    const walletUsedPaise = Math.min(balancePaise, discountedPaise);
+    // Cashback usage caps: at most 50% of the plan amount can be paid with
+    // cashback, and at most 50% of the available wallet balance per purchase.
+    // The remaining balance stays for future purchases.
+    const walletCapPaise = Math.min(
+      Math.floor(balancePaise / 2),
+      Math.floor(discountedPaise / 2)
+    );
+    const walletUsedPaise = Math.min(walletCapPaise, discountedPaise);
     const payablePaise = discountedPaise - walletUsedPaise;
     const discountPaise = amount * 100 - discountedPaise;
 
@@ -4083,6 +4133,7 @@ const buyPlan = async (req, res) => {
         amount: 0,
         payablePaise: 0,
         walletUsedPaise,
+        walletCapPaise,
         walletBalancePaise: balanceAfter,
         discountPaise,
         key: process.env.RAZORPAY_KEY_ID,
@@ -4114,6 +4165,7 @@ const buyPlan = async (req, res) => {
       planName: plan.planName,
       payablePaise,
       walletUsedPaise,
+      walletCapPaise,
       walletBalancePaise: balancePaise,
       discountPaise,
     });
@@ -4222,61 +4274,69 @@ const verifyPayment = async (req, res) => {
     }
 
     // ===============================
-    // 💸 REFERRAL CASHBACK → REFERRER WALLET
+    // 💸 REFERRAL CASHBACK → REFERRER WALLET (post-payment, one-time per pair)
     // ===============================
+    if (user && user.referred_by) {
+      // The referred user's 10% instant discount applies only to the first
+      // purchase; mark it used after this successful payment.
+      user.referral_discount_used = true;
+      await user.save();
+    }
     if (user && user.referred_by && (order.amount || 0) > 0) {
       const settings = await getReferralSettings();
-      const cashbackPercent = settings.cashbackPercent;
+      const referrerPercent = settings.cashbackPercent;  // e.g. 15%
 
-      if (cashbackPercent > 0) {
-        const paidPaise = order.amount || 0;
-        const cashbackPaise = Math.round((paidPaise * cashbackPercent) / 100);
-        const discountAmount = plan.price - paidPaise / 100;
+      // Cashback is computed on the plan's list price (e.g. 15% of Rs.199).
+      const planPricePaise = Math.round((plan.price || 0) * 100);
+      const referrerCashbackPaise = Math.round((planPricePaise * referrerPercent) / 100);
+      const paidPaise = order.amount || 0;
 
-        // 🔁 Guard: only credit once per referred user
-        const existingCashback = await ReferralCashback.findOne({
+      // 🔁 Guard: only credit once per referred user
+      const existingCashback = await ReferralCashback.findOne({
+        referrerId: user.referred_by,
+        referredUserId: user._id,
+        status: { $in: ['pending', 'credited', 'used', 'paid'] },
+      });
+
+      if (!existingCashback && referrerCashbackPaise > 0) {
+        const referrer = await User.findById(user.referred_by);
+
+        const record = await ReferralCashback.create({
           referrerId: user.referred_by,
           referredUserId: user._id,
-          status: { $in: ['pending', 'credited', 'used', 'paid'] },
+          planId: plan._id,
+          planName: plan.planName || 'Plan',
+          planAmount: plan.price,
+          discountAmount: 0,
+          paidAmount: paidPaise / 100,
+          cashbackPercent: referrerPercent,
+          cashbackAmount: referrerCashbackPaise / 100,
+          status: 'credited',
+          paidAt: new Date(),
         });
 
-        if (!existingCashback && cashbackPaise > 0) {
-          const referrer = await User.findById(user.referred_by);
-          if (referrer) {
-            const record = await ReferralCashback.create({
-              referrerId: referrer._id,
-              referredUserId: user._id,
-              planId: plan._id,
-              planName: plan.planName || 'Plan',
-              planAmount: plan.price,
-              discountAmount: Math.max(discountAmount, 0),
-              paidAmount: paidPaise / 100,
-              cashbackPercent: cashbackPercent,
-              cashbackAmount: cashbackPaise / 100,
-              status: 'credited',
-              paidAt: new Date(),
-            });
+        // Referrer wallet
+        if (referrer && referrerCashbackPaise > 0) {
+          referrer.cashback_balance_paise =
+            (referrer.cashback_balance_paise || 0) + referrerCashbackPaise;
+          await referrer.save();
 
-            referrer.cashback_balance_paise =
-              (referrer.cashback_balance_paise || 0) + cashbackPaise;
-            await referrer.save();
+          await CashbackTransaction.create({
+            userId: referrer._id,
+            type: 'earn',
+            amountPaise: referrerCashbackPaise,
+            title: `Referral cashback - ${user.firstname || 'friend'} purchased ${plan.planName || 'a plan'}`,
+            relatedUserId: user._id,
+            referralCashbackId: record._id,
+            orderId: razorpay_order_id,
+            balanceAfterPaise: referrer.cashback_balance_paise,
+          });
 
-            await CashbackTransaction.create({
-              userId: referrer._id,
-              type: 'earn',
-              amountPaise: cashbackPaise,
-              title: `Referral cashback - ${user.firstname || 'friend'} purchased ${plan.planName || 'a plan'}`,
-              relatedUserId: user._id,
-              referralCashbackId: record._id,
-              orderId: razorpay_order_id,
-              balanceAfterPaise: referrer.cashback_balance_paise,
-            });
-
-            console.log(
-              `Referral cashback wallet credited: referrer=${referrer._id}, amount=₹${cashbackPaise / 100}`
-            );
-          }
+          console.log(
+            `Referral cashback credited (referrer): referrer=${referrer._id}, amount=₹${referrerCashbackPaise / 100}`
+          );
         }
+
       }
     }
 

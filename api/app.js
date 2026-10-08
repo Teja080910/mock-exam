@@ -18,6 +18,7 @@ const db = require('./config/mongoose');
 const MongoStore = require("connect-mongo");
 
 require("./Cron/planCron")
+require("./Cron/notificationCleanupCron")
 // Load the passport module
 const passport = require('passport');
 const flash = require("connect-flash");

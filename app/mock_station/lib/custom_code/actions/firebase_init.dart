@@ -59,14 +59,36 @@ Future<void> firebaseInit() async {
   });
 
     // Handle when app is opened from notification
-  FirebaseMessaging.onMessageOpenedApp.listen((event) {});
+  FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      _openNotificationsScreen();
+  });
 
     // Check if app was opened from notification
-  FirebaseMessaging.instance.getInitialMessage().then((value) {});
+  FirebaseMessaging.instance.getInitialMessage().then((value) {
+      if (value != null) {
+        _openNotificationsScreen();
+      }
+  });
 
     debugPrint('Firebase initialized successfully');
   } catch (e) {
     debugPrint('Error initializing Firebase: $e');
+  }
+}
+
+Future<void> _openNotificationsScreen() async {
+  // The router may not be ready immediately on cold start; retry briefly.
+  for (var attempt = 0; attempt < 10; attempt++) {
+    final ctx = appNavigatorKey.currentContext;
+    if (ctx != null) {
+      try {
+        ctx.pushNamed('notification_screen');
+      } catch (e) {
+        debugPrint('Notification redirect failed: $e');
+      }
+      return;
+    }
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 }
 

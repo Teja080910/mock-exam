@@ -171,7 +171,8 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
       }
 
     
-      context.goNamed(HomeScreenWidget.routeName);
+      FFAppState().clearNotifyCache();
+        context.goNamed(HomeScreenWidget.routeName);
       return userCredential;
     } catch (e, stack) {
       print('ERROR during Google Sign-In: $e');
@@ -401,7 +402,8 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
           FFAppState().userDetils = userDetails;
           FFAppState().userId = getJsonField(userDetails, r'''$.id''').toString();
           
-          context.goNamed(HomeScreenWidget.routeName);
+          FFAppState().clearNotifyCache();
+        context.goNamed(HomeScreenWidget.routeName);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Backend Login Failed: ${apiResponse.jsonBody}')),
@@ -767,11 +769,11 @@ class _LoginScreenWidgetState extends State<LoginScreenWidget>
       ),
       child: const Row(
         children: [
-          Expanded(child: _FeatureItem(icon: Icons.assignment_outlined, color: Color(0xFF3E6BFF), title: 'PYQs Based', subtitle: 'Mock Tests', underline: Color(0xFF3E6BFF), compact: true)),
+          Expanded(child: _FeatureItem(icon: Icons.assignment_outlined, color: Color(0xFF3E6BFF), title: 'Unlimited', subtitle: 'Mock Tests', underline: Color(0xFF3E6BFF), compact: true)),
           _FeatureDivider(),
           Expanded(child: _FeatureItem(icon: Icons.article_outlined, color: Color(0xFFFF5A58), title: 'High-quality', subtitle: 'study notes', underline: Color(0xFFFF5A58), compact: true)),
           _FeatureDivider(),
-          Expanded(child: _FeatureItem(icon: Icons.newspaper_outlined, color: Color(0xFF31B95D), title: 'Daily', subtitle: 'Current Affairs', underline: Color(0xFF31B95D), compact: true)),
+          Expanded(child: _FeatureItem(icon: Icons.newspaper_outlined, color: Color(0xFF31B95D), title: 'Ebook & Daily', subtitle: 'Current Affairs', underline: Color(0xFF31B95D), compact: true)),
         ],
       ),
     );

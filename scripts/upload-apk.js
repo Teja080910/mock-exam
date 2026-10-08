@@ -44,19 +44,25 @@ async function upload(apkPath) {
   const fileName = `mock-station${version ? `-v${version}` : ''}-${stamp}.apk`;
 
   console.log(`Uploading ${fileName} to Tracker (${apiUrl})...`);
-  const form = new FormData();
-  form.append('projectId', projectId);
-  form.append('file', new Blob([fs.readFileSync(apkPath)]), fileName);
 
-  const res = await fetch(`${apiUrl}/api/apk/upload`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: form,
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error || `Upload failed (${res.status})`);
+  // Use curl for the upload: Node's fetch (undici) times out on ~100MB
+  // bodies on slower connections, curl handles it reliably.
+  const { execFileSync } = require('child_process');
+  const base = apiUrl.replace(/\/+$/, '');
+  const out = execFileSync('curl', [
+    '-s', '-X', 'POST', `${base}/api/apk/upload`,
+    '-H', `Authorization: Bearer ${token}`,
+    '-F', `projectId=${projectId}`,
+    '-F', `file=@${apkPath};filename=${fileName}`,
+  ], { maxBuffer: 32 * 1024 * 1024, timeout: 30 * 60 * 1000 }).toString();
+
+  const json = JSON.parse(out);
+  if (!json || !json.apk) throw new Error(json.error || 'Upload failed: ' + out.slice(0, 300));
   console.log('\nUploaded to Mock Station project!');
-  console.log('Download link: ' + (json.shareUrl || json.url));
+  const shareUrl = (json.shareUrl || json.url || '')
+    .replace('https://localhost:3001', base);
+  const fallbackUrl = `${base}/apk/mockstation/${json.apk.id}/${encodeURIComponent(fileName)}`;
+  console.log('Download link: ' + (shareUrl || fallbackUrl));
 }
 
 async function main() {

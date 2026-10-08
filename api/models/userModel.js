@@ -74,6 +74,12 @@ const userSchema = new mongoose.Schema ({
     cashback_balance_paise:{
         type:Number,
         default:0
+    },
+    // True once the referred user has completed their first plan purchase
+    // (the 10% referral discount applies only to that first purchase).
+    referral_discount_used:{
+        type:Boolean,
+        default:false
     }
 },
 { timestamps: true });

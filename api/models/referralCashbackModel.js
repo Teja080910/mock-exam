@@ -39,6 +39,10 @@ const ReferralCashbackSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
+    referredCashbackAmount: {
+        type: Number,
+        default: 0
+    },
     status: {
         // credited = added to the referrer's cashback wallet; used = spent on
         // a purchase; pending/paid kept for legacy payout records.

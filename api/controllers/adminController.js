@@ -75,7 +75,7 @@ const editProfile = async (req, res) => {
         const currentAdmin = await Admin.findById(id);
         if (req.file) {
             if (currentAdmin) {
-                if (fs.existsSync(userimages + currentAdmin.image)) {
+                if (currentAdmin.image && fs.existsSync(userimages + currentAdmin.image)) {
                     fs.unlinkSync(userimages + currentAdmin.image)
                 }
             }
@@ -232,9 +232,24 @@ const viewCashbacks = async (req, res) => {
             const skip = (page - 1) * limit;
 
             const typeFilter = (req.query.type || '').trim();
+            const search = (req.query.q || '').trim();
             const filter = {};
             if (typeFilter === 'earn' || typeFilter === 'redeem') {
                 filter.type = typeFilter;
+            }
+            if (search) {
+                const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+                const matchedUsers = await User.find({
+                    $or: [{ firstname: rx }, { lastname: rx }, { email: rx }],
+                })
+                    .select('_id')
+                    .limit(500)
+                    .lean();
+                filter.$or = [
+                    { userId: { $in: matchedUsers.map((u) => u._id) } },
+                    { title: rx },
+                    { orderId: rx },
+                ];
             }
 
             const [transactions, totalItems] = await Promise.all([
@@ -271,6 +286,7 @@ const viewCashbacks = async (req, res) => {
                 liability,
                 referrals,
                 typeFilter,
+                search,
                 currentPage: page,
                 totalPages: Math.max(1, Math.ceil(totalItems / limit)),
                 totalItems,

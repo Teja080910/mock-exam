@@ -24,6 +24,8 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   late Razorpay _razorpay;
   String? _currentOrderId;
+  // plan _id -> discount percent from the newest active admin offer
+  Map<String, int> _offerDiscounts = {};
 
   @override
   void initState() {
@@ -38,6 +40,41 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
 
     // Fetch latest user plan on screen load
     WidgetsBinding.instance.addPostFrameCallback((_) => refreshProfile());
+    _loadOfferDiscounts();
+  }
+
+  Future<void> _loadOfferDiscounts() async {
+    try {
+      final res = await QuizGroup.getIntroAPICall.call();
+      if (QuizGroup.getIntroAPICall.success(res.jsonBody) != 1) return;
+      final intros = QuizGroup.getIntroAPICall
+          .introDetailsList(res.jsonBody)
+          ?.whereType<Map>()
+          .toList();
+      if (intros == null || intros.isEmpty) return;
+
+      // The newest active offer governs the plan discounts.
+      intros.sort((a, b) {
+        final aTime = DateTime.tryParse(
+                getJsonField(a, r'''$.updatedAt''').toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = DateTime.tryParse(
+                getJsonField(b, r'''$.updatedAt''').toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+
+      final discounts =
+          (getJsonField(intros.first, r'''$.discounts''') as List?) ?? [];
+      final map = <String, int>{};
+      for (final d in discounts) {
+        final pid = getJsonField(d, r'''$.planId''').toString();
+        final pct =
+            int.tryParse(getJsonField(d, r'''$.discountPercent''').toString()) ?? 0;
+        if (pid.isNotEmpty && pct > 0) map[pid] = pct;
+      }
+      if (mounted) setState(() => _offerDiscounts = map);
+    } catch (_) {}
   }
 
   Future<void> _showPlanSuccessDialog() async {
@@ -462,6 +499,7 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   Widget _buildPlanCard({
     required int index,
     required String price,
+    required int discountPercent,
     required String planName,
     required String planType,
     required String planValidity,
@@ -550,14 +588,57 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '₹$price',
-                      style: TextStyle(
-                        fontSize: FFFont.f20,
-                        fontWeight: FontWeight.w900,
-                        color: accent,
+                    if (discountPercent > 0) ...[
+                      Text(
+                        '₹$price',
+                        style: const TextStyle(
+                          fontSize: FFFont.f12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF94A3B8),
+                          decoration: TextDecoration.lineThrough,
+                        ),
                       ),
-                    ),
+                      Text(
+                        '₹${(() {
+                          final raw = (int.tryParse(price) ?? 0) *
+                              (100 - discountPercent) /
+                              100;
+                          return raw == raw.roundToDouble()
+                              ? raw.toStringAsFixed(0)
+                              : raw.toStringAsFixed(2);
+                        })()}',
+                        style: TextStyle(
+                          fontSize: FFFont.f20,
+                          fontWeight: FontWeight.w900,
+                          color: accent,
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 3.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFE4E6),
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        child: Text(
+                          '$discountPercent% OFF',
+                          style: const TextStyle(
+                            fontSize: FFFont.f10,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFE11D48),
+                          ),
+                        ),
+                      ),
+                    ] else
+                      Text(
+                        '₹$price',
+                        style: TextStyle(
+                          fontSize: FFFont.f20,
+                          fontWeight: FontWeight.w900,
+                          color: accent,
+                        ),
+                      ),
                     const SizedBox(height: 6.0),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -927,9 +1008,15 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 }
                               }
 
+                              final planMongoId =
+                                  getJsonField(plan, r'''$._id''').toString();
+                              final discountPercent =
+                                  _offerDiscounts[planMongoId] ?? 0;
+
                               return _buildPlanCard(
                                 index: index,
                                 price: price,
+                                discountPercent: discountPercent,
                                 planName: planName,
                                 planType: planType,
                                 planValidity: planValidity,

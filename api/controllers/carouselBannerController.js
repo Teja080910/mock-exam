@@ -117,7 +117,7 @@ const updateBanner = async (req, res) => {
             };
 
             if (req.file) {
-                if (currentBanner && fs.existsSync(userimages + currentBanner.image)) {
+                if (currentBanner && currentBanner.image && fs.existsSync(userimages + currentBanner.image)) {
                     fs.unlinkSync(userimages + currentBanner.image);
                 }
                 updateData.image = req.file.filename;
@@ -141,7 +141,7 @@ const deleteBanner = async (req, res) => {
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-banner';
         const currentBanner = await CarouselBanner.findById(id);
         if (currentBanner) {
-            if (fs.existsSync(userimages + currentBanner.image)) {
+            if (currentBanner.image && fs.existsSync(userimages + currentBanner.image)) {
                 fs.unlinkSync(userimages + currentBanner.image);
             }
         }

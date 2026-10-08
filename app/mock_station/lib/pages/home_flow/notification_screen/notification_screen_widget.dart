@@ -8,6 +8,7 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'notification_screen_model.dart';
@@ -42,6 +43,105 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
     super.dispose();
   }
 
+  Future<void> _openNotification(dynamic item) async {
+    final link = getJsonField(item, r'''$.link''').toString().trim();
+    final screen = getJsonField(item, r'''$.screen''').toString().trim();
+    final title = getJsonField(item, r'''$.title''').toString();
+    final description =
+        getJsonField(item, r'''$.description''').toString();
+    final image = getJsonField(item, r'''$.image''').toString();
+
+    // In-app page redirect (a Link URL takes precedence over this).
+    if (link.isEmpty && screen.isNotEmpty) {
+      const routes = {
+        'plans': 'PlansScreen',
+        'current_affairs': 'current_affairs',
+        'news': 'news_screen',
+        'books': 'books_screen',
+        'notes': 'notes_screen',
+      };
+      final route = routes[screen];
+      if (route != null) {
+        context.pushNamed(route);
+        return;
+      }
+    }
+
+    if (link.isNotEmpty && (link.startsWith('http://') || link.startsWith('https://'))) {
+      final uri = Uri.tryParse(link);
+      if (uri != null) {
+        try {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        } catch (e) {
+          debugPrint('Notification link launch failed: $e');
+        }
+      }
+    }
+
+    // No link - show the full notification.
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800, fontSize: FFFont.f16),
+              ),
+              const SizedBox(height: 10),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (image.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  '${FFAppConstants.imageBaseURL}$image',
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      custom_widgets.HtmlConverterDes(
+                        width: double.infinity,
+                        height: 10.0,
+                        text: description,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Close'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -74,6 +174,11 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                       child: FutureBuilder<ApiCallResponse>(
                         future: FFAppState()
                             .notify(
+                          // Per-user cache key: otherwise a second user logging
+                          // in on the same app session sees the previous
+                          // user's cached notifications.
+                          uniqueQueryKey:
+                              'notifications_${getJsonField(FFAppState().userDetils, r'''$.id''').toString()}_${FFAppState().loginToken.hashCode}',
                           requestFn: () => QuizGroup.getNotificationsCall.call(
                             userId: getJsonField(
                               FFAppState().userDetils,
@@ -144,7 +249,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                 } else {
                                   return Builder(
                                     builder: (context) {
-                                      final notificationsDetails =
+                                       final notificationsDetails =
                                           QuizGroup.getNotificationsCall
                                                   .notificationsDetails(
                                                     containerGetNotificationsResponse
@@ -152,6 +257,21 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                   )
                                                   ?.toList() ??
                                               [];
+                                      // Newest first (guaranteed client-side,
+                                      // regardless of API order).
+                                      notificationsDetails.sort((a, b) {
+                                        final aTime = DateTime.tryParse(
+                                                getJsonField(a,
+                                                        r'''$.createdAt''')
+                                                    .toString()) ??
+                                            DateTime.fromMillisecondsSinceEpoch(0);
+                                        final bTime = DateTime.tryParse(
+                                                getJsonField(b,
+                                                        r'''$.createdAt''')
+                                                    .toString()) ??
+                                            DateTime.fromMillisecondsSinceEpoch(0);
+                                        return bTime.compareTo(aTime);
+                                      });
                                       if (notificationsDetails.isEmpty) {
                                         return Center(
                                           child: NotificationsemtyWidget(),
@@ -195,7 +315,13 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                         notificationsDetailsItem,
                                                         r'''$.image''')
                                                     .toString();
-                                            return Padding(
+                                            return InkWell(
+                                              onTap: () =>
+                                                  _openNotification(
+                                                      notificationsDetailsItem),
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0),
+                                              child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       16.0, 0.0, 16.0, 0.0),
@@ -433,6 +559,7 @@ class _NotificationScreenWidgetState extends State<NotificationScreenWidget> {
                                                   ),
                                                 ),
                                               ),
+                                            ),
                                             );
                                           },
                                         ),

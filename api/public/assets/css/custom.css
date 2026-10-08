@@ -504,3 +504,27 @@ a.text-success:focus {
         overflow-x: hidden;
     }
 }
+/* Admin form labels: never split mid-word, wrap only at spaces, and give
+   the label column slightly more room so long labels don't collide with
+   the inputs. Applies to every add/edit form. */
+.col-form-label {
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+    white-space: normal;
+    font-size: 13.5px;
+    line-height: 1.25;
+    padding-right: 10px;
+}
+
+@media (min-width: 576px) {
+    form .row > .col-form-label.col-sm-2 {
+        flex: 0 0 auto;
+        width: 22%;
+        max-width: 22%;
+    }
+    form .row > .col-sm-10 {
+        flex: 0 0 auto;
+        width: 78%;
+        max-width: 78%;
+    }
+}

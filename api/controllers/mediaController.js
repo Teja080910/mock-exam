@@ -54,7 +54,7 @@ const deleteMedia = async (req, res) => {
         const id = req.query.id;
         const currentMedia = await Media.findById(id);
         if (currentMedia) {
-            if (fs.existsSync(userimages + currentMedia.url)) {
+            if (currentMedia.url && fs.existsSync(userimages + currentMedia.url)) {
                 fs.unlinkSync(userimages + currentMedia.url)
             }
         }

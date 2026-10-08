@@ -92,6 +92,7 @@
                                                         </td>
                                                         <td>
                                                             <a href="#" class="text-info me-3 btn-view-notification" data-title="<%= notification.title %>" data-description="<%= notification.description %>" data-image="<%= notification.image || '' %>" data-sent-at="<%= notification.createdAt.toLocaleString() %>" data-bs-toggle="modal" data-bs-target="#viewNotificationModal"><i class="bx bx-show"></i></a>
+                                                            <a href="/delete-notification?id=<%= notification._id %>" onclick="return confirm('Are you sure you want to delete this notification?')" class="text-danger"><i class="bx bx-trash"></i></a>
                                                         </td>
                                                     </tr>
                                                 <% }); %>

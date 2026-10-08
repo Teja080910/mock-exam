@@ -4,12 +4,31 @@ const userimages = path.join('./public/assets/userImages/');
 const { verifyAdminAccess } = require('../config/verification');
 const Intro = require("../models/introModel");
 const Admin = require("../models/adminModel");
+const Plan = require("../models/planModel");
+
+// Build the per-plan discount list from the form fields
+// plan_enable_<planId> + plan_discount_<planId>.
+const parsePlanDiscounts = (body) => {
+    const discounts = [];
+    Object.keys(body || {}).forEach((key) => {
+        const m = key.match(/^plan_discount_(.+)$/);
+        if (!m) return;
+        const planId = m[1];
+        const percent = Number(body[key]) || 0;
+        const enabled = body[`plan_enable_${planId}`] === 'on' || body[`plan_enable_${planId}`] === '1';
+        if (enabled && percent > 0) {
+            discounts.push({ planId, discountPercent: Math.min(100, percent) });
+        }
+    });
+    return discounts;
+};
 
 // Load Intro
 const loadIntro = async (req, res) => {
     try {
         const intro = await Intro.find({});
-        res.render('addIntro', { intro: intro });
+        const plans = await Plan.find({}).sort({ price: 1 });
+        res.render('addIntro', { intro: intro, plans: plans });
     } catch (error) {
         console.log(error.message);
     }
@@ -24,15 +43,17 @@ const addIntro = async (req, res) => {
                 title: req.body.title,
                 image: req.file.filename,
                 description: req.body.description,
-                is_active: req.body.is_active = "on" ? 1 : 0
+                is_active: req.body.is_active = "on" ? 1 : 0,
+                discounts: parsePlanDiscounts(req.body)
             });
             const saveIntro = await introData.save();
             const intro = await Intro.find({});
+            const plans = await Plan.find({}).sort({ price: 1 });
             if (saveIntro) {
-                res.render('addIntro', { message: "Intro Added Succesfully..!!", intro: intro });
+                res.render('addIntro', { message: "Intro Added Succesfully..!!", intro: intro, plans: plans });
             }
             else {
-                res.render('addIntro', { message: "Intro Not Added..!!*" });
+                res.render('addIntro', { message: "Intro Not Added..!!*", plans: plans });
             }
         } else {
             req.flash('error', 'You have no access to add Intro , You are not super admin !! *');
@@ -66,7 +87,7 @@ const viewIntro = async (req, res) => {
 
             const totalItems = await Intro.countDocuments(filter);
             const totalPages = Math.max(1, Math.ceil(totalItems / limit));
-            const allIntro = await Intro.find(filter).sort({ createdAt: 1 }).skip(skip).limit(limit);
+            const allIntro = await Intro.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
 
             const params = [];
             if (req.query.is_active !== undefined && req.query.is_active !== '') params.push(`is_active=${encodeURIComponent(req.query.is_active)}`);
@@ -98,11 +119,12 @@ const editIntro = async (req, res) => {
         const id = req.query.id;
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-intro';
         const editData = await Intro.findById({ _id: id });
+        const plans = await Plan.find({}).sort({ price: 1 });
         if (editData) {
-            res.render('editIntro', { intro: editData, returnUrl: returnUrl });
+            res.render('editIntro', { intro: editData, plans: plans, returnUrl: returnUrl });
         }
         else {
-            res.render('editIntro', { message: 'Intro Not Added', returnUrl: returnUrl });
+            res.render('editIntro', { message: 'Intro Not Added', plans: plans, returnUrl: returnUrl });
         }
     } catch (error) {
         console.log(error.message);
@@ -119,7 +141,7 @@ const UpdateIntro = async (req, res) => {
             const currentIntro = await Intro.findById(id);
             if (req.file) {
                 if (currentIntro) {
-                    if (fs.existsSync(userimages + currentIntro.image)) {
+                    if (currentIntro.image && fs.existsSync(userimages + currentIntro.image)) {
                         fs.unlinkSync(userimages + currentIntro.image)
                     }
                 }
@@ -128,7 +150,8 @@ const UpdateIntro = async (req, res) => {
                         $set: {
                             title: req.body.title,
                             image: req.file.filename,
-                            description: req.body.description
+                            description: req.body.description,
+                            discounts: parsePlanDiscounts(req.body)
                         }
                     });
                 res.redirect(returnUrl);
@@ -138,7 +161,8 @@ const UpdateIntro = async (req, res) => {
                     {
                         $set: {
                             title: req.body.title,
-                            description: req.body.description
+                            description: req.body.description,
+                            discounts: parsePlanDiscounts(req.body)
                         }
                     });
                 res.redirect(returnUrl);
@@ -161,7 +185,7 @@ const deleteIntro = async (req, res) => {
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-intro';
         const currentIntro = await Intro.findById(id);
         if (currentIntro) {
-            if (fs.existsSync(userimages + currentIntro.image)) {
+            if (currentIntro.image && fs.existsSync(userimages + currentIntro.image)) {
                 fs.unlinkSync(userimages + currentIntro.image)
             }
         }

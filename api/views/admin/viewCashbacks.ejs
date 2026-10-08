@@ -47,14 +47,30 @@
                     </div>
 
                     <div class="card mb-4">
-                        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <div class="card-header">
                             <h5 class="card-title mb-0">Wallet Transactions</h5>
-                            <form method="get" action="/view-cashbacks" class="d-flex gap-2">
-                                <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
-                                    <option value="">All Types</option>
-                                    <option value="earn" <%= typeFilter === 'earn' ? 'selected' : '' %>>Earn</option>
-                                    <option value="redeem" <%= typeFilter === 'redeem' ? 'selected' : '' %>>Redeem</option>
-                                </select>
+                        </div>
+                        <div class="card-body pt-3">
+                            <form method="get" action="/view-cashbacks">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted small fw-semibold">Search</label>
+                                        <input type="text" name="q" class="form-control"
+                                               placeholder="Search user, email, description..." value="<%= typeof search !== 'undefined' ? search : '' %>" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-semibold">Type</label>
+                                        <select name="type" class="form-select" onchange="this.form.submit()">
+                                            <option value="">All Types</option>
+                                            <option value="earn" <%= typeFilter === 'earn' ? 'selected' : '' %>>Earn</option>
+                                            <option value="redeem" <%= typeFilter === 'redeem' ? 'selected' : '' %>>Redeem</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-semibold">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search me-1"></i> Search</button>
+                                    </div>
+                                </div>
                             </form>
                         </div>
                         <div class="table-responsive text-nowrap">
@@ -104,7 +120,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: typeFilter ? ('type=' + typeFilter) : '' }) %>
+                        <%- include('../partials/pagination', { currentPage: currentPage, totalPages: totalPages, totalItems: totalItems, limit: limit, extraParams: [typeFilter ? ('type=' + typeFilter) : '', (typeof search !== 'undefined' && search) ? ('q=' + encodeURIComponent(search)) : ''].filter(Boolean).join('&') }) %>
                     </div>
                 </div>
             </div>

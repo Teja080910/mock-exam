@@ -19,8 +19,8 @@ class ReferAndEarnScreenWidget extends StatefulWidget {
 class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   String referralCode = '';
-  int cashbackPercent = 20;
-  int discountPercent = 12;
+  int cashbackPercent = 10;
+  int discountPercent = 10;
   double totalCashback = 0;
   double totalRedeemed = 0;
   double walletBalance = 0;
@@ -28,6 +28,8 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
   List<dynamic> walletTransactions = [];
   bool hasReferrer = false;
   bool _loading = true;
+  final _referralCodeController = TextEditingController();
+  bool _applyingCode = false;
 
   @override
   void initState() {
@@ -61,9 +63,9 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
           referralCode = code;
         }
         cashbackPercent =
-            QuizGroup.getReferralInfoCall.cashbackPercent(infoBody) ?? 20;
+            QuizGroup.getReferralInfoCall.cashbackPercent(infoBody) ?? 10;
         discountPercent =
-            QuizGroup.getReferralInfoCall.discountPercent(infoBody) ?? 12;
+            QuizGroup.getReferralInfoCall.discountPercent(infoBody) ?? 10;
         hasReferrer = QuizGroup.getReferralInfoCall.hasReferrer(infoBody) ?? false;
         walletBalance =
             (QuizGroup.getReferralInfoCall.walletBalancePaise(infoBody) ?? 0) / 100;
@@ -86,6 +88,131 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
     }
 
     setState(() => _loading = false);
+  }
+
+  Future<void> _applyReferralCode() async {
+    final code = _referralCodeController.text.trim();
+    if (code.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a referral code')),
+      );
+      return;
+    }
+    setState(() => _applyingCode = true);
+    final res = await QuizGroup.applyReferralCodeCall.call(
+      token: FFAppState().loginToken,
+      referralCode: code,
+    );
+    if (!mounted) return;
+    setState(() => _applyingCode = false);
+    final ok = QuizGroup.applyReferralCodeCall.success(res.jsonBody) ?? false;
+    final msg = QuizGroup.applyReferralCodeCall.message(res.jsonBody) ??
+        'Failed to apply referral code';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? "Referral applied — you get $discountPercent% off on your first purchase!" : msg)),
+    );
+    if (ok) {
+      _referralCodeController.clear();
+      await _loadReferralInfo();
+    }
+  }
+
+  Widget _buildApplyCodeCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 10.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: const Color(0xFFFDE68A), width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.local_offer_rounded,
+                  color: Color(0xFFD97706), size: 16.0),
+              SizedBox(width: 6.0),
+              Text(
+                'Have a referral code?',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: FFFont.f14,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 3.0),
+          const Text(
+            "Enter your friend's code to get discount on your first purchase.",
+            style: TextStyle(fontSize: FFFont.f11, color: Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 8.0),
+          SizedBox(
+            height: 40.0,
+            child: TextField(
+              controller: _referralCodeController,
+              textCapitalization: TextCapitalization.characters,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.0,
+                  fontSize: FFFont.f14),
+              decoration: InputDecoration(
+                hintText: 'e.g. ABC12345',
+                isDense: true,
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: const Icon(Icons.local_offer_outlined,
+                    size: 15, color: Color(0xFFD97706)),
+                prefixIconConstraints:
+                    const BoxConstraints(minWidth: 32.0, minHeight: 32.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          SizedBox(
+            width: double.infinity,
+            height: 38.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF059669),
+                disabledBackgroundColor: const Color(0xFF94A3B8),
+                elevation: 0,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+              ),
+              onPressed: _applyingCode ? null : _applyReferralCode,
+              child: _applyingCode
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Apply Code',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: FFFont.f14)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _referralCodeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -236,7 +363,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       iconColor: const Color(0xFFD97706),
                       title: 'They Get Up to $discountPercent% Discount',
                       subtitle:
-                          'Your friends get up to $discountPercent% discount on their purchase with your code',
+                          'Your friends get up to $discountPercent% instant discount on their first plan purchase with your code',
                       stepNumber: '03',
                       stepColor: const Color(0xFFD97706),
                     ),
@@ -300,7 +427,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                                 ),
                                 const SizedBox(height: 3.0),
                                 const Text(
-                                  'Auto-applied on your next plan purchase',
+                                  'Auto-applied on your next purchase (max 50% of plan price)',
                                   style: TextStyle(
                                     fontSize: FFFont.f12,
                                     color: Color(0xFF64748B),
@@ -313,6 +440,12 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                       ),
                     ),
                     const SizedBox(height: 20.0),
+
+                    // Apply referral code (only for users who don't have a referrer yet)
+                    if (!_loading && !hasReferrer) ...[
+                      _buildApplyCodeCard(),
+                      const SizedBox(height: 20.0),
+                    ],
 
                     // Discount Active Banner
                     if (!_loading && hasReferrer) ...[
@@ -398,7 +531,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                             onPressed: () {
                               if (referralCode.isNotEmpty) {
                                 Share.share(
-                                  'Use my referral code *$referralCode* to join Mock Station App and get up to $discountPercent% discount on your purchase! Download now: https://play.google.com/store/apps/details?id=com.mock.exam.app',
+                                  'Use my referral code *$referralCode* to join Mock Station App and get up to $discountPercent% discount on your first purchase! Download now: https://play.google.com/store/apps/details?id=com.mock.exam.app',
                                   subject: 'Mock Station Referral',
                                 );
                               } else {
@@ -526,7 +659,7 @@ class _ReferAndEarnScreenWidgetState extends State<ReferAndEarnScreenWidget> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'You get $discountPercent% off on all plan purchases.',
+                  'You get $discountPercent% off on your first plan purchase.',
                   style: const TextStyle(
                     fontSize: FFFont.f12,
                     color: Color(0xFF047857),

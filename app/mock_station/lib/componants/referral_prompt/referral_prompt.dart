@@ -20,8 +20,11 @@ Future<void> showReferralPromptOnce(BuildContext context) async {
   // Don't ask users who already have a referrer on their account.
   final token = FFAppState().loginToken;
   if (token.isEmpty) return;
+  var discountPercent = 10;
   try {
     final infoRes = await QuizGroup.getReferralInfoCall.call(token: token);
+    discountPercent =
+        QuizGroup.getReferralInfoCall.discountPercent(infoRes.jsonBody) ?? 10;
     final hasReferrer =
         QuizGroup.getReferralInfoCall.hasReferrer(infoRes.jsonBody) ?? false;
     if (hasReferrer) {
@@ -43,103 +46,280 @@ Future<void> showReferralPromptOnce(BuildContext context) async {
     context: context,
     barrierDismissible: false,
     builder: (dialogContext) => StatefulBuilder(
-      builder: (dialogContext, setModalState) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Row(
-          children: const [
-            Icon(Icons.card_giftcard, color: Color(0xFF10B981), size: 26),
-            SizedBox(width: 10),
-            Text('Got a referral code?',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: FFFont.f18)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'If your friend invited you, enter their code & get up to 12% discount on any plan purchase.',
-              style: TextStyle(fontSize: FFFont.f14, color: Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: codeController,
-              textCapitalization: TextCapitalization.characters,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-              ),
-              decoration: InputDecoration(
-                hintText: 'e.g. ABC12345',
-                prefixIcon: const Icon(Icons.local_offer_outlined,
-                    size: 18, color: Color(0xFF10B981)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+      builder: (dialogContext, setModalState) {
+        void closeDialog() {
+          if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+        }
+
+        Future<void> skip() async {
+          await finish();
+          closeDialog();
+        }
+
+        Future<void> applyCode() async {
+          final code = codeController.text.trim();
+          if (code.isEmpty) {
+            ScaffoldMessenger.of(dialogContext).showSnackBar(
+              const SnackBar(content: Text('Enter a referral code')),
+            );
+            return;
+          }
+          setModalState(() => applying = true);
+          final res = await QuizGroup.applyReferralCodeCall.call(
+            token: FFAppState().loginToken,
+            referralCode: code,
+          );
+          final body = res.jsonBody;
+          if (!dialogContext.mounted) return;
+          setModalState(() => applying = false);
+          final success =
+              QuizGroup.applyReferralCodeCall.success(body) ?? false;
+          final msg = QuizGroup.applyReferralCodeCall.message(body) ??
+              'Failed to apply referral code';
+          if (success) {
+            await finish();
+            closeDialog();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Referral applied — discount will apply on your first purchase!")),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(dialogContext).showSnackBar(
+              SnackBar(content: Text(msg)),
+            );
+          }
+        }
+
+        const navy = Color(0xFF07133F);
+        const blue = Color(0xFF087BFF);
+        const orange = Color(0xFFFF8700);
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 40, vertical: 28),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = MediaQuery.sizeOf(context).width < 400;
+              return ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26),
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFFE5F7FF), Color(0xFFC8EAFF)],
+                          ),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.fromLTRB(
+                            compact ? 12 : 16,
+                            compact ? 10 : 14,
+                            compact ? 12 : 16,
+                            compact ? 10 : 14,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/images/referral_gift_reference.png',
+                                width: compact ? 128 : 160,
+                                height: compact ? 68 : 86,
+                                fit: BoxFit.contain,
+                              ),
+                              SizedBox(height: compact ? 5 : 7),
+                              Text(
+                                'Got a referral code?',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: navy,
+                                  fontSize: compact ? 19 : 22,
+                                  height: 1.1,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.7,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text.rich(
+                                TextSpan(
+                                  style: TextStyle(
+                                    color: const Color(0xFF34466F),
+                                    fontSize: compact ? 12 : 14,
+                                    height: 1.45,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  children: [
+                                    const TextSpan(
+                                        text:
+                                            'If your friend invited you, enter their code & get up to '),
+                                    TextSpan(
+                                      text: '$discountPercent% discount',
+                                      style: const TextStyle(
+                                        color: blue,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    const TextSpan(
+                                        text: ' on any plan purchase.'),
+                                  ],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: compact ? 8 : 12),
+                              TextField(
+                                controller: codeController,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                style: const TextStyle(
+                                  color: navy,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'e.g. ABC12345',
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF7182A4),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.local_offer_outlined,
+                                    color: blue,
+                                    size: 26,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(17),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFF269AFF), width: 2),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(17),
+                                    borderSide: const BorderSide(
+                                        color: blue, width: 2.5),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 12),
+                                ),
+                              ),
+                              SizedBox(height: compact ? 8 : 10),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: compact ? 36 : 40,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: orange,
+                                          disabledBackgroundColor:
+                                              const Color(0xFFB5C4D7),
+                                          elevation: 3,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(17)),
+                                        ),
+                                        onPressed: applying ? null : skip,
+                                        child: Text(
+                                          'Do not show again',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: compact ? 11 : 13,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: compact ? 36 : 40,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: blue,
+                                          disabledBackgroundColor:
+                                              const Color(0xFF9ABCE0),
+                                          elevation: 3,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(17)),
+                                        ),
+                                        onPressed:
+                                            applying ? null : applyCode,
+                                        child: applying
+                                            ? const SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : Text(
+                                                'Apply  ›',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize:
+                                                      compact ? 14 : 16,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Positioned(
+                        top: -42,
+                        left: -42,
+                        child: _ReferralCircle(size: 115),
+                      ),
+                      const Positioned(
+                        bottom: -48,
+                        right: -38,
+                        child: _ReferralCircle(size: 125),
+                      ),
+                    ],
+                  ),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: finish,
-            child: const Text('Skip',
-                style: TextStyle(color: Color(0xFF64748B))),
+              );
+            },
           ),
-          TextButton(
-            onPressed: finish,
-            child: const Text("Don't show again",
-                style: TextStyle(color: Color(0xFF94A3B8))),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF059669),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: applying
-                ? null
-                : () async {
-                    if (codeController.text.trim().isEmpty) return;
-                    setModalState(() => applying = true);
-                    final res = await QuizGroup.applyReferralCodeCall.call(
-                      token: FFAppState().loginToken,
-                      referralCode: codeController.text.trim(),
-                    );
-                    final body = res.jsonBody;
-                    setModalState(() => applying = false);
-                    final success =
-                        QuizGroup.applyReferralCodeCall.success(body) ?? false;
-                    final msg = QuizGroup.applyReferralCodeCall.message(body) ??
-                        'Failed to apply referral code';
-                    if (success) {
-                      await finish();
-                      if (dialogContext.mounted) Navigator.pop(dialogContext);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                "Referral applied — you'll get 12% off!")),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        SnackBar(content: Text(msg)),
-                      );
-                    }
-                  },
-            child: applying
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Text('Apply',
-                    style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+        );
+      },
     ),
   );
+}
+
+class _ReferralCircle extends StatelessWidget {
+  const _ReferralCircle({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            color: Color(0x33269AFF),
+            shape: BoxShape.circle,
+          ),
+        ),
+      );
 }

@@ -93,7 +93,9 @@ const addNotification = async (req, res) => {
             const nottificationData = new common_Notification({
                 title: req.body.title,
                 description: cleanDescription || req.body.description,
-                image: req.file ? req.file.filename : descImage
+                image: req.file ? req.file.filename : descImage,
+                link: (req.body.link || '').trim(),
+                screen: (req.body.screen || '').trim()
             });
             const saveNotification = await nottificationData.save();
 
@@ -134,6 +136,36 @@ const addNotification = async (req, res) => {
     }
 }
 
+// Delete notification (admin)
+const deleteNotification = async (req, res) => {
+    try {
+        const loginData = await Admin.findById({ _id: req.session.user_id });
+        if (!loginData || loginData.is_admin != 1) {
+            req.flash('error', 'You have no access to delete notification , You are not super admin !! *');
+            return res.redirect('back');
+        }
+        const id = req.query.id;
+        const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-notification';
+        if (!id) {
+            return res.redirect(returnUrl);
+        }
+        const notification = await common_Notification.findById(id);
+        if (notification && notification.image) {
+            try {
+                const imgPath = path.join(__dirname, '../public/assets/userImages', notification.image);
+                if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+            } catch (e) {
+                console.log('Notification image delete failed:', e.message);
+            }
+        }
+        await common_Notification.deleteOne({ _id: id });
+        res.redirect(returnUrl);
+    } catch (error) {
+        console.log(error.message);
+        res.redirect('/view-notification');
+    }
+}
+
 // Firebase Push Notification to all users
 function sendPushNotification(registrationTokens, title, body, imageUrl = '') {
     const message = {
@@ -160,5 +192,6 @@ function sendPushNotification(registrationTokens, title, body, imageUrl = '') {
 module.exports = {
     loadNotification,
     viewNotification,
-    addNotification
+    addNotification,
+    deleteNotification
 }

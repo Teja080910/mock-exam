@@ -1,6 +1,22 @@
+const mongoose = require('mongoose');
 const fs = require("fs");
 const path = require('path')
 const userimages = path.join('./public/assets/userImages/');
+
+// Safely delete an uploaded image file. Guards against empty names (which
+// would point at the directory itself -> EISDIR) and missing files.
+const safeUnlinkImage = (filename) => {
+    try {
+        if (!filename || typeof filename !== 'string' || !filename.trim()) return;
+        const full = path.join(userimages, filename.trim());
+        if (fs.existsSync(full) && fs.statSync(full).isFile()) {
+            fs.unlinkSync(full);
+        }
+    } catch (e) {
+        console.log('Image cleanup failed:', e.message);
+    }
+};
+
 const { verifyAdminAccess } = require('../config/verification');
 const Category = require("../models/categoryModel");
 const CategoryGroup = require("../models/categoryGroupModel");
@@ -151,12 +167,10 @@ const UpdateCategory = async (req, res) => {
             const id = req.body.id;
             const returnUrl = req.body.returnUrl || req.query.returnUrl || '/view-category';
             const currentCategory = await Category.findById(id);
-            const categoryIdObj = require('mongoose').Types.ObjectId(id);
+            const categoryIdObj = new mongoose.Types.ObjectId(id);
             if (req.file) {
                 if (currentCategory) {
-                    if (fs.existsSync(userimages + currentCategory.image)) {
-                        fs.unlinkSync(userimages + currentCategory.image)
-                    }
+                    safeUnlinkImage(currentCategory.image);
                 }
                 await Category.findByIdAndUpdate({ _id: id },
                     {
@@ -240,18 +254,20 @@ const deleteCategory = async (req, res) => {
     try {
         const id = req.query.id;
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-category';
-        const categoryIdObj = require('mongoose').Types.ObjectId(id);
+        if (!id) {
+            return res.redirect(returnUrl);
+        }
         const currentCategory = await Category.findById(id);
         if (currentCategory) {
-            if (fs.existsSync(userimages + currentCategory.image)) {
-                fs.unlinkSync(userimages + currentCategory.image)
-            }
+            safeUnlinkImage(currentCategory.image);
         }
-        await CategoryGroup.updateMany({ categories: categoryIdObj }, { $pull: { categories: categoryIdObj } });
+        // Mongoose casts the id string to ObjectId for these queries.
+        await CategoryGroup.updateMany({ categories: id }, { $pull: { categories: id } });
         await Category.deleteOne({ _id: id });
         res.redirect(returnUrl);
     } catch (error) {
         console.log(error.message);
+        res.redirect('/view-category');
     }
 }
 
@@ -379,18 +395,17 @@ const editSubcategory = async (req, res) => {
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-subcategory';
         console.log('Subcategory ID:', id);
         
-        const editData = await Subcategory.findById({ _id: id });
-        console.log('Edit data found:', !!editData);
-        console.log('Edit data:', editData);
-        
+        if (!id) {
+            return res.redirect(returnUrl);
+        }
+        const editData = await Subcategory.findById(id);
+
         const categories = await Category.find({ is_active: 1 });
-        console.log('Categories found:', categories.length);
-        
+
         if (editData) {
             res.render('editSubcategory', { subcategory: editData, categories, returnUrl: returnUrl });
         } else {
-            console.log('Subcategory not found');
-            res.render('editSubcategory', { message: 'Subcategory Not Found', categories, returnUrl: returnUrl });
+            return res.redirect(returnUrl);
         }
     } catch (error) {
         console.log('Error in editSubcategory:', error.message);
@@ -408,9 +423,7 @@ const updateSubcategory = async (req, res) => {
             const currentSubcategory = await Subcategory.findById(id);
             if (req.file) {
                 if (currentSubcategory) {
-                    if (fs.existsSync(userimages + currentSubcategory.image)) {
-                        fs.unlinkSync(userimages + currentSubcategory.image)
-                    }
+                    safeUnlinkImage(currentSubcategory.image);
                 }
                 await Subcategory.findByIdAndUpdate({ _id: id }, {
                     $set: {
@@ -447,14 +460,13 @@ const deleteSubcategory = async (req, res) => {
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-subcategory';
         const currentSubcategory = await Subcategory.findById(id);
         if (currentSubcategory) {
-            if (fs.existsSync(userimages + currentSubcategory.image)) {
-                fs.unlinkSync(userimages + currentSubcategory.image)
-            }
+            safeUnlinkImage(currentSubcategory.image);
         }
         await Subcategory.deleteOne({ _id: id });
         res.redirect(returnUrl);
     } catch (error) {
         console.log(error.message);
+        res.redirect('/view-subcategory');
     }
 }
 

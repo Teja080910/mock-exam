@@ -123,7 +123,7 @@ const updateEbook = async (req, res) => {
 
             // Handle image update
             if (req.files && req.files.image) {
-                if (currentEbook && fs.existsSync(userimages + currentEbook.image)) {
+                if (currentEbook && currentEbook.image && fs.existsSync(userimages + currentEbook.image)) {
                     fs.unlinkSync(userimages + currentEbook.image);
                 }
                 updateData.image = req.files.image[0].filename;
@@ -155,7 +155,7 @@ const deleteEbook = async (req, res) => {
         const returnUrl = req.query.returnUrl || req.get('Referrer') || '/view-ebook';
         const currentEbook = await Ebook.findById(id);
         if (currentEbook) {
-            if (fs.existsSync(userimages + currentEbook.image)) {
+            if (currentEbook.image && fs.existsSync(userimages + currentEbook.image)) {
                 fs.unlinkSync(userimages + currentEbook.image);
             }
             if (currentEbook.file && fs.existsSync(userimages + currentEbook.file)) {

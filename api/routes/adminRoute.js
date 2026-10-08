@@ -196,6 +196,7 @@ admin_route.post('/setting', SettingController.addSetting);
 admin_route.get('/add-notification', notificationController.loadNotification);
 admin_route.post('/add-notification', upload.single('image'), notificationController.addNotification);
 admin_route.get('/view-notification', notificationController.viewNotification);
+admin_route.get('/delete-notification', notificationController.deleteNotification);
 
 // SMTP Settings
 admin_route.get('/smtp-settings', smtpController.smtpLoad);

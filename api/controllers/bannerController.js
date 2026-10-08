@@ -103,7 +103,7 @@ const UpdateBanner = async (req, res) => {
                 const currentBanner = await Banner.findById(id);
                 if (req.file) {
                     if (currentBanner) {
-                        if (fs.existsSync(userimages + currentBanner.image)) {
+                        if (currentBanner.image && fs.existsSync(userimages + currentBanner.image)) {
                             fs.unlinkSync(userimages + currentBanner.image)
                         }
                     }
@@ -142,7 +142,7 @@ const deleteBanner = async (req, res) => {
         const id = req.query.id;
         const currentBanner = await Banner.findById(id);
         if (currentBanner) {
-            if (fs.existsSync(userimages + currentBanner.image)) {
+            if (currentBanner.image && fs.existsSync(userimages + currentBanner.image)) {
                 fs.unlinkSync(userimages + currentBanner.image)
             }
         }

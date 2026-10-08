@@ -839,8 +839,9 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     final youCorrect = _computedCorrect.toDouble();
     final youWrong = _computedWrong.toDouble();
     final youAttempt = (youCorrect + youWrong).toDouble();
-    final youAccuracy =
-        youAttempt > 0 ? ((youCorrect / youAttempt) * 100.0) : 0.0;
+    // Same definition as the Performance Summary accuracy card:
+    // correct answers / total questions (skips count against accuracy).
+    final youAccuracy = _accuracy;
     final youScore = _displayTotalMarks;
     final youTimeSec = _totalTakenSeconds().toDouble();
 
@@ -848,34 +849,33 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
         ? (_compareData!['topper'] as Map)
         : null;
     final topperScore =
-        double.tryParse((topperMap?['score'] ?? '').toString()) ?? youScore;
+        double.tryParse((topperMap?['score'] ?? '').toString()) ?? 0.0;
     final topperAccuracy =
-        double.tryParse((topperMap?['accuracy'] ?? '').toString()) ??
-            youAccuracy;
+        double.tryParse((topperMap?['accuracy'] ?? '').toString()) ?? 0.0;
     final topperAttempt =
-        double.tryParse((topperMap?['attempt'] ?? '').toString()) ?? youAttempt;
+        double.tryParse((topperMap?['attempt'] ?? '').toString()) ?? 0.0;
     final topperCorrect =
-        double.tryParse((topperMap?['correct'] ?? '').toString()) ?? youCorrect;
+        double.tryParse((topperMap?['correct'] ?? '').toString()) ?? 0.0;
     final topperIncorrect =
-        double.tryParse((topperMap?['incorrect'] ?? '').toString()) ?? youWrong;
+        double.tryParse((topperMap?['incorrect'] ?? '').toString()) ?? 0.0;
     final topperTimeSec =
-        double.tryParse((topperMap?['time'] ?? '').toString()) ?? youTimeSec;
+        double.tryParse((topperMap?['time'] ?? '').toString()) ?? 0.0;
 
     final avgMap = _compareData?['average'] is Map
         ? (_compareData!['average'] as Map)
         : null;
     final avgScore =
-        double.tryParse((avgMap?['score'] ?? '').toString()) ?? youScore;
+        double.tryParse((avgMap?['score'] ?? '').toString()) ?? 0.0;
     final avgAccuracy =
-        double.tryParse((avgMap?['accuracy'] ?? '').toString()) ?? youAccuracy;
+        double.tryParse((avgMap?['accuracy'] ?? '').toString()) ?? 0.0;
     final avgAttempt =
-        double.tryParse((avgMap?['attempt'] ?? '').toString()) ?? youAttempt;
+        double.tryParse((avgMap?['attempt'] ?? '').toString()) ?? 0.0;
     final avgCorrect =
-        double.tryParse((avgMap?['correct'] ?? '').toString()) ?? youCorrect;
+        double.tryParse((avgMap?['correct'] ?? '').toString()) ?? 0.0;
     final avgIncorrect =
-        double.tryParse((avgMap?['incorrect'] ?? '').toString()) ?? youWrong;
+        double.tryParse((avgMap?['incorrect'] ?? '').toString()) ?? 0.0;
     final avgTimeSec =
-        double.tryParse((avgMap?['time'] ?? '').toString()) ?? youTimeSec;
+        double.tryParse((avgMap?['time'] ?? '').toString()) ?? 0.0;
 
     double youVal = 0.0;
     double topperVal = 0.0;
@@ -1211,8 +1211,10 @@ class _QuizResultWidgetState extends State<QuizResultWidget>
     const colSubjectHeaderColor = Color(0xFF64748B);
     const colCorrectColor = Color(0xFF16A34A);
     const colWrongColor = Color(0xFFDC2626);
-    const colSkipColor = Color(0xFFC98A00);
-    const colReviewColor = Color(0xFFC74E9C);
+    // Must match the Performance Summary accents (Skipped Questions /
+    // Marked for Review) so both sections use the same colors.
+    const colSkipColor = Color(0xFFEEB123);
+    const colReviewColor = Color(0xFFED7BC3);
     const colMarksColor = Color(0xFF7C3AED);
     const colTimeColor = Color(0xFFEA580C);
 
