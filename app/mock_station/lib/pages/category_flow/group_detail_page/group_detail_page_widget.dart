@@ -38,7 +38,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
           onPressed: () => context.safePop(),
         ),
         title: Text(
-          (widget.groupName ?? '').toUpperCase(),
+          (widget.groupName ?? ''),
           style: const TextStyle(
             color: Color(0xFF111827),
             fontSize: FFFont.f18,
@@ -187,7 +187,7 @@ class _GroupDetailPageWidgetState extends State<GroupDetailPageWidget> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    displayTitle.toUpperCase(),
+                                    displayTitle,
                                     style: const TextStyle(
                                       fontSize: FFFont.f16,
                                       fontWeight: FontWeight.w700,

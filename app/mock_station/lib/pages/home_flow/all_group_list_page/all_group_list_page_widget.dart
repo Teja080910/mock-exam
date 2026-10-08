@@ -155,7 +155,7 @@ class _AllGroupListPageWidgetState extends State<AllGroupListPageWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              group.displayName.toUpperCase(),
+                              group.displayName,
                               style: const TextStyle(
                                 fontSize: FFFont.f16,
                                 fontWeight: FontWeight.w700,

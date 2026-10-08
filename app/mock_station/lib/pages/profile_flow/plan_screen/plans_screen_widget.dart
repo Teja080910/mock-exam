@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/componants/payment_success_componant/payment_success_componant_widget.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:provider/provider.dart';
 import 'plans_screen_model.dart';
@@ -26,6 +27,12 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   String? _currentOrderId;
   // plan _id -> discount percent from the newest active admin offer
   Map<String, int> _offerDiscounts = {};
+  String? _selectedPlanId;
+  String? _selectedPlanPrice;
+  String? _selectedPlanCategory;
+  String? _selectedPlanName;
+  String? _selectedPlanDisplayPrice;
+  bool _selectedPlanUnavailable = false;
 
   @override
   void initState() {
@@ -307,56 +314,33 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryBackground,
-        border: Border(
-          bottom: BorderSide(color: const Color(0xFFE5E7EB).withOpacity(0.75)),
-        ),
-      ),
+      color: Colors.white,
       child: SafeArea(
         bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 14.0),
-          child: Row(
-            children: [
-              InkWell(
-                onTap: () => context.safePop(),
-                borderRadius: BorderRadius.circular(999.0),
-                child: Container(
-                  width: 38.0,
-                  height: 38.0,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF93C5FD).withOpacity(0.15),
-                        blurRadius: 10.0,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: 18.0,
-                    color: Color(0xFF111827),
+        child: SizedBox(
+          height: 72,
+          child: CustomPaint(
+            painter: _PlanHeaderDecorationPainter(),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  left: 16,
+                  top: 0,
+                  child: InkWell(
+                    onTap: () => context.safePop(),
+                    child: const Icon(Icons.arrow_back_rounded,
+                        size: 24, color: Color(0xFF111827)),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12.0),
-              const Expanded(
-                child: Text(
-                  'Subscription Plans',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: FFFont.f18,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF111827),
-                  ),
+                Image.asset(
+                  'assets/images/mock_test_horizontal_logo.png',
+                  width: 174,
+                  height: 42,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              const SizedBox(width: 38.0),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -364,7 +348,17 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
   }
 
   Widget _buildSectionHeader() {
-    return const SizedBox.shrink();
+    return const Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: Text(
+        'Select Your Plan',
+        style: TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 19,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
   }
 
   static const Map<int, Map<String, dynamic>> _indexThemes = {
@@ -446,39 +440,13 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     return _indexThemes[index % _indexThemes.length]!;
   }
 
-  Widget _buildBenefitChip({
-    required Color accent,
-    required IconData icon,
-    required String text,
-    Color? background,
-    Color? borderColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      decoration: BoxDecoration(
-        color: background ?? accent.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(6.0),
-        border: Border.all(
-          color: borderColor ?? accent.withOpacity(0.3),
-          width: 1.0,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12.0, color: accent),
-          const SizedBox(width: 5.0),
-          Text(
-            text,
-            style: TextStyle(
-              color: accent,
-              fontSize: FFFont.f11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
+  String _displayPlanPrice(String price, int discountPercent) {
+    if (discountPercent <= 0) return price;
+    final priceValue = int.tryParse(price) ?? 0;
+    final raw = priceValue * (100 - discountPercent) / 100;
+    return raw == raw.roundToDouble()
+        ? raw.toStringAsFixed(0)
+        : raw.toStringAsFixed(2);
   }
 
   String _formatPlanCategorySubtitle(
@@ -501,327 +469,340 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
     required String price,
     required int discountPercent,
     required String planName,
-    required String planType,
     required String planValidity,
     required String categoryName,
-    required String planId,
     required bool isAlreadyActive,
-    required bool isIncluded,
+    required bool isSelected,
+    required bool isRecommended,
     required List<String> features,
-    required VoidCallback onBuyNow,
+    required VoidCallback onSelect,
   }) {
     final theme = _planTheme(categoryName, planName, index);
     final accent = theme['accent'] as Color;
     final soft = theme['soft'] as Color;
     final icon = theme['icon'] as IconData;
-    final border = theme['border'] as Color;
-    final resolvedFeatures = features;
-    final statusLabel = isAlreadyActive ? 'Active' : 'Inactive';
+    final feature = features.isNotEmpty
+        ? features.first
+        : planName.toLowerCase().contains('ebook')
+            ? 'High Quality Content'
+            : planName.toLowerCase().contains('notes')
+                ? 'Short & Concise Notes'
+                : planName.toLowerCase().contains('mock')
+                    ? 'Mock Tests & PYQs Pdf'
+                    : 'Ebooks + Notes + Mock Tests';
+    final displayPrice = _displayPlanPrice(price, discountPercent);
+    // Selection is only a visual state. Show Active only when account access
+    // data says the user already owns this plan.
+    final showActiveBadge = isAlreadyActive;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14.0),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(color: border.withOpacity(0.7), width: 1.2),
+        color: isAlreadyActive
+            ? const Color(0xFFF1FCF5)
+            : isSelected
+                ? soft.withOpacity(0.28)
+                : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isAlreadyActive
+              ? const Color(0xFF35C978)
+              : isSelected
+                  ? accent
+                  : Colors.transparent,
+          width: 1.5,
+        ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0D0F172A),
-            blurRadius: 10.0,
-            offset: Offset(0, 4),
+            color: Color(0x0A123047),
+            blurRadius: 8,
+            offset: Offset(0, 3),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Section: Icon, Title/Subtitle/Validity, Price & Status Badge
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 54.0,
-                  height: 54.0,
-                  decoration: BoxDecoration(
-                    color: soft,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(icon, color: accent, size: 26.0),
-                ),
-                const SizedBox(width: 12.0),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        planName,
-                        style: const TextStyle(
-                          fontSize: FFFont.f16,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                      const SizedBox(height: 2.0),
-                      Text(
-                        categoryName,
-                        style: TextStyle(
-                          fontSize: FFFont.f12,
-                          fontWeight: FontWeight.w600,
-                          color: accent,
-                        ),
-                      ),
-                      const SizedBox(height: 8.0),
-                      _buildBenefitChip(
-                        accent: accent,
-                        borderColor: border,
-                        icon: Icons.calendar_today_rounded,
-                        text: 'Validity: $planValidity',
-                        background: soft.withOpacity(0.5),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onSelect,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
-                    if (discountPercent > 0) ...[
-                      Text(
-                        '₹$price',
-                        style: const TextStyle(
-                          fontSize: FFFont.f12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF94A3B8),
-                          decoration: TextDecoration.lineThrough,
-                        ),
-                      ),
-                      Text(
-                        '₹${(() {
-                          final raw = (int.tryParse(price) ?? 0) *
-                              (100 - discountPercent) /
-                              100;
-                          return raw == raw.roundToDouble()
-                              ? raw.toStringAsFixed(0)
-                              : raw.toStringAsFixed(2);
-                        })()}',
-                        style: TextStyle(
-                          fontSize: FFFont.f20,
-                          fontWeight: FontWeight.w900,
-                          color: accent,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 4.0),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 3.0),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFE4E6),
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        child: Text(
-                          '$discountPercent% OFF',
-                          style: const TextStyle(
-                            fontSize: FFFont.f10,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFFE11D48),
-                          ),
-                        ),
-                      ),
-                    ] else
-                      Text(
-                        '₹$price',
-                        style: TextStyle(
-                          fontSize: FFFont.f20,
-                          fontWeight: FontWeight.w900,
-                          color: accent,
-                        ),
-                      ),
-                    const SizedBox(height: 6.0),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0, vertical: 4.0),
-                      decoration: BoxDecoration(
-                        color: isAlreadyActive
-                            ? soft
-                            : const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(6.0),
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(color: soft, shape: BoxShape.circle),
+                      alignment: Alignment.center,
+                      child: Icon(icon, color: accent, size: 27),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            planName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF07133F),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Valid for $planValidity',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF999BB2),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded,
+                                  size: 18, color: accent),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  feature,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xFF20232A),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        statusLabel,
-                        style: TextStyle(
-                          fontSize: FFFont.f11,
-                          fontWeight: FontWeight.w700,
-                          color: isAlreadyActive
-                              ? accent
-                              : const Color(0xFF4B5568),
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 76,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 22),
+                          if (discountPercent > 0)
+                            Text(
+                              '₹$price',
+                              style: const TextStyle(
+                                color: Color(0xFF999BB2),
+                                fontSize: 13,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          Text(
+                            '₹$displayPrice',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 12.0),
-            // Dotted Separator
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Flex(
-                  direction: Axis.horizontal,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(
-                    (constraints.constrainWidth() / 10).floor(),
-                    (index) => SizedBox(
-                      width: 4.0,
-                      height: 1.0,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(color: border),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12.0),
-            // Bottom Section: Features and Buy Now button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: resolvedFeatures
-                        .map((feature) => Padding(
-                              padding: const EdgeInsets.only(bottom: 6.0),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.check_circle_rounded,
-                                      size: 16.0, color: accent),
-                                  const SizedBox(width: 8.0),
-                                  Expanded(
-                                    child: Text(
-                                      feature,
-                                      style: const TextStyle(
-                                        fontSize: FFFont.f12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF374151),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ),
-                const SizedBox(width: 12.0),
-                isAlreadyActive
-                    ? Container(
-                        width: 104.0,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDCFCE7),
-                          border: Border.all(
-                            color: const Color(0xFF16A34A),
-                            width: 1.2,
-                          ),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.check_circle_rounded,
-                              color: Color(0xFF16A34A),
-                              size: 15.0,
-                            ),
-                            SizedBox(width: 4.0),
-                            Text(
-                              'Active',
-                              style: TextStyle(
-                                fontSize: FFFont.f12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF16A34A),
-                              ),
-                            ),
-                          ],
-                        ),
+              ),
+              Positioned(
+                top: 7,
+                right: 8,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showActiveBadge)
+                      _planBadge(
+                        'Active',
+                        const Color(0xFF0DBB6B),
+                        icon: Icons.check_circle,
                       )
-                    : SizedBox(
-                        width: 104.0,
-                        height: 40.0,
-                        child: ElevatedButton(
-                          onPressed: onBuyNow,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accent,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: const Text(
-                            'Buy Now',
-                            style: TextStyle(
-                              fontSize: FFFont.f12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-              ],
-            ),
-          ],
+                    else ...[
+                      if (isRecommended)
+                        _planBadge('Recommended', const Color(0xFFFFE500),
+                            textColor: Colors.black),
+                      if (discountPercent > 0) ...[
+                        if (isRecommended) const SizedBox(width: 5),
+                        _planBadge('$discountPercent% OFF',
+                            const Color(0xFFFF7900)),
+                      ],
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTrustItem({
-    required Color accent,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Expanded(
-      child: Column(
+  Widget _planBadge(String label, Color color,
+      {Color textColor = Colors.white, IconData? icon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(7),
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 38.0,
-            height: 38.0,
-            decoration: BoxDecoration(
-              color: accent.withOpacity(0.12),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, color: accent, size: 20.0),
-          ),
-          const SizedBox(height: 6.0),
+          if (icon != null) ...[
+            Icon(icon, size: 13, color: textColor),
+            const SizedBox(width: 3),
+          ],
           Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: FFFont.f11,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1E3A8A),
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 2.0),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
+            label,
             style: TextStyle(
-              fontSize: FFFont.f10,
-              fontWeight: FontWeight.w500,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              height: 1.1,
+              color: textColor,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentBar() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 11, 18, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF17324D).withOpacity(0.10),
+            blurRadius: 12,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 132,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Pay using',
+                      style: TextStyle(
+                        color: Color(0xFF8B6AA8),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Icon(Icons.verified_user_rounded,
+                        color: Color(0xFF1685E8), size: 15),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/razorpay_logo_(1).svg',
+                      width: 25,
+                      height: 25,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(width: 5),
+                    const Text(
+                      'Razorpay',
+                      style: TextStyle(
+                        color: Color(0xFF263B55),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_selectedPlanName != null &&
+                    _selectedPlanDisplayPrice != null) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    '${_selectedPlanName!} · ₹${_selectedPlanDisplayPrice!}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF78889A),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 3),
+                  const Text(
+                    'Choose a plan',
+                    style: TextStyle(
+                      color: Color(0xFF78889A),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: SizedBox(
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_selectedPlanId == null ||
+                      _selectedPlanPrice == null ||
+                      _selectedPlanCategory == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Select a plan to continue')),
+                    );
+                    return;
+                  }
+                  if (_selectedPlanUnavailable) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('You already have access to this plan')),
+                    );
+                    return;
+                  }
+                  await _startPurchase(
+                    planId: _selectedPlanId!,
+                    price: _selectedPlanPrice!,
+                    categoryName: _selectedPlanCategory!,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF087FF5),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text(
+                  'Proceed to Payment',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
             ),
           ),
         ],
@@ -835,16 +816,15 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
 
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      body: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 18.0, 16.0, 0.0),
-                child: FutureBuilder<ApiCallResponse>(
+      backgroundColor: const Color(0xFFF0FAFF),
+      body: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: FutureBuilder<ApiCallResponse>(
                   future: QuizGroup.getPlanCall.call(
                     token: FFAppState().loginToken,
                   ),
@@ -874,8 +854,9 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                       return aPrice.compareTo(bPrice);
                     });
                     return ListView(
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(bottom: 16),
                       children: [
+                        _buildSectionHeader(),
                         for (var index = 0; index < plans.length; index++)
                           Builder(
                             builder: (context) {
@@ -884,10 +865,6 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                   getJsonField(plan, r'''$.price''').toString();
                               final planName =
                                   getJsonField(plan, r'''$.planName''')
-                                          ?.toString() ??
-                                      'Standard Plan';
-                              final planType =
-                                  getJsonField(plan, r'''$.planType''')
                                           ?.toString() ??
                                       'Standard Plan';
                               final planValidity =
@@ -1018,78 +995,105 @@ class _PlansScreenWidgetState extends State<PlansScreenWidget> {
                                 price: price,
                                 discountPercent: discountPercent,
                                 planName: planName,
-                                planType: planType,
                                 planValidity: planValidity,
                                 categoryName: categoryName,
-                                planId: getJsonField(plan, r'''$.planId''')
-                                    .toString(),
-                                isAlreadyActive:
-                                    isAlreadyActive || isIncludedByHigherPlan,
-                                isIncluded: isIncludedByHigherPlan,
+                                isAlreadyActive: isAlreadyActive ||
+                                    isIncludedByHigherPlan,
+                                isSelected: _selectedPlanId == planMongoId,
+                                isRecommended:
+                                    planName.toLowerCase().contains('lifetime'),
                                 features: planFeatures,
-                                onBuyNow: () async {
-                                  await _startPurchase(
-                                    planId: getJsonField(plan, r'''$._id''')
-                                        .toString(),
-                                    price: price,
-                                    categoryName: categoryName,
-                                  );
+                                onSelect: () {
+                                  setState(() {
+                                    _selectedPlanId = planMongoId;
+                                    _selectedPlanPrice = price;
+                                    _selectedPlanCategory = categoryName;
+                                    _selectedPlanName = planName;
+                                    _selectedPlanDisplayPrice =
+                                        _displayPlanPrice(price, discountPercent);
+                                    _selectedPlanUnavailable =
+                                        isAlreadyActive ||
+                                            isIncludedByHigherPlan;
+                                  });
                                 },
                               );
                             },
                           ),
-                        const SizedBox(height: 6.0),
-                        Container(
-                          padding:
-                              const EdgeInsets.fromLTRB(6.0, 8.0, 6.0, 12.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(22.0),
-                            border: Border.all(color: const Color(0xFFE5E7EB)),
-                          ),
-                          child: Row(
-                            children: [
-                              _buildTrustItem(
-                                accent: const Color(0xFF2563EB),
-                                icon: Icons.shield_outlined,
-                                title: 'Secure Payment',
-                                subtitle: '100% Safe & Secure',
-                              ),
-                              Container(
-                                width: 1.0,
-                                height: 32.0,
-                                color: const Color(0xFFE5E7EB),
-                              ),
-                              _buildTrustItem(
-                                accent: const Color(0xFF22C55E),
-                                icon: Icons.autorenew_rounded,
-                                title: 'Instant Access',
-                                subtitle: 'Start immediately',
-                              ),
-                              Container(
-                                width: 1.0,
-                                height: 32.0,
-                                color: const Color(0xFFE5E7EB),
-                              ),
-                              _buildTrustItem(
-                                accent: const Color(0xFF8B5CF6),
-                                icon: Icons.support_agent_rounded,
-                                title: '24/7 Support',
-                                subtitle: 'We\'re here to help',
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 18.0),
                       ],
                     );
                   },
-                ),
               ),
             ),
-          ],
-        ),
+          ),
+          SafeArea(
+            top: false,
+            child: ColoredBox(color: Colors.white, child: _buildPaymentBar()),
+          ),
+        ],
       ),
     );
   }
+}
+
+class _PlanHeaderDecorationPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    void diamond(double x, double y, double side, Color color, double angle) {
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(angle);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset.zero, width: side, height: side),
+          const Radius.circular(1.5),
+        ),
+        Paint()..color = color,
+      );
+      canvas.restore();
+    }
+
+    diamond(19, 12, 7, const Color(0xFFFFC52F), 0.72);
+    diamond(48, 5, 7, const Color(0xFFE9697A), 0.35);
+    diamond(70, 17, 6, const Color(0xFF9B51E0), 0.72);
+    diamond(size.width - 78, 13, 7, const Color(0xFFFFC52F), 0.78);
+    diamond(size.width - 48, 8, 8, const Color(0xFF8BC34A), 0.48);
+    diamond(size.width - 20, 13, 7, const Color(0xFFE9697A), 0.65);
+    diamond(21, 49, 6, const Color(0xFF8BC34A), 0.2);
+    diamond(size.width - 29, 48, 6, const Color(0xFFE875BD), 0.2);
+
+    final magenta = Paint()
+      ..color = const Color(0xFFD52ACB)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+    final leftWave = Path()
+      ..moveTo(0, 39)
+      ..cubicTo(8, 35, 10, 48, 17, 44)
+      ..cubicTo(23, 40, 25, 34, 31, 40);
+    canvas.drawPath(leftWave, magenta);
+
+    final coral = Paint()
+      ..color = const Color(0xFFE9574D)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+    final rightWave = Path()
+      ..moveTo(size.width - 42, 38)
+      ..cubicTo(size.width - 32, 31, size.width - 28, 47, size.width - 20, 40)
+      ..cubicTo(size.width - 14, 35, size.width - 11, 29, size.width - 5, 34);
+    canvas.drawPath(rightWave, coral);
+
+    final orange = Paint()
+      ..color = const Color(0xFFF2A323)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final smallScribble = Path()
+      ..moveTo(size.width - 40, 55)
+      ..cubicTo(size.width - 47, 50, size.width - 32, 49, size.width - 39, 44);
+    canvas.drawPath(smallScribble, orange);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

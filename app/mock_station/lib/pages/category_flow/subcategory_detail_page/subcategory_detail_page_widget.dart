@@ -60,7 +60,7 @@ class _SubcategoryDetailPageWidgetState
               const SizedBox(width: 14.0),
               Expanded(
                 child: Text(
-                  title.toUpperCase(),
+                  title,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: FFFont.f18,

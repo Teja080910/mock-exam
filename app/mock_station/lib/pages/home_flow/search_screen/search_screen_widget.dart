@@ -456,7 +456,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
         child: Icon(result.icon, color: Color(0xFF2563EB), size: 24.0),
       ),
       title: Text(
-        result.title.toUpperCase(),
+        result.title,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(

@@ -167,7 +167,7 @@ class _FeaturedCategoryDetailWidgetState
               const SizedBox(width: 14.0),
               Expanded(
                 child: Text(
-                  (widget.title ?? '').toUpperCase(),
+                  (widget.title ?? ''),
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: FFFont.f18,

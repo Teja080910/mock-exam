@@ -127,13 +127,6 @@ Future<void> showReferralPromptOnce(BuildContext context) async {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Image.asset(
-                                'assets/images/referral_gift_reference.png',
-                                width: compact ? 128 : 160,
-                                height: compact ? 68 : 86,
-                                fit: BoxFit.contain,
-                              ),
-                              SizedBox(height: compact ? 5 : 7),
                               Text(
                                 'Got a referral code?',
                                 textAlign: TextAlign.center,

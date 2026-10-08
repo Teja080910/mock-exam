@@ -511,14 +511,8 @@ class _HomeScreenWidgetState extends State<HomeScreenWidget>
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Text(
                 (group.code.isNotEmpty
-                        ? group.code
-                        : group.displayName
-                            .replaceAll(
-                                RegExp(r'\s*Mock\s*Test[s]?\s*',
-                                    caseSensitive: false),
-                                '')
-                            .trim())
-                    .toUpperCase(),
+                    ? group.code
+                    : group.displayName),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
